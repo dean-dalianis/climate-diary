@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 
 import requests
+from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -355,11 +356,19 @@ def combine_all_climate_data(countries):
         if os.path.exists(file_path):
             with open(file_path, 'r') as file:
                 data = json.load(file)
+                # Convert dates to MongoDB's BSON format
+                for record in data:
+                    record['date'] = {
+                        "$date": parse(record['date']).isoformat()
+                    }
                 all_climate_data.extend(data)
 
-    with open(f"{DATA_DIR}/all_climate_data.json", 'w') as file:
+    with open(f"{DATA_DIR}/accumulated_climate_data.json", 'w') as file:
         json.dump(all_climate_data, file)
 
 
 if __name__ == "__main__":
-    noaa_gsom_fetcher()
+    # noaa_gsom_fetcher()
+    countries = load_or_fetch_data(get_countries, f"{DATA_DIR}/countries.json")
+
+    combine_all_climate_data(countries)
