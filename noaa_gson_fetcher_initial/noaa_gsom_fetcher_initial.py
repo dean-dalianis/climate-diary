@@ -323,7 +323,7 @@ def log_no_results(data_url):
     logger.warning(f'No results for request: {data_url}')
 
 
-def noaa_gsom_fetcher():
+def noaa_gsom_fetcher_initial():
     """
     The main entry point of the script.
     """
@@ -368,4 +368,4 @@ def combine_all_climate_data(countries):
 
 
 if __name__ == "__main__":
-    noaa_gsom_fetcher()
+    noaa_gsom_fetcher_initial()
