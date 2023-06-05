@@ -368,7 +368,4 @@ def combine_all_climate_data(countries):
 
 
 if __name__ == "__main__":
-    # noaa_gsom_fetcher()
-    countries = load_or_fetch_data(get_countries, f"{DATA_DIR}/countries.json")
-
-    combine_all_climate_data(countries)
+    noaa_gsom_fetcher()
