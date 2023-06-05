@@ -10,8 +10,33 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
-logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger('ClimateDataFetcher')
+LOGS_DIR = 'logs'
+DATA_DIR = 'data'
+
+# Create logs and data folders if they don't exist
+os.makedirs(LOGS_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# Configure root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Create a file handler for INFO level logs
+info_handler = logging.FileHandler(f"{LOGS_DIR}/app.log")
+info_handler.setLevel(logging.INFO)
+
+# Create another file handler for ERROR level logs
+error_handler = logging.FileHandler(f"{LOGS_DIR}/error.log")
+error_handler.setLevel(logging.WARNING)
+
+# Create a formatter and set it for all handlers
+formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+info_handler.setFormatter(formatter)
+error_handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(info_handler)
+logger.addHandler(error_handler)
 
 # Constants
 HEADERS = {
@@ -23,11 +48,6 @@ MAX_REQUESTS_PER_SECOND = 5
 REQUESTS_INTERVAL = 1.0 / MAX_REQUESTS_PER_SECOND
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
 BLACKLIST_FILE = 'blacklist_urls.json'
-LOGS_DIR = 'logs'
-DATA_DIR = 'data'
-APP_LOG_FILE = 'app.log'
-ERROR_LOG_FILE = 'error.log'
-NO_RESULTS_LOG_FILE = 'no_results.log'
 
 last_request_time = None
 
@@ -284,8 +304,7 @@ def log_request_error(url, status_code):
         url (str): The URL of the request.
         status_code (int): The status code of the response.
     """
-    with open(f"{LOGS_DIR}/{ERROR_LOG_FILE}", 'a') as file:
-        file.write(f'{url} - Status Code: {status_code}\n')
+    logger.error(f'Non-200 request. URL: {url} - Status Code: {status_code}')
 
 
 def log_no_results(data_url):
@@ -295,8 +314,7 @@ def log_no_results(data_url):
     Args:
         data_url (str): The URL of the request.
     """
-    with open(f"{LOGS_DIR}/{NO_RESULTS_LOG_FILE}", 'a') as file:
-        file.write(f'{data_url}\n')
+    logger.warning(f'No results for request: {data_url}')
 
 
 def noaa_gsom_fetcher():
