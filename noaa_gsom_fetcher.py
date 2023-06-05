@@ -281,6 +281,11 @@ def fetch_climate_data_for_country(country):
         if new_climate_data is None:
             break
 
+        # Add country_id and country_name to each record in new_climate_data
+        for record in new_climate_data:
+            record['country_id'] = country['id']
+            record['country_name'] = country['name']
+
         if 'climate_data' in country:
             country['climate_data'].extend(new_climate_data)
         else:
@@ -294,6 +299,7 @@ def fetch_climate_data_for_country(country):
         logger.info(f"Climate data fetched for country {country['name']}.")
     else:
         logger.warning(f"Failed to fetch complete climate data for country {country['name']}.")
+
 
 
 def log_request_error(url, status_code):
