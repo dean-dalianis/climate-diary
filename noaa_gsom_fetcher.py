@@ -301,7 +301,6 @@ def fetch_climate_data_for_country(country):
         logger.warning(f"Failed to fetch complete climate data for country {country['name']}.")
 
 
-
 def log_request_error(url, status_code):
     """
     Log a non-200 request to the `error.log` file.
@@ -337,6 +336,29 @@ def noaa_gsom_fetcher():
         for country in countries:
             fetch_climate_data_for_country(country)
             pbar.update()
+    combine_all_climate_data(countries)
+
+
+def combine_all_climate_data(countries):
+    """
+    Combine all climate data into a single JSON file.
+
+    Args:
+        countries (list): The list of countries.
+
+    Returns:
+        None
+    """
+    all_climate_data = []
+    for country in countries:
+        file_path = f"{DATA_DIR}/climate_data_{country['id'].replace(':', '_')}.json"
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                all_climate_data.extend(data)
+
+    with open(f"{DATA_DIR}/all_climate_data.json", 'w') as file:
+        json.dump(all_climate_data, file)
 
 
 if __name__ == "__main__":
