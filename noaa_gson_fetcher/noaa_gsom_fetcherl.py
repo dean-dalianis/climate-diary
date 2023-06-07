@@ -10,11 +10,11 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
-INFLUXDB_HOST = '<your_host>'
-INFLUXDB_PORT = '<your_port>'
-INFLUXDB_USER = '<your_user>'
+INFLUXDB_HOST = 'localhost'
+INFLUXDB_PORT = '8086'
+INFLUXDB_USER = 'admin'
 INFLUXDB_PASSWORD = '<your_password>'
-INFLUXDB_DATABASE = '<your_database>'
+INFLUXDB_DATABASE = 'climate'
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
@@ -84,7 +84,11 @@ def make_api_request(url):
     global last_request_time
     last_request_time = time.time()
     if response.status_code == 200:
-        return response.json()['results']
+        json_data = response.json()
+        if 'results' in json_data:
+            return json_data['results']
+        else:
+            return None
     else:
         return None
 
