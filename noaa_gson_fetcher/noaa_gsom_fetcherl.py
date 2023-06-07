@@ -202,8 +202,8 @@ def fetch_and_write_climate_data_to_influxdb():
                 end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d')
 
                 while start_date <= end_date:
-                    current_end_date = min(start_date + timedelta(days=3652),
-                                           end_date)  # 10 years from start_date or end_date, whichever is earlier
+                    current_end_date = min(start_date + timedelta(days=9*365),
+                                           end_date)  # 9 years from start_date or end_date, whichever is earlier
                     climate_data = get_climate_data(country['id'], start_date, current_end_date)
                     if climate_data is not None:
                         for record in climate_data:
