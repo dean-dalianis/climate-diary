@@ -19,7 +19,7 @@ To get started with Grafana and InfluxDB, follow these steps:
       InfluxDB using Docker Compose. Make sure to create the necessary directories, configure the InfluxDB and Telegraf
       files, and set up the required environment variables. Also, make sure to create an init script for climate data:
       ```bash
-      CREATE DATABASE climate WITH DURATION 31d
+      CREATE DATABASE climate WITH DURATION INF
       CREATE USER climate WITH PASSWORD '<climateUSERpassword>'
       GRANT WRITE ON climate to climate```
 

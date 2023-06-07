@@ -184,7 +184,7 @@ def fetch_and_write_climate_data_to_influxdb(country, client):
                     "measurement": "climate",
                     "tags": {
                         "country_name": country['name'],
-                        "country_id": country['country_id'],
+                        "country_id": country['id'],
                         "datatype": record['datatype']
                     },
                     "time": parse(record['date']).isoformat(),
