@@ -15,6 +15,7 @@ INFLUXDB_PORT = '8086'
 INFLUXDB_USER = 'admin'
 INFLUXDB_PASSWORD = '<your_password>'
 INFLUXDB_DATABASE = 'climate'
+BATCH_SIZE = 50  # Number of countries to process at a time
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
@@ -58,6 +59,9 @@ http = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
+# Setup logging
+logging.basicConfig(filename='climate_data.log', level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(message)s')
 
 def sleep_until_next_request():
     """
@@ -90,6 +94,7 @@ def make_api_request(url):
         else:
             return None
     else:
+        logging.error(f'Received status code {response.status_code} for URL {url}')
         return None
 
 
@@ -101,8 +106,10 @@ def get_countries():
     :rtype: list or None
     """
     countries_url = f"{BASE_URL}locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
-    return make_api_request(countries_url)
-
+    countries = make_api_request(countries_url)
+    if countries is None:
+        logging.error('Failed to fetch countries')
+    return countries
 
 def get_climate_data(country_id, start_date, end_date):
     """
@@ -117,7 +124,10 @@ def get_climate_data(country_id, start_date, end_date):
     start_date_str = start_date.strftime('%Y-%m-%d')
     end_date_str = end_date.strftime('%Y-%m-%d')
     data_url = f"{BASE_URL}data?datasetid=GSOM&datatypeid={DATATYPE_ID}&units=metric&locationid={country_id}&startdate={start_date_str}&enddate={end_date_str}&limit=1000"
-    return make_api_request(data_url)
+    data = make_api_request(data_url)
+    if data is None:
+        logging.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
+    return data
 
 
 def get_last_record_date_for_country(country_id, client):
@@ -163,56 +173,59 @@ def decode_attributes(datatype, attributes_str):
     }
 
 
-def fetch_and_write_climate_data_to_influxdb(country, client):
-    """
-    Fetch climate data for a country and write it to InfluxDB.
-
-    :param dict country: The country to fetch climate data for.
-    :param InfluxDBClient client: The InfluxDB client.
-    """
-    last_record_date = get_last_record_date_for_country(country['id'], client)
-    if last_record_date is None:
-        start_date = datetime.now() - relativedelta(years=1)
-    else:
-        start_date = last_record_date + relativedelta(days=1)
-    end_date = datetime.now()
-    while start_date < end_date:
-        climate_data = get_climate_data(country['id'], start_date, end_date)
-        if climate_data is not None:
-            points = [
-                {
-                    "measurement": "climate",
-                    "tags": {
-                        "country_name": country['name'],
-                        "country_id": country['id'],
-                        "datatype": record['datatype']
-                    },
-                    "time": parse(record['date']).isoformat(),
-                    "fields": {
-                        "value": record['value'],
-                        **decode_attributes(record['datatype'], record['attributes'])
-                    }
-                }
-                for record in climate_data
-            ]
-            client.write_points(points)
-        start_date += relativedelta(days=1)
-
-
-def main():
+def fetch_and_write_climate_data_to_influxdb():
     """
     Main function - Connects to InfluxDB and fetches climate data for each country, writing it to the database.
     """
-    client = InfluxDBClient(host=INFLUXDB_HOST, port=INFLUXDB_PORT, username=INFLUXDB_USER, password=INFLUXDB_PASSWORD,
+    client = InfluxDBClient(host=INFLUXDB_HOST, port=INFLUXDB_PORT, username=INFLUXDB_USER,
+                            password=INFLUXDB_PASSWORD,
                             database=INFLUXDB_DATABASE)
 
     countries = get_countries()
     if countries is not None:
-        for country in tqdm(countries, desc="Fetching climate data"):
-            fetch_and_write_climate_data_to_influxdb(country, client)
-    else:
-        logging.error('Could not fetch the list of countries')
+        for i in tqdm(range(0, len(countries), BATCH_SIZE), desc="Fetching climate data"):
+            batch_countries = countries[i:i + BATCH_SIZE]
+            points = []
+            for country in batch_countries:
+                last_record_date = get_last_record_date_for_country(country['id'], client)
+                if last_record_date is None:
+                    start_date = datetime.now() - relativedelta(years=1)
+                else:
+                    start_date = last_record_date + relativedelta(days=1)
+                end_date = datetime.now()
 
+                while start_date < end_date:
+                    climate_data = get_climate_data(country['id'], start_date, end_date)
+                    if climate_data is not None:
+                        points.extend([
+                            {
+                                "measurement": "climate",
+                                "tags": {
+                                    "country_name": country['name'],
+                                    "country_id": country['id'],
+                                    "datatype": record['datatype']
+                                },
+                                "time": parse(record['date']).isoformat(),
+                                "fields": {
+                                    "value": record['value'],
+                                    **decode_attributes(record['datatype'], record['attributes'])
+                                }
+                            }
+                            for record in climate_data
+                        ])
+                    start_date += relativedelta(days=1)
+
+            # Write points for all countries in the batch
+            if points:
+                try:
+                    client.write_points(points)
+                    logging.info(f'Successfully wrote data for countries {i}-{i + BATCH_SIZE - 1}')
+                except Exception as e:
+                    logging.error(f'Failed to write data for countries {i}-{i + BATCH_SIZE - 1}: {str(e)}')
+            else:
+                logging.error('No data to write')
+        else:
+            logging.error('Could not fetch the list of countries')
 
 if __name__ == "__main__":
-    main()
+    fetch_and_write_climate_data_to_influxdb()
