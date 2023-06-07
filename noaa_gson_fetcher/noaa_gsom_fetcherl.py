@@ -14,7 +14,7 @@ INFLUXDB_PORT = '8086'
 INFLUXDB_USER = 'admin'
 INFLUXDB_PASSWORD = '<influx_pwd>'
 INFLUXDB_DATABASE = 'climate'
-BATCH_SIZE = 50  # Number of countries to process at a time
+BATCH_SIZE = 10  # Number of countries to process at a time
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
@@ -94,7 +94,8 @@ def make_api_request(url):
         else:
             return None
     else:
-        logging.error(f'Received status code {response.status_code} for URL {url}')
+        logging.error(
+            f'Received status code {response.status_code} for URL {url}. Response content: {response.content}')
         return None
 
 
@@ -202,7 +203,7 @@ def fetch_and_write_climate_data_to_influxdb():
                 end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d')
 
                 while start_date <= end_date:
-                    current_end_date = min(start_date + timedelta(days=9*365),
+                    current_end_date = min(start_date + timedelta(days=9 * 365),
                                            end_date)  # 9 years from start_date or end_date, whichever is earlier
                     climate_data = get_climate_data(country['id'], start_date, current_end_date)
                     if climate_data is not None:
