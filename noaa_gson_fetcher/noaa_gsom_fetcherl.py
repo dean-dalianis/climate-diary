@@ -1,10 +1,9 @@
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from dateutil.parser import parse
-from dateutil.relativedelta import relativedelta
 from influxdb import InfluxDBClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -13,7 +12,7 @@ from tqdm import tqdm
 INFLUXDB_HOST = 'localhost'
 INFLUXDB_PORT = '8086'
 INFLUXDB_USER = 'admin'
-INFLUXDB_PASSWORD = '<your_password>'
+INFLUXDB_PASSWORD = '<influx_pwd>'
 INFLUXDB_DATABASE = 'climate'
 BATCH_SIZE = 50  # Number of countries to process at a time
 
@@ -63,6 +62,7 @@ http.mount("http://", adapter)
 logging.basicConfig(filename='climate_data.log', level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
 
+
 def sleep_until_next_request():
     """
     Sleep until it's time for the next request, based on the maximum request rate.
@@ -110,6 +110,7 @@ def get_countries():
     if countries is None:
         logging.error('Failed to fetch countries')
     return countries
+
 
 def get_climate_data(country_id, start_date, end_date):
     """
@@ -177,9 +178,13 @@ def fetch_and_write_climate_data_to_influxdb():
     """
     Main function - Connects to InfluxDB and fetches climate data for each country, writing it to the database.
     """
-    client = InfluxDBClient(host=INFLUXDB_HOST, port=INFLUXDB_PORT, username=INFLUXDB_USER,
-                            password=INFLUXDB_PASSWORD,
-                            database=INFLUXDB_DATABASE)
+    client = InfluxDBClient(
+        host=INFLUXDB_HOST,
+        port=INFLUXDB_PORT,
+        username=INFLUXDB_USER,
+        password=INFLUXDB_PASSWORD,
+        database=INFLUXDB_DATABASE
+    )
 
     countries = get_countries()
     if countries is not None:
@@ -188,17 +193,27 @@ def fetch_and_write_climate_data_to_influxdb():
             points = []
             for country in batch_countries:
                 last_record_date = get_last_record_date_for_country(country['id'], client)
-                if last_record_date is None:
-                    start_date = datetime.now() - relativedelta(years=1)
-                else:
-                    start_date = last_record_date + relativedelta(days=1)
-                end_date = datetime.now()
 
-                while start_date < end_date:
-                    climate_data = get_climate_data(country['id'], start_date, end_date)
+                if last_record_date is None:
+                    start_date = datetime.strptime(country['mindate'], '%Y-%m-%d')
+                else:
+                    start_date = last_record_date + timedelta(days=1)
+
+                end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d')
+
+                while start_date <= end_date:
+                    current_end_date = min(start_date + timedelta(days=3652),
+                                           end_date)  # 10 years from start_date or end_date, whichever is earlier
+                    climate_data = get_climate_data(country['id'], start_date, current_end_date)
                     if climate_data is not None:
-                        points.extend([
-                            {
+                        for record in climate_data:
+                            fields = {
+                                "value": record['value']
+                            }
+                            if 'attributes' in record:
+                                fields.update(decode_attributes(record['datatype'], record['attributes']))
+
+                            points.append({
                                 "measurement": "climate",
                                 "tags": {
                                     "country_name": country['name'],
@@ -206,14 +221,11 @@ def fetch_and_write_climate_data_to_influxdb():
                                     "datatype": record['datatype']
                                 },
                                 "time": parse(record['date']).isoformat(),
-                                "fields": {
-                                    "value": record['value'],
-                                    **decode_attributes(record['datatype'], record['attributes'])
-                                }
-                            }
-                            for record in climate_data
-                        ])
-                    start_date += relativedelta(days=1)
+                                "fields": fields
+                            })
+
+                    # Adjust the start_date for the next iteration
+                    start_date = current_end_date + timedelta(days=1)
 
             # Write points for all countries in the batch
             if points:
@@ -226,6 +238,7 @@ def fetch_and_write_climate_data_to_influxdb():
                 logging.error('No data to write')
         else:
             logging.error('Could not fetch the list of countries')
+
 
 if __name__ == "__main__":
     fetch_and_write_climate_data_to_influxdb()
