@@ -178,23 +178,24 @@ def fetch_and_write_climate_data_to_influxdb(country, client):
     end_date = datetime.now()
     while start_date < end_date:
         climate_data = get_climate_data(country['id'], start_date, end_date)
-        points = [
-            {
-                "measurement": "climate",
-                "tags": {
-                    "country_name": country['name'],
-                    "country_id": country['country_id'],
-                    "datatype": record['datatype']
-                },
-                "time": parse(record['date']).isoformat(),
-                "fields": {
-                    "value": record['value'],
-                    **decode_attributes(record['datatype'], record['attributes'])
+        if climate_data is not None:
+            points = [
+                {
+                    "measurement": "climate",
+                    "tags": {
+                        "country_name": country['name'],
+                        "country_id": country['country_id'],
+                        "datatype": record['datatype']
+                    },
+                    "time": parse(record['date']).isoformat(),
+                    "fields": {
+                        "value": record['value'],
+                        **decode_attributes(record['datatype'], record['attributes'])
+                    }
                 }
-            }
-            for record in climate_data
-        ]
-        client.write_points(points)
+                for record in climate_data
+            ]
+            client.write_points(points)
         start_date += relativedelta(days=1)
 
 
