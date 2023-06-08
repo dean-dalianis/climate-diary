@@ -1,0 +1,62 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{11785_project,times}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\title{M126 Project Proposal: Data Diary of a Changing Climate}
+
+
+\author{
+Konstantinos Dalianis \\
+\texttt{deandalianis@di.uoa.gr} \\
+\AND
+Konstantinos Malonas \\
+\texttt{cs22200020@di.uoa.gr} \\
+\AND
+Michael Darmanis \\
+\texttt{mdarm@di.uoa.gr}
+}
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+The project attempts to create a visualisation system aimed at effectively portraying the impacts and implications of climate change. Leveraging the capabilities of D3 (and/or Chart.js) for intricate static visualisations, and Grafana for real-time, dynamic visualisations, we aim to deliver a comprehensive and interactive platform to present climate change data. The system will work with both static and dynamic datasets, illuminating historical climate patterns, current conditions, and potential
+future scenarios.
+\end{abstract}
+
+\section{Introduction}
+Understanding and communicating the complexities of climate change is a significant challenge in today's world (\cite{skeptical, inside}). This project seeks to bridge this gap by employing data visualisation techniques that make the concepts of climate change more accessible. By leveraging the power of D3.js, Chart.js, and Grafana, the project aims to converge various climate change indicators in a singular, interactive visualisation tool, aiding in the comprehension and effective understanding of climate change. 
+
+\section{Proof of Concept}
+The initial stage of the project involves creating a proof-of-concept model to demonstrate the feasibility of the project. This model will incorporate key climate change indicators into a unified static and dynamic visualisation interface. This phase will aid us in understanding the viability of the approach, fine-tuning the visualisation techniques, and identifying challenges in integrating different types of climate data.
+
+\section{Data \& Technical Requirements}
+We will employ D3 to construct intricate static visualisations that offer a detailed overview of historical and present climate data, with a focus on discerning trends and patterns. These visualisations may include graphs, charts, and maps that depict various climate change indicators.
+
+Grafana or Chart.js will be used to build interactive, dynamic visualisations that can provide real-time updates and insights on specific climate change indicators. Users will be able to interact with these visualisations to explore different timelines, scenarios, and variables, thus gaining a more profound understanding of the progression of climate change.
+
+The project will utilise a host of datasets related to climate change, and will most likely include:
+\begin{itemize}
+    \item Historical climate data\footnote{\url{https://climatedataguide.ucar.edu/climate-data/}}: Data reflecting past climate patterns and trends.
+    \item Weather station and satellite measurements\footnote{\url{https://www.ncei.noaa.gov/cdo-web/search?datasetid=GHCND}}: Real-time or recent data collected from weather stations and satellites, providing up-to-date information on climate conditions.
+    \item Greenhouse gas emissions data\footnote{\url{https://ourworldindata.org/co2-emissions}}: Data on the emission levels of greenhouse gases, which contribute to climate change.
+    \item Sea-level rise data\footnote{\url{https://cds.climate.copernicus.eu}}: Data related to the measurement and monitoring of sea-level rise, an important indicator of climate change.
+\end{itemize}
+
+\section{Final Goals \& Evaluation}
+The ultimate goal is to deliver a fully functional visualisation platform that translates complex climate data into clear, intuitive visual insights. This tool should assist people with non-technical skills to enhance their awareness of the realities and impacts of climate change. The success of the project will be measured based on user feedback, our grade (obviously), the comprehensiveness of the data presented, and the platform's effectiveness in conveying intricate climate information in an understandable manner.
+
+
+% You should cite all sources mentioned in this proposal in the file 11785_project.bib
+% If you don't wish to cite some of your sources inline (e.g. in the Related Work section) using \cite{}, just you nocite to add
+% them to the references section at the end of your proposal like so.
+%\nocite{Bengio+chapter2007}
+%\nocite{Hinton06}
+
+\bibliography{11785_project}
+\bibliographystyle{11785_project}
+
+\end{document}
