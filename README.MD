@@ -68,6 +68,7 @@ The services included in the stack are:
 3. **Chronograf**: A visualization and administrative tool for InfluxDB, providing data exploration and management
    capabilities.
 4. **Climate Data Fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
+5. **Telegraph**: A telegraph instance for host metrics (starts only if running on Raspberry PI)
 
 ## Setup
 
@@ -82,12 +83,15 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     INFLUXDB_ADMIN_PASSWORD=<admin_password>
     TELEGRAF_PASSWORD=<telegraf_password>
     CLIMATE_PASSWORD=<climate_password>
+    NOAA_TOKEN=<noaa_token>
+    BATCHSIZE=2 (optional -- default: 10)
+    IS_RASPBERRY_PI=true (optional -- default: false)
     ```
 
 3. Build the Docker images and start the containers by running the following command in the terminal:
 
     ```bash
-    docker-compose up -d
+    docker compose -f ./docker/docker-compose.yml up --remove-orphans --build
     ```
 
 4. After the containers are up and running, you can access the following services:
