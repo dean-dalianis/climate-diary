@@ -75,7 +75,7 @@ services:
     networks:
       - metrics-network
     volumes:
-      - ./docker/climate_data/log:/app/log
+      - ./climate_data/log:/app/log
     environment:
       - CLIMATE_PASSWORD=${CLIMATE_PASSWORD}
       - NOAA_TOKEN=${NOAA_TOKEN}
