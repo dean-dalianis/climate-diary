@@ -35,9 +35,6 @@ services:
       - INFLUXDB_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
 
   telegraf:
-    build:
-      context: ../
-      dockerfile: ./docker/telegraf/Dockerfile
     container_name: telegraf
     restart: always
     networks:
