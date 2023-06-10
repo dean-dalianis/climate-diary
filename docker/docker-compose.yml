@@ -34,6 +34,20 @@ services:
       - INFLUXDB_USERNAME=admin
       - INFLUXDB_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
 
+  telegraf:
+    build:
+      context: ../
+      dockerfile: ./docker/telegraf/Dockerfile
+    container_name: telegraf
+    restart: always
+    networks:
+      - metrics-network
+    environment:
+      - IS_RASPBERRY_PI=${IS_RASPBERRY_PI}
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    command: ["sh", "-c", "if [ \"$IS_RASPBERRY_PI\" = \"true\" ]; then telegraf; else sleep infinity; fi"]
+
   grafana:
     image: grafana/grafana:latest
     user: "$UID:$GID"
