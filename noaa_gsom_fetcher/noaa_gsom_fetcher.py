@@ -14,7 +14,7 @@ INFLUXDB_HOST = 'influxdb'
 INFLUXDB_PORT = '8086'
 INFLUXDB_USER = 'climate'
 INFLUXDB_DATABASE = 'climate'
-BATCH_SIZE = 10  # Number of countries to process at a time
+BATCH_SIZE = os.environ.get('BATCHSIZE') if os.environ.get('BATCHSIZE') is not None else 10
 
 INFLUXDB_PASSWORD = os.environ.get('CLIMATE_PASSWORD')
 
