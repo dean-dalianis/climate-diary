@@ -44,6 +44,7 @@ services:
       - metrics-network
     environment:
       - IS_RASPBERRY_PI=${IS_RASPBERRY_PI}
+      - TELEGRAF_PASSWORD=${TELEGRAF_PASSWORD}
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     command: ["sh", "-c", "if [ \"$IS_RASPBERRY_PI\" = \"true\" ]; then telegraf; else sleep infinity; fi"]
