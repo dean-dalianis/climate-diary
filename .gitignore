@@ -1,1 +1,5 @@
+docker/influxdb_data
+docker/grafana_data
+*.log
+*.env
 venv

@@ -1,20 +1,30 @@
 import logging
+import os
 import time
 from datetime import datetime, timedelta
+from logging.handlers import TimedRotatingFileHandler
 
 import requests
 from dateutil.parser import parse
 from influxdb import InfluxDBClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-from tqdm import tqdm
 
-INFLUXDB_HOST = 'localhost'
+INFLUXDB_HOST = 'influxdb'
 INFLUXDB_PORT = '8086'
-INFLUXDB_USER = 'admin'
-INFLUXDB_PASSWORD = '<influx_pwd>'
+INFLUXDB_USER = 'climate'
 INFLUXDB_DATABASE = 'climate'
 BATCH_SIZE = 10  # Number of countries to process at a time
+
+influxdb_password = os.environ.get('INFLUXDB_PASSWORD')
+
+# Check if the variable is set
+if influxdb_password is not None:
+    # Update the INFLUXDB_PASSWORD value
+    INFLUXDB_PASSWORD = influxdb_password
+else:
+    # Use a default value if the environment variable is not set
+    INFLUXDB_PASSWORD = 'changeme'
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
@@ -58,9 +68,21 @@ http = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
-# Setup logging
-logging.basicConfig(filename='climate_data.log', level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s')
+# Set up log rotation
+log_filename = 'log/climate_data.log'
+log_handler = TimedRotatingFileHandler(log_filename, when='D', interval=1, backupCount=7)
+log_handler.suffix = "%Y-%m-%d"
+log_handler.setLevel(logging.INFO)
+
+# Set up logging format
+log_format = '%(asctime)s %(levelname)s %(message)s'
+log_formatter = logging.Formatter(log_format)
+log_handler.setFormatter(log_formatter)
+
+# Set up root logger
+logger = logging.getLogger()
+logger.addHandler(log_handler)
+logger.setLevel(logging.INFO)
 
 
 def sleep_until_next_request():
@@ -92,6 +114,8 @@ def make_api_request(url):
         if 'results' in json_data:
             return json_data['results']
         else:
+            logging.error(
+                f'No \'results\' in response for URL {url}. Response content: {response.content}')
             return None
     else:
         logging.error(
@@ -189,9 +213,10 @@ def fetch_and_write_climate_data_to_influxdb():
 
     countries = get_countries()
     if countries is not None:
-        for i in tqdm(range(0, len(countries), BATCH_SIZE), desc="Fetching climate data"):
+        for i in range(0, len(countries), BATCH_SIZE):
             batch_countries = countries[i:i + BATCH_SIZE]
             points = []
+            logging.info(f'Fetching climate data for countries {i}-{i + BATCH_SIZE - 1}')
             for country in batch_countries:
                 last_record_date = get_last_record_date_for_country(country['id'], client)
 
@@ -209,7 +234,7 @@ def fetch_and_write_climate_data_to_influxdb():
                     if climate_data is not None:
                         for record in climate_data:
                             fields = {
-                                "value": record['value']
+                                "value": float(record['value'])
                             }
                             if 'attributes' in record:
                                 fields.update(decode_attributes(record['datatype'], record['attributes']))
