@@ -35,7 +35,8 @@ services:
       - INFLUXDB_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
 
   grafana:
-    image: grafana/grafana:9.5.2
+    image: grafana/grafana:latest
+    user: "$UID:$GID"
     container_name: grafana
     restart: always
     depends_on:

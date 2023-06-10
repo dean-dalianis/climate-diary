@@ -16,15 +16,7 @@ INFLUXDB_USER = 'climate'
 INFLUXDB_DATABASE = 'climate'
 BATCH_SIZE = 10  # Number of countries to process at a time
 
-influxdb_password = os.environ.get('CLIMATE_PASSWORD')
-
-# Check if the variable is set
-if influxdb_password is not None:
-    # Update the INFLUXDB_PASSWORD value
-    INFLUXDB_PASSWORD = influxdb_password
-else:
-    # Use a default value if the environment variable is not set
-    INFLUXDB_PASSWORD = 'changeme'
+INFLUXDB_PASSWORD = os.environ.get('CLIMATE_PASSWORD')
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
@@ -49,8 +41,7 @@ ATTRIBUTES = {
 }
 
 HEADERS = {
-    "token": "CrowgJSXkoziFSVNtUXpQdvPibUoqGPK"
-    # "token": "MMbckUthGxPJhtXxxBQlxNrqnmTtvQTf"
+    "token": os.environ.get('NOAA_TOKEN')
 }
 
 last_request_time = None
