@@ -16,7 +16,7 @@ INFLUXDB_USER = 'climate'
 INFLUXDB_DATABASE = 'climate'
 BATCH_SIZE = 10  # Number of countries to process at a time
 
-influxdb_password = os.environ.get('INFLUXDB_PASSWORD')
+influxdb_password = os.environ.get('CLIMATE_PASSWORD')
 
 # Check if the variable is set
 if influxdb_password is not None:
