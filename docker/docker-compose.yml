@@ -35,6 +35,7 @@ services:
       - INFLUXDB_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
 
   telegraf:
+    image: telegraf:latest
     container_name: telegraf
     restart: always
     networks:
