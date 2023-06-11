@@ -21,6 +21,10 @@ INFLUXDB_PASSWORD = os.environ.get('INFLUXDB_ADMIN_PASSWORD')
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
 
+EU_CONTINENT_FIPS = ["AL", "AN", "AU", "BO", "BE", "BU", "HR", "CY", "EZ", "DA", "EN", "FI", "FR", "GM", "GR", "HU",
+                     "IC", "EI", "IT", "KV", "LG", "LH", "LU", "MK", "MT", "MD", "MN", "NL", "NO", "PL", "PO", "RO",
+                     "RI", "LO", "SI", "SP", "SW", "SZ", "UK", "UP", "RS", "BO", "MD", "SM", "IM", "LI", "MC", "VA"]
+
 ATTRIBUTES = {
     "TMAX": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "TMIN": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
@@ -59,6 +63,8 @@ MEASUREMENT_NAMES = {
     "RHAV": "Average Relative Humidity"
 }
 
+MIN_START_YEAR = 1940
+
 # Store your tokens in a list
 TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 6)]
 
@@ -66,8 +72,6 @@ TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 6)]
 current_token_index = 0
 current_token_requests = 0
 MAX_REQUESTS_PER_TOKEN = 10000
-
-MIN_START_YEAR = 1940
 
 
 def update_token():
@@ -204,15 +208,17 @@ def decode_attributes(datatype, attributes_str):
     }
 
 
-def fetch_stations(country_id):
+def fetch_stations(country_id, start_date):
     """
     Fetches and returns a map of all stations for a given country.
 
     :param dict country_id: The country_id to fetch the stations for.
+    :param datetime start_date: The start of the date range.
     :return: A map of stations. Each key is the id of the station, and its value is a dictionary containing the 'elevation', 'latitude', 'longitude', and 'name' of the station.
     :rtype: dict
     """
-    stations_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&locationid={country_id}&limit=1000"
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    stations_url = f"{BASE_URL}stations?datasetid=GSOM&&units=metric&locationid={country_id}&startdate={start_date_str}&limit=1000"
     stations = make_api_request(stations_url)
 
     logging.info(f'Fetching stations for {country_id}...')
@@ -254,6 +260,16 @@ def fetch_countries():
     return countries
 
 
+def fetch_european_countries():
+    all_countries = fetch_countries()
+    european_countries = [country for country in all_countries if country['id'].split(':')[1] in EU_CONTINENT_FIPS]
+    if len(european_countries) == 0:
+        logging.error('Failed to fetch European countries')
+        return None
+    logging.info(f'Fetched {len(european_countries)} European countries.')
+    return european_countries
+
+
 def fetch_climate_data(country_id, start_date, end_date):
     """
     Fetch and return climate data for the specified country and date range.
@@ -285,7 +301,7 @@ def fetch_and_write_climate_data_to_influxdb():
         database=INFLUXDB_DATABASE
     )
 
-    countries = fetch_countries()
+    countries = fetch_european_countries()
 
     if countries is None:
         return
@@ -294,12 +310,12 @@ def fetch_and_write_climate_data_to_influxdb():
         points = []
         logging.info(f'Fetching climate data for country: {country["name"]}')
 
-        station_map = fetch_stations(country['id'])
-
         start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
         if start_date.year < MIN_START_YEAR:
             start_date = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
         end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
+        print(start_date)
+        station_map = fetch_stations(country['id'], start_date)
 
         while start_date <= end_date:
             current_end_date = min(start_date + timedelta(days=9 * 365),
