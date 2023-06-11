@@ -115,54 +115,50 @@ def sleep_until_next_request():
 
 
 def make_api_request(url):
-    """
-    Make a GET request to the specified URL and return the JSON response.
-    If the response status code is not 200, returns None.
-
-    :param str url: The URL to send a GET request to.
-    :return: The response to the request, in JSON format.
-    :rtype: dict or None
-    """
-    sleep_until_next_request()
-    response = http.get(url, headers=HEADERS)
     global last_request_time
-    last_request_time = time.time()
-    if response.status_code == 200:
-        json_data = response.json()
-        if 'results' in json_data:
-            return json_data['results']
-        else:
-            if 'station' in url:
-                return json_data
+    offset = 1  # start with the first result
+    all_results = []
+    total_pages = 0  # initially, total pages are unknown
+
+    while True:
+        sleep_until_next_request()
+        paged_url = f"{url}&offset={offset}"
+        response = http.get(paged_url, headers=HEADERS)
+        last_request_time = time.time()
+
+        if response.status_code == 200:
+            json_data = response.json()
+
+            if 'results' in json_data:
+                results = json_data['results']
+
+                all_results.extend(results)
+
+                # Calculate total number of pages
+                total_pages = json_data.get('metadata', {}).get('resultset', {}).get('count', 0) // len(results) + 1
+                # Calculate current page
+                current_page = offset // len(results) + 1
+
+                logging.info(f'Fetching {url} page {current_page}/{total_pages}')
+
+                # check if there are more results to fetch
+                if json_data.get('metadata', {}).get('resultset', {}).get('count', 0) > offset:
+                    # there are more results, so increase the offset for the next request
+                    offset += len(results)
+                else:
+                    # all results have been fetched
+                    return all_results
             else:
                 logging.error(
-                    f'No \'results\' in response for URL {url}. Response content: {response.content}')
-                return None
-    else:
-        logging.error(
-            f'Received status code {response.status_code} for URL {url}. Response content: {response.content}')
-        return None
+                    f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
+                break  # break from loop if no 'results' in response
+        else:
+            logging.error(
+                f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}')
+            break  # break from loop if status code is not 200
 
-
-def extract_station_details(station_id):
-    """
-    Fetch and return details for a specific station.
-
-    :param str station_id: The ID of the station to fetch details for.
-    :return: Station details.
-    :rtype: dict or None
-    """
-    station_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&name={station_id}"
-    station_details_list = make_api_request(station_url)
-    if station_details_list is None:
-        logging.error(f'Failed to fetch details for station {station_id}')
-        return None
-    else:
-        station_details = station_details_list[0]
-        # Exclude mindate and maxdate from the details
-        station_details = {k: v for k, v in station_details.items() if k not in ['mindate', 'maxdate']}
-        # Cache the details
-        return station_details
+    # return whatever has been fetched till the point of error
+    return all_results
 
 
 def get_countries_and_stations():
@@ -175,22 +171,30 @@ def get_countries_and_stations():
     logging.info(f'Fetching countries...')
     countries_url = f"{BASE_URL}locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
     countries = make_api_request(countries_url)
-    if countries is None:
+    if countries is None or len(countries) == 0:
         logging.error('Failed to fetch countries')
-        return None
+        return None, None
 
+    logging.info(f'Fetched {len(countries)} countries.')
     logging.info(f'Fetching stations...')
+
+    stations_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&limit=1000"
+    stations = make_api_request(stations_url)
+
+    if stations is None or len(stations) == 0:
+        logging.error('Failed to fetch stations')
+        return None, None
+
     station_map = {}
-    for country in countries:
-        country_id = country['id']
-        stations_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&locationid={country_id}"
-        stations = make_api_request(stations_url)
-        logging.info(f'Fetching all station details for {country_id}...')
-        if stations is not None:
-            station_map[country_id] = {
-                station['id']: extract_station_details(station)
-                for station in stations
-            }
+    for station in stations:
+        station_map[station['id']] = {
+            'elevation': station.get('elevation', float('inf')),
+            'latitude': station.get('latitude', float('inf')),
+            'longitude': station.get('longitude', float('inf')),
+            'name': station.get('name', 'N/A')
+        }
+
+    logging.info(f'Fetched {len(station_map)} stations...')
 
     return countries, station_map
 
@@ -253,59 +257,59 @@ def fetch_and_write_climate_data_to_influxdb():
     )
 
     countries, station_map = get_countries_and_stations()
-    if countries is not None:
-        for i in range(0, len(countries), BATCH_SIZE):
-            batch_countries = countries[i:i + BATCH_SIZE]
-            points = []
-            logging.info(f'Fetching climate data for countries {i}-{i + BATCH_SIZE - 1}')
-            for country in batch_countries:
+    if countries is None or station_map is None:
+        return
 
-                start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
-                end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
+    for i in range(0, len(countries), BATCH_SIZE):
+        batch_countries = countries[i:i + BATCH_SIZE]
+        points = []
+        logging.info(f'Fetching climate data for countries {i}-{i + BATCH_SIZE - 1}')
+        for country in batch_countries:
 
-                while start_date <= end_date:
-                    current_end_date = min(start_date + timedelta(days=9 * 365),
-                                           end_date)  # 9 years from start_date or end_date, whichever is earlier
-                    climate_data = get_climate_data(country['id'], start_date, current_end_date)
-                    if climate_data is not None:
-                        for record in climate_data:
-                            station_details = station_map.get(country['id'], {}).get(record['station'])
-                            fields = {
-                                "value": float(record['value']),
-                                "country_id": country['id'].split(':')[1],
-                                "latitude": station_details['latitude'],
-                                "longitude": station_details['longitude'],
-                                "elevation": float(station_details['elevation'])
-                            }
-                            if 'attributes' in record:
-                                fields.update(decode_attributes(record['datatype'], record['attributes']))
+            start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
+            end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
 
-                            points.append({
-                                "measurement": MEASUREMENT_NAMES.get(record['datatype']),
-                                "tags": {
-                                    "country": country['name'],
-                                    "station": record['station'],
-                                    "station_name": station_details['name']
-                                },
-                                "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
-                                "fields": fields
-                            })
+            while start_date <= end_date:
+                current_end_date = min(start_date + timedelta(days=9 * 365),
+                                       end_date)  # 9 years from start_date or end_date, whichever is earlier
+                climate_data = get_climate_data(country['id'], start_date, current_end_date)
+                if climate_data is not None:
+                    for record in climate_data:
+                        station_details = station_map[record['station']]
+                        fields = {
+                            "value": float(record['value']),
+                            "country_id": country['id'].split(':')[1],
+                            "latitude": float(station_details['latitude']),
+                            "longitude": float(station_details['longitude']),
+                            "elevation": float(station_details['elevation'])
+                        }
+                        if 'attributes' in record:
+                            fields.update(decode_attributes(record['datatype'], record['attributes']))
 
-                    # Adjust the start_date for the next iteration
-                    start_date = current_end_date + timedelta(days=1)
+                        points.append({
+                            "measurement": MEASUREMENT_NAMES.get(record['datatype']),
+                            "tags": {
+                                "country": country['name'],
+                                "station": record['station'],
+                                "station_name": station_details['name']
+                            },
+                            "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
+                            "fields": fields
+                        })
 
-            # Write points for all countries in the batch
-            if points:
-                try:
-                    logging.info(f'Writing data for countries {i}-{i + BATCH_SIZE - 1}')
-                    client.write_points(points)
-                    logging.info(f'Successfully wrote data for countries {i}-{i + BATCH_SIZE - 1}')
-                except Exception as e:
-                    logging.error(f'Failed to write data for countries {i}-{i + BATCH_SIZE - 1}: {str(e)}')
-            else:
-                logging.error('No data to write')
+                # Adjust the start_date for the next iteration
+                start_date = current_end_date + timedelta(days=1)
+
+        # Write points for all countries in the batch
+        if points:
+            try:
+                logging.info(f'Writing data for countries {i}-{i + BATCH_SIZE - 1}')
+                client.write_points(points)
+                logging.info(f'Successfully wrote data for countries {i}-{i + BATCH_SIZE - 1}')
+            except Exception as e:
+                logging.error(f'Failed to write data for countries {i}-{i + BATCH_SIZE - 1}: {str(e)}')
         else:
-            logging.error('Could not fetch the list of countries')
+            logging.error('No data to write')
 
 
 def wait_for_influxdb():
