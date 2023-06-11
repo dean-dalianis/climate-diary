@@ -130,3 +130,19 @@ Remember to edit these configuration files according to your needs.
 ## License
 
 This project is licensed under the terms of the MIT license.
+
+---
+---
+
+
+# To-Do list
+
+List of stuff to do within the following week (12 - 17 / 06):
+
+1. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and time-variable).
+   
+2. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.   
+
+3. **Remote Database Cluster Setup**: set up a cluster for the remote database.
+
+Update and cross-out at will.
