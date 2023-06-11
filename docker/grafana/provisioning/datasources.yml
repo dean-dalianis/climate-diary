@@ -1,0 +1,9 @@
+apiVersion: 1
+
+datasources:
+  - name: NOAA GSOM
+    type: influxdb
+    url: http://influxdb:8086
+    access: proxy
+    database: ${DB_NAME}
+    editable: true

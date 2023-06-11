@@ -39,6 +39,18 @@ in the script.
 
 Please note that the 'source_code' attribute, if present, is excluded during the attribute decoding process.
 
+## Station Information
+
+In addition to climate data, the script also retrieves details for each station. The station details include the
+following information:
+
+- Elevation: The elevation of the station.
+- Latitude: The latitude of the station.
+- Longitude: The longitude of the station.
+- Name: The name of the station.
+- Data Coverage: The percentage of data coverage for the station.
+- ID: The ID of the station.
+
 ## Rate Limiting
 
 The script manages rate limiting based on the `MAX_REQUESTS_PER_SECOND` constant. By default, it is set to 5 requests
@@ -74,6 +86,7 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     ```
     INFLUXDB_ADMIN_PASSWORD=<admin_password>
     NOAA_TOKEN=<noaa_token>
+    DB_NAME=noaa_gsom
     BATCHSIZE=2 (optional -- default: 10)
     ```
 

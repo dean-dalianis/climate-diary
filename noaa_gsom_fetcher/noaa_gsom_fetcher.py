@@ -13,9 +13,9 @@ from requests.packages.urllib3.util.retry import Retry
 
 INFLUXDB_HOST = 'influxdb'
 INFLUXDB_PORT = '8086'
-INFLUXDB_DATABASE = 'climate'
 BATCH_SIZE = os.environ.get('BATCHSIZE') if os.environ.get('BATCHSIZE') is not None else 10
 
+INFLUXDB_DATABASE = os.environ.get('DB_NAME')
 INFLUXDB_USER = os.environ.get('INFLUXDB_ADMIN_USER')
 INFLUXDB_PASSWORD = os.environ.get('INFLUXDB_ADMIN_PASSWORD')
 
@@ -39,6 +39,26 @@ ATTRIBUTES = {
     "DYHF": [],
     "DYTS": [],
     "RHAV": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+}
+
+MEASUREMENT_NAMES = {
+    "TMAX": "Maximum Temperature",
+    "TMIN": "Minimum Temperature",
+    "TAVG": "Average Temperature",
+    "PRCP": "Precipitation",
+    "SNOW": "Snowfall",
+    "EVAP": "Evaporation",
+    "WDMV": "Wind Movement",
+    "AWND": "Average Daily Wind Speed",
+    "WSF2": "Fastest 2-Minute Wind Speed",
+    "WSF5": "Fastest 5-Second Wind Speed",
+    "WSFG": "Peak Gust Wind Speed",
+    "WSFI": "Fastest Instantaneous Wind Speed",
+    "WSFM": "Fastest 5-Minute Wind Speed",
+    "DYFG": "Days with Fog",
+    "DYHF": "Days with Heat Index >= 90F/32.2C",
+    "DYTS": "Days with Thunder",
+    "RHAV": "Average Relative Humidity",
 }
 
 HEADERS = {
@@ -66,15 +86,23 @@ log_handler = TimedRotatingFileHandler(log_filename, when='D', interval=1, backu
 log_handler.suffix = "%Y-%m-%d"
 log_handler.setLevel(logging.INFO)
 
+# Set up console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
 # Set up logging format
 log_format = '%(asctime)s %(levelname)s %(message)s'
 log_formatter = logging.Formatter(log_format)
 log_handler.setFormatter(log_formatter)
+console_handler.setFormatter(log_formatter)
 
 # Set up root logger
 logger = logging.getLogger()
 logger.addHandler(log_handler)
+logger.addHandler(console_handler)
 logger.setLevel(logging.INFO)
+# Station details cache
+station_details_cache = {}
 
 
 def sleep_until_next_request():
@@ -106,9 +134,12 @@ def make_api_request(url):
         if 'results' in json_data:
             return json_data['results']
         else:
-            logging.error(
-                f'No \'results\' in response for URL {url}. Response content: {response.content}')
-            return None
+            if 'station' in url:
+                return json_data
+            else:
+                logging.error(
+                    f'No \'results\' in response for URL {url}. Response content: {response.content}')
+                return None
     else:
         logging.error(
             f'Received status code {response.status_code} for URL {url}. Response content: {response.content}')
@@ -148,34 +179,30 @@ def get_climate_data(country_id, start_date, end_date):
     return data
 
 
-def get_last_record_date_for_country(country_id, client):
+def get_station_details(station_id):
     """
-    Fetch and return the date of the last record for the specified country.
+    Fetch and return details for a specific station.
 
-    :param str country_id: The ID of the country.
-    :param InfluxDBClient client: The InfluxDB client.
-    :return: The date of the last record for the country.
-    :rtype: datetime.datetime or None
+    :param str station_id: The ID of the station to fetch details for.
+    :return: Station details.
+    :rtype: dict or None
     """
-    try:
-        result = client.query(
-            f'SELECT last("value") FROM "climate" WHERE "country_id" = \'{country_id}\'')
-    except Exception as e:
-        logging.info(f'Error querying the database: {e}')
+    # Check cache first
+    if station_id in station_details_cache:
+        return station_details_cache[station_id]
+
+    station_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&name={station_id}"
+    station_details_list = make_api_request(station_url)
+    if station_details_list is None:
+        logging.error(f'Failed to fetch details for station {station_id}')
         return None
-    if result:
-        try:
-            last_time = list(result.get_points(measurement='climate'))[0]['time']
-            try:
-                return parse(last_time).astimezone(ZoneInfo("UTC"))
-            except ValueError:
-                # If the timestamp doesn't have a fractional part of a second,
-                # try parsing it without the fractional part.
-                return datetime.strptime(last_time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=ZoneInfo("UTC"))
-        except Exception as e:
-            logging.info(f'Error parsing the time: {e}')
-            return None
-    return None
+    else:
+        station_details = station_details_list[0]
+        # Exclude mindate and maxdate from the details
+        station_details = {k: v for k, v in station_details.items() if k not in ['mindate', 'maxdate']}
+        # Cache the details
+        station_details_cache[station_id] = station_details
+        return station_details
 
 
 def decode_attributes(datatype, attributes_str):
@@ -223,13 +250,8 @@ def fetch_and_write_climate_data_to_influxdb():
             points = []
             logging.info(f'Fetching climate data for countries {i}-{i + BATCH_SIZE - 1}')
             for country in batch_countries:
-                last_record_date = get_last_record_date_for_country(country['id'], client)
 
-                if last_record_date is None:
-                    start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
-                else:
-                    start_date = last_record_date + timedelta(days=1)
-
+                start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
                 end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
 
                 while start_date <= end_date:
@@ -238,18 +260,23 @@ def fetch_and_write_climate_data_to_influxdb():
                     climate_data = get_climate_data(country['id'], start_date, current_end_date)
                     if climate_data is not None:
                         for record in climate_data:
+                            station_details = get_station_details(record['station'])
                             fields = {
-                                "value": float(record['value'])
+                                "value": float(record['value']),
+                                "country_id": country['id'].split(':')[1],
+                                "latitude": station_details['latitude'],
+                                "longitude": station_details['longitude'],
+                                "elevation": float(station_details['elevation'])
                             }
                             if 'attributes' in record:
                                 fields.update(decode_attributes(record['datatype'], record['attributes']))
 
                             points.append({
-                                "measurement": "climate",
+                                "measurement": MEASUREMENT_NAMES.get(record['datatype']),
                                 "tags": {
-                                    "country_name": country['name'],
-                                    "country_id": country['id'],
-                                    "datatype": record['datatype']
+                                    "country": country['name'],
+                                    "station": record['station'],
+                                    "station_name": station_details['name']
                                 },
                                 "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
                                 "fields": fields
