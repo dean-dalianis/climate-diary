@@ -20,14 +20,7 @@ Below are the data types the script fetches and the associated attributes:
 - SNOW: Snowfall. Attributes: days_missing, measurement_flag, quality_flag, source_code
 - EVAP: Evaporation. Attributes: days_missing, measurement_flag, quality_flag, source_code
 - WDMV: Wind movement. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- AWND: Average daily wind speed. Attributes: days_missing, source_code
-- WSF2: Fastest 2-minute wind speed. Attributes: days_missing, source_code
-- WSF5: Fastest 5-second wind speed. Attributes: days_missing, source_code
-- WSFG: Peak gust wind speed. Attributes: days_missing, source_code
-- WSFI: Fastest instantaneous wind speed. Attributes: days_missing, source_code
-- WSFM: Fastest 5-minute wind speed. Attributes: days_missing, source_code
 - DYFG: Days with fog. Attributes: None
-- DYHF: Days with heat index >= 90F/32.2C. Attributes: None
 - DYTS: Days with thunder. Attributes: None
 - RHAV: Average relative humidity. Attributes: days_missing, measurement_flag, quality_flag, source_code
 
@@ -87,7 +80,6 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     INFLUXDB_ADMIN_PASSWORD=<admin_password>
     NOAA_TOKEN=<noaa_token>
     DB_NAME=noaa_gsom
-    BATCHSIZE=2 (optional -- default: 10)
     ```
 
 3. Build the Docker images and start the containers by running the following command in the terminal:
@@ -95,6 +87,14 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     ```bash
     docker compose -f ./docker/docker-compose.yml up --remove-orphans --build
     ```
+
+   If you need to clean-up docker deployments:
+
+    ```bash
+    docker-compose --env-file .\docker\.env -f .\docker\docker-compose.yml down --volumes --remove-orphans
+    ```
+
+   And manually remove the created directories in your local host machine.
 
 4. After the containers are up and running, you can access the following services:
 
@@ -126,6 +126,8 @@ Remember to edit these configuration files according to your needs.
 - The InfluxDB container mounts the `influxdb_data/` directory as a volume for data persistence.
 - The climate data fetcher script container (`climate-data`) mounts the `docker/climate_data/log/` directory as a volume
   for logging.
+- There is an issue with Grafana datasource provisioning. The password for the `Basic Auth Details` and the DB user
+  should be set manually.
 
 ## License
 
@@ -134,14 +136,14 @@ This project is licensed under the terms of the MIT license.
 ---
 ---
 
-
 # To-Do list
 
 List of stuff to do within the following week (12 - 17 / 06):
 
-1. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and time-variable).
-   
-2. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.   
+1. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and
+   time-variable).
+
+2. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.
 
 3. **Remote Database Cluster Setup**: set up a cluster for the remote database.
 

@@ -5,5 +5,11 @@ datasources:
     type: influxdb
     url: http://influxdb:8086
     access: proxy
+    user: admin
+    password: ${INFLUXDB_ADMIN_PASSWORD}
     database: ${DB_NAME}
+    basicAuth: true
+    basicAuthUser: admin
+    basicAuthPassword: ${INFLUXDB_ADMIN_PASSWORD}
+    isDefault: true
     editable: true

@@ -13,14 +13,14 @@ from requests.packages.urllib3.util.retry import Retry
 
 INFLUXDB_HOST = 'influxdb'
 INFLUXDB_PORT = '8086'
-BATCH_SIZE = os.environ.get('BATCHSIZE') if os.environ.get('BATCHSIZE') is not None else 10
 
-INFLUXDB_DATABASE = os.environ.get('DB_NAME')
+INFLUXDB_DATABASE = os.environ.get('INFLUXDB_DB')
 INFLUXDB_USER = os.environ.get('INFLUXDB_ADMIN_USER')
 INFLUXDB_PASSWORD = os.environ.get('INFLUXDB_ADMIN_PASSWORD')
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
-DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
+# DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
+DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,DYFG,DYTS,RHAV"
 ATTRIBUTES = {
     "TMAX": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "TMIN": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
@@ -28,17 +28,16 @@ ATTRIBUTES = {
     "PRCP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "SNOW": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "EVAP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    "WDMV": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    "AWND": ["days_missing", "source_code"],
-    "WSF2": ["days_missing", "source_code"],
-    "WSF5": ["days_missing", "source_code"],
-    "WSFG": ["days_missing", "source_code"],
-    "WSFI": ["days_missing", "source_code"],
-    "WSFM": ["days_missing", "source_code"],
+    # "WDMV": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+    # "AWND": ["days_missing", "source_code"],
+    # "WSF2": ["days_missing", "source_code"],
+    # "WSF5": ["days_missing", "source_code"],
+    # "WSFG": ["days_missing", "source_code"],
+    # "WSFI": ["days_missing", "source_code"],
+    # "WSFM": ["days_missing", "source_code"],
     "DYFG": [],
-    "DYHF": [],
     "DYTS": [],
-    "RHAV": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+    "RHAV": ["days_missing", "measurement_flag", "quality_flag", "source_code"]
 }
 
 MEASUREMENT_NAMES = {
@@ -48,17 +47,16 @@ MEASUREMENT_NAMES = {
     "PRCP": "Precipitation",
     "SNOW": "Snowfall",
     "EVAP": "Evaporation",
-    "WDMV": "Wind Movement",
-    "AWND": "Average Daily Wind Speed",
-    "WSF2": "Fastest 2-Minute Wind Speed",
-    "WSF5": "Fastest 5-Second Wind Speed",
-    "WSFG": "Peak Gust Wind Speed",
-    "WSFI": "Fastest Instantaneous Wind Speed",
-    "WSFM": "Fastest 5-Minute Wind Speed",
+    # "WDMV": "Wind Movement",
+    # "AWND": "Average Daily Wind Speed",
+    # "WSF2": "Fastest 2-Minute Wind Speed",
+    # "WSF5": "Fastest 5-Second Wind Speed",
+    # "WSFG": "Peak Gust Wind Speed",
+    # "WSFI": "Fastest Instantaneous Wind Speed",
+    # "WSFM": "Fastest 5-Minute Wind Speed",
     "DYFG": "Days with Fog",
-    "DYHF": "Days with Heat Index >= 90F/32.2C",
     "DYTS": "Days with Thunder",
-    "RHAV": "Average Relative Humidity",
+    "RHAV": "Average Relative Humidity"
 }
 
 HEADERS = {
@@ -118,7 +116,6 @@ def make_api_request(url):
     global last_request_time
     offset = 1  # start with the first result
     all_results = []
-    total_pages = 0  # initially, total pages are unknown
 
     while True:
         sleep_until_next_request()
@@ -161,63 +158,6 @@ def make_api_request(url):
     return all_results
 
 
-def get_countries_and_stations():
-    """
-    Fetch and return a list of countries & all stations per country.
-
-    :return: A list of countries.
-    :rtype: list or None
-    """
-    logging.info(f'Fetching countries...')
-    countries_url = f"{BASE_URL}locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
-    countries = make_api_request(countries_url)
-    if countries is None or len(countries) == 0:
-        logging.error('Failed to fetch countries')
-        return None, None
-
-    logging.info(f'Fetched {len(countries)} countries.')
-    logging.info(f'Fetching stations...')
-
-    stations_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&limit=1000"
-    stations = make_api_request(stations_url)
-
-    if stations is None or len(stations) == 0:
-        logging.error('Failed to fetch stations')
-        return None, None
-
-    station_map = {}
-    for station in stations:
-        station_map[station['id']] = {
-            'elevation': station.get('elevation', float('inf')),
-            'latitude': station.get('latitude', float('inf')),
-            'longitude': station.get('longitude', float('inf')),
-            'name': station.get('name', 'N/A')
-        }
-
-    logging.info(f'Fetched {len(station_map)} stations...')
-
-    return countries, station_map
-
-
-def get_climate_data(country_id, start_date, end_date):
-    """
-    Fetch and return climate data for the specified country and date range.
-
-    :param str country_id: The ID of the country to fetch data for.
-    :param datetime start_date: The start of the date range.
-    :param datetime end_date: The end of the date range.
-    :return: Climate data for the specified country and date range.
-    :rtype: list or None
-    """
-    start_date_str = start_date.strftime('%Y-%m-%d')
-    end_date_str = end_date.strftime('%Y-%m-%d')
-    data_url = f"{BASE_URL}data?datasetid=GSOM&datatypeid={DATATYPE_ID}&units=metric&locationid={country_id}&startdate={start_date_str}&enddate={end_date_str}&limit=1000"
-    data = make_api_request(data_url)
-    if data is None:
-        logging.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
-    return data
-
-
 def decode_attributes(datatype, attributes_str):
     """
     Decode the attributes string for a given datatype and return as a dictionary.
@@ -244,6 +184,75 @@ def decode_attributes(datatype, attributes_str):
     }
 
 
+def fetch_stations(country_id):
+    """
+    Fetches and returns a map of all stations for a given country.
+
+    :param dict country_id: The country_id to fetch the stations for.
+    :return: A map of stations. Each key is the id of the station, and its value is a dictionary containing the 'elevation', 'latitude', 'longitude', and 'name' of the station.
+    :rtype: dict
+    """
+    stations_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&locationid={country_id}&limit=1000"
+    stations = make_api_request(stations_url)
+
+    logging.info(f'Fetching stations for {country_id}...')
+
+    station_map = {}
+    for station in stations:
+        station_map[station['id']] = {
+            'elevation': station.get('elevation', float('inf')),
+            'latitude': station.get('latitude', float('inf')),
+            'longitude': station.get('longitude', float('inf')),
+            'name': station.get('name', 'N/A')
+        }
+
+    if len(stations) == 0:
+        logging.error('Failed to fetch stations')
+        return None
+
+    logging.info(f'Fetched {len(station_map)} stations for {country_id}...')
+
+    return station_map
+
+
+def fetch_countries():
+    """
+    Fetch and return a list of all countries.
+
+    :return: A list of countries.
+    :rtype: list or None
+    """
+    logging.info(f'Fetching countries...')
+    countries_url = f"{BASE_URL}locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
+    countries = make_api_request(countries_url)
+    if len(countries) == 0:
+        logging.error('Failed to fetch countries')
+        return None
+
+    logging.info(f'Fetched {len(countries)} countries.')
+
+    return countries
+
+
+def fetch_climate_data(country_id, start_date, end_date):
+    """
+    Fetch and return climate data for the specified country and date range.
+
+    :param str country_id: The ID of the country to fetch data for.
+    :param datetime start_date: The start of the date range.
+    :param datetime end_date: The end of the date range.
+    :return: Climate data for the specified country and date range.
+    :rtype: list or None
+    """
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    end_date_str = end_date.strftime('%Y-%m-%d')
+    data_url = f"{BASE_URL}data?datasetid=GSOM&datatypeid={DATATYPE_ID}&units=metric&locationid={country_id}&startdate={start_date_str}&enddate={end_date_str}&limit=1000"
+    data = make_api_request(data_url)
+    if data is None:
+        logging.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
+    return data
+
+
 def fetch_and_write_climate_data_to_influxdb():
     """
     Connects to InfluxDB, fetches climate data for each country, writes them to the database.
@@ -256,58 +265,61 @@ def fetch_and_write_climate_data_to_influxdb():
         database=INFLUXDB_DATABASE
     )
 
-    countries, station_map = get_countries_and_stations()
-    if countries is None or station_map is None:
+    countries = fetch_countries()
+
+    if countries is None:
         return
 
-    for i in range(0, len(countries), BATCH_SIZE):
-        batch_countries = countries[i:i + BATCH_SIZE]
+    for country in countries:
         points = []
-        logging.info(f'Fetching climate data for countries {i}-{i + BATCH_SIZE - 1}')
-        for country in batch_countries:
+        logging.info(f'Fetching climate data for country: {country["name"]}')
 
-            start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
-            end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
+        station_map = fetch_stations(country['id'])
 
-            while start_date <= end_date:
-                current_end_date = min(start_date + timedelta(days=9 * 365),
-                                       end_date)  # 9 years from start_date or end_date, whichever is earlier
-                climate_data = get_climate_data(country['id'], start_date, current_end_date)
-                if climate_data is not None:
-                    for record in climate_data:
-                        station_details = station_map[record['station']]
-                        fields = {
-                            "value": float(record['value']),
-                            "country_id": country['id'].split(':')[1],
-                            "latitude": float(station_details['latitude']),
-                            "longitude": float(station_details['longitude']),
-                            "elevation": float(station_details['elevation'])
-                        }
-                        if 'attributes' in record:
-                            fields.update(decode_attributes(record['datatype'], record['attributes']))
+        start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
+        if start_date.year < 1880:
+            start_date = datetime(1880, 1, 1, tzinfo=ZoneInfo("UTC"))
+        end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
 
-                        points.append({
-                            "measurement": MEASUREMENT_NAMES.get(record['datatype']),
-                            "tags": {
-                                "country": country['name'],
-                                "station": record['station'],
-                                "station_name": station_details['name']
-                            },
-                            "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
-                            "fields": fields
-                        })
+        while start_date <= end_date:
+            current_end_date = min(start_date + timedelta(days=9 * 365),
+                                   end_date)  # 9 years from start_date or end_date, whichever is earlier
+            climate_data = fetch_climate_data(country['id'], start_date, current_end_date)
+            if climate_data is not None:
+                for record in climate_data:
+                    station_details = station_map[record['station']]
+                    fields = {
+                        "value": float(record['value']),
+                        "country_id": country['id'].split(':')[1],
+                        "latitude": float(station_details['latitude']),
+                        "longitude": float(station_details['longitude']),
+                        "elevation": float(station_details['elevation'])
+                    }
+                    if 'attributes' in record:
+                        fields.update(decode_attributes(record['datatype'], record['attributes']))
 
-                # Adjust the start_date for the next iteration
-                start_date = current_end_date + timedelta(days=1)
+                    points.append({
+                        "measurement": MEASUREMENT_NAMES.get(record['datatype']),
+                        "tags": {
+                            "country": country['name'],
+                            "station": record['station'],
+                            "station_name": station_details['name']
+                        },
+                        "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
+                        "fields": fields
+                    })
+
+            # Adjust the start_date for the next iteration
+            start_date = current_end_date + timedelta(days=1)
 
         # Write points for all countries in the batch
         if points:
             try:
-                logging.info(f'Writing data for countries {i}-{i + BATCH_SIZE - 1}')
+                logging.info(f'Writing data for {country["name"]}')
                 client.write_points(points)
-                logging.info(f'Successfully wrote data for countries {i}-{i + BATCH_SIZE - 1}')
+                logging.info(f'Successfully wrote data for {country["name"]}')
             except Exception as e:
-                logging.error(f'Failed to write data for countries {i}-{i + BATCH_SIZE - 1}: {str(e)}')
+                logging.error(f'Failed to write data for {country["name"]}, {e}')
         else:
             logging.error('No data to write')
 
