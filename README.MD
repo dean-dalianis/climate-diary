@@ -47,7 +47,7 @@ following information:
 ## Rate Limiting
 
 The script manages rate limiting based on the `MAX_REQUESTS_PER_SECOND` constant. By default, it is set to 5 requests
-per second.
+per second, which is the limit of NOAA API. Also, the API has a limit of 10.000 requests per token per day.
 
 ## Note
 
@@ -78,8 +78,12 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 
     ```
     INFLUXDB_ADMIN_PASSWORD=<admin_password>
-    NOAA_TOKEN=<noaa_token>
     DB_NAME=noaa_gsom
+    NOAA_TOKEN_1=<noaa_token_1>
+    NOAA_TOKEN_2=<noaa_token_2>
+    NOAA_TOKEN_3=<noaa_token_3>
+    NOAA_TOKEN_4=<noaa_token_4>
+    NOAA_TOKEN_5=<noaa_token_5>
     ```
 
 3. Build the Docker images and start the containers by running the following command in the terminal:
@@ -133,8 +137,9 @@ Remember to edit these configuration files according to your needs.
 
 This project is licensed under the terms of the MIT license.
 
+
 ---
----
+
 
 # To-Do list
 
@@ -145,6 +150,6 @@ List of stuff to do within the following week (12 - 17 / 06):
 
 2. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.
 
-3. **Remote Database Cluster Setup**: set up a cluster for the remote database.
+3. **Cloud Configuration**: configure a cloud environment to run the containers
 
 Update and cross-out at will.

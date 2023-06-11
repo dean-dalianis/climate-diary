@@ -19,8 +19,8 @@ INFLUXDB_USER = os.environ.get('INFLUXDB_ADMIN_USER')
 INFLUXDB_PASSWORD = os.environ.get('INFLUXDB_ADMIN_PASSWORD')
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
-# DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
-DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,DYFG,DYTS,RHAV"
+DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
+
 ATTRIBUTES = {
     "TMAX": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "TMIN": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
@@ -28,13 +28,13 @@ ATTRIBUTES = {
     "PRCP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "SNOW": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
     "EVAP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    # "WDMV": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    # "AWND": ["days_missing", "source_code"],
-    # "WSF2": ["days_missing", "source_code"],
-    # "WSF5": ["days_missing", "source_code"],
-    # "WSFG": ["days_missing", "source_code"],
-    # "WSFI": ["days_missing", "source_code"],
-    # "WSFM": ["days_missing", "source_code"],
+    "WDMV": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+    "AWND": ["days_missing", "source_code"],
+    "WSF2": ["days_missing", "source_code"],
+    "WSF5": ["days_missing", "source_code"],
+    "WSFG": ["days_missing", "source_code"],
+    "WSFI": ["days_missing", "source_code"],
+    "WSFM": ["days_missing", "source_code"],
     "DYFG": [],
     "DYTS": [],
     "RHAV": ["days_missing", "measurement_flag", "quality_flag", "source_code"]
@@ -47,21 +47,45 @@ MEASUREMENT_NAMES = {
     "PRCP": "Precipitation",
     "SNOW": "Snowfall",
     "EVAP": "Evaporation",
-    # "WDMV": "Wind Movement",
-    # "AWND": "Average Daily Wind Speed",
-    # "WSF2": "Fastest 2-Minute Wind Speed",
-    # "WSF5": "Fastest 5-Second Wind Speed",
-    # "WSFG": "Peak Gust Wind Speed",
-    # "WSFI": "Fastest Instantaneous Wind Speed",
-    # "WSFM": "Fastest 5-Minute Wind Speed",
+    "WDMV": "Wind Movement",
+    "AWND": "Average Daily Wind Speed",
+    "WSF2": "Fastest 2-Minute Wind Speed",
+    "WSF5": "Fastest 5-Second Wind Speed",
+    "WSFG": "Peak Gust Wind Speed",
+    "WSFI": "Fastest Instantaneous Wind Speed",
+    "WSFM": "Fastest 5-Minute Wind Speed",
     "DYFG": "Days with Fog",
     "DYTS": "Days with Thunder",
     "RHAV": "Average Relative Humidity"
 }
 
-HEADERS = {
-    "token": os.environ.get('NOAA_TOKEN')
-}
+# Store your tokens in a list
+TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 6)]
+
+# Use a variable to track the current token index and request count
+current_token_index = 0
+current_token_requests = 0
+MAX_REQUESTS_PER_TOKEN = 10000
+
+MIN_START_YEAR = 1940
+
+
+def update_token():
+    global current_token_index, current_token_requests
+    current_token_index = (current_token_index + 1) % len(TOKENS)
+    current_token_requests = 0
+
+
+def get_headers():
+    global current_token_requests
+    current_token_requests += 1
+    if current_token_requests > MAX_REQUESTS_PER_TOKEN:
+        logging.info(f'Token {current_token_index} reached {current_token_requests} requests. Changing token...')
+        update_token()
+    return {
+        "token": TOKENS[current_token_index]
+    }
+
 
 last_request_time = None
 MAX_REQUESTS_PER_SECOND = 5
@@ -69,7 +93,7 @@ REQUESTS_INTERVAL = 1.0 / MAX_REQUESTS_PER_SECOND
 
 retry_strategy = Retry(
     total=5,
-    status_forcelist=[429, 500, 502, 503, 504],
+    status_forcelist=[500, 502, 503, 504],
     allowed_methods=["GET"],
     backoff_factor=1
 )
@@ -113,14 +137,13 @@ def sleep_until_next_request():
 
 
 def make_api_request(url):
-    global last_request_time
-    offset = 1  # start with the first result
+    offset = 0  # start with offset 0
     all_results = []
 
     while True:
         sleep_until_next_request()
         paged_url = f"{url}&offset={offset}"
-        response = http.get(paged_url, headers=HEADERS)
+        response = http.get(paged_url, headers=get_headers())
         last_request_time = time.time()
 
         if response.status_code == 200:
@@ -128,33 +151,30 @@ def make_api_request(url):
 
             if 'results' in json_data:
                 results = json_data['results']
-
                 all_results.extend(results)
 
-                # Calculate total number of pages
-                total_pages = json_data.get('metadata', {}).get('resultset', {}).get('count', 0) // len(results) + 1
-                # Calculate current page
-                current_page = offset // len(results) + 1
+                # Calculate total number of results
+                total_count = json_data.get('metadata', {}).get('resultset', {}).get('count', 0)
 
-                logging.info(f'Fetching {url} page {current_page}/{total_pages}')
-
-                # check if there are more results to fetch
-                if json_data.get('metadata', {}).get('resultset', {}).get('count', 0) > offset:
-                    # there are more results, so increase the offset for the next request
+                # Check if there are more results to fetch
+                if total_count > offset + len(results):
                     offset += len(results)
                 else:
-                    # all results have been fetched
+                    # All results have been fetched
                     return all_results
             else:
                 logging.error(
                     f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
-                break  # break from loop if no 'results' in response
+                break  # Break from loop if no 'results' in response
+        elif response.status_code == 429:
+            logging.warning(
+                f'Received status code {response.status_code} for URL {paged_url}. Changing token...')
+            update_token()  # Update token if status code is 429
         else:
             logging.error(
                 f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}')
-            break  # break from loop if status code is not 200
+            break  # Break from loop if status code is not 200
 
-    # return whatever has been fetched till the point of error
     return all_results
 
 
@@ -277,8 +297,8 @@ def fetch_and_write_climate_data_to_influxdb():
         station_map = fetch_stations(country['id'])
 
         start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
-        if start_date.year < 1880:
-            start_date = datetime(1880, 1, 1, tzinfo=ZoneInfo("UTC"))
+        if start_date.year < MIN_START_YEAR:
+            start_date = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
         end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
 
         while start_date <= end_date:
@@ -346,4 +366,5 @@ def wait_for_influxdb():
 
 if __name__ == "__main__":
     wait_for_influxdb()
+    logging.info(f'Loaded token {TOKENS}')
     fetch_and_write_climate_data_to_influxdb()
