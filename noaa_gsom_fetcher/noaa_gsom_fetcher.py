@@ -101,8 +101,6 @@ logger = logging.getLogger()
 logger.addHandler(log_handler)
 logger.addHandler(console_handler)
 logger.setLevel(logging.INFO)
-# Station details cache
-station_details_cache = {}
 
 
 def sleep_until_next_request():
@@ -146,18 +144,55 @@ def make_api_request(url):
         return None
 
 
-def get_countries():
+def extract_station_details(station_id):
     """
-    Fetch and return a list of countries.
+    Fetch and return details for a specific station.
+
+    :param str station_id: The ID of the station to fetch details for.
+    :return: Station details.
+    :rtype: dict or None
+    """
+    station_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&name={station_id}"
+    station_details_list = make_api_request(station_url)
+    if station_details_list is None:
+        logging.error(f'Failed to fetch details for station {station_id}')
+        return None
+    else:
+        station_details = station_details_list[0]
+        # Exclude mindate and maxdate from the details
+        station_details = {k: v for k, v in station_details.items() if k not in ['mindate', 'maxdate']}
+        # Cache the details
+        return station_details
+
+
+def get_countries_and_stations():
+    """
+    Fetch and return a list of countries & all stations per country.
 
     :return: A list of countries.
     :rtype: list or None
     """
+    logging.info(f'Fetching countries...')
     countries_url = f"{BASE_URL}locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
     countries = make_api_request(countries_url)
     if countries is None:
         logging.error('Failed to fetch countries')
-    return countries
+        return None
+
+    logging.info(f'Fetching stations...')
+    station_map = {}
+    for country in countries:
+        country_id = country['id']
+        stations_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&locationid={country_id}"
+        stations = make_api_request(stations_url)
+        logging.info(f'Fetching all station details for {country_id}...')
+        if stations is not None:
+            station_map[country_id] = {
+                station['id']: extract_station_details(station)
+                for station in stations
+            }
+
+    return countries, station_map
 
 
 def get_climate_data(country_id, start_date, end_date):
@@ -177,32 +212,6 @@ def get_climate_data(country_id, start_date, end_date):
     if data is None:
         logging.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
     return data
-
-
-def get_station_details(station_id):
-    """
-    Fetch and return details for a specific station.
-
-    :param str station_id: The ID of the station to fetch details for.
-    :return: Station details.
-    :rtype: dict or None
-    """
-    # Check cache first
-    if station_id in station_details_cache:
-        return station_details_cache[station_id]
-
-    station_url = f"{BASE_URL}stations?datasetid=GSOM&units=metric&name={station_id}"
-    station_details_list = make_api_request(station_url)
-    if station_details_list is None:
-        logging.error(f'Failed to fetch details for station {station_id}')
-        return None
-    else:
-        station_details = station_details_list[0]
-        # Exclude mindate and maxdate from the details
-        station_details = {k: v for k, v in station_details.items() if k not in ['mindate', 'maxdate']}
-        # Cache the details
-        station_details_cache[station_id] = station_details
-        return station_details
 
 
 def decode_attributes(datatype, attributes_str):
@@ -243,7 +252,7 @@ def fetch_and_write_climate_data_to_influxdb():
         database=INFLUXDB_DATABASE
     )
 
-    countries = get_countries()
+    countries, station_map = get_countries_and_stations()
     if countries is not None:
         for i in range(0, len(countries), BATCH_SIZE):
             batch_countries = countries[i:i + BATCH_SIZE]
@@ -260,7 +269,7 @@ def fetch_and_write_climate_data_to_influxdb():
                     climate_data = get_climate_data(country['id'], start_date, current_end_date)
                     if climate_data is not None:
                         for record in climate_data:
-                            station_details = get_station_details(record['station'])
+                            station_details = station_map.get(country['id'], {}).get(record['station'])
                             fields = {
                                 "value": float(record['value']),
                                 "country_id": country['id'].split(':')[1],
