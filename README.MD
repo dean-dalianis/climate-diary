@@ -49,15 +49,10 @@ per second.
 This is an unofficial script and is not affiliated with or endorsed by NOAA. Always check
 the [NOAA's API terms of service](https://www.ncdc.noaa.gov/cdo-web/webservices/v2) before using the script.
 
-# Docker
+# Climate Monitoring Stack Using Docker
 
-This project provides a Docker Compose configuration for setting up a monitoring stack with InfluxDB, Grafana,
-Chronograf, and a custom climate data fetcher script for periodically fetching data from the NOAA GSOM dataset.
-
-## Climate Monitoring Stack Using Docker
-
-This project provides a Docker Compose configuration for setting up a monitoring stack with InfluxDB, Grafana,
-Chronograf, and a custom climate data fetcher script for periodically fetching data from the NOAA GSOM dataset.
+This project provides a Docker Compose configuration for setting up a monitoring stack with InfluxDB, Grafana, and a
+custom climate data fetcher script for periodically fetching data from the NOAA GSOM dataset.
 
 ## Services
 
@@ -65,10 +60,7 @@ The services included in the stack are:
 
 1. **InfluxDB**: A time series database for storing metrics and time-based data.
 2. **Grafana**: A platform for visualizing and analyzing metrics with customizable dashboards and plugins.
-3. **Chronograf**: A visualization and administrative tool for InfluxDB, providing data exploration and management
-   capabilities.
-4. **Climate Data Fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
-5. **Telegraph**: A telegraph instance for host metrics (starts only if running on Raspberry PI)
+3. **Climate Data Fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
 
 ## Setup
 
@@ -81,11 +73,8 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 
     ```
     INFLUXDB_ADMIN_PASSWORD=<admin_password>
-    TELEGRAF_PASSWORD=<telegraf_password>
-    CLIMATE_PASSWORD=<climate_password>
     NOAA_TOKEN=<noaa_token>
     BATCHSIZE=2 (optional -- default: 10)
-    IS_RASPBERRY_PI=true (optional -- default: false)
     ```
 
 3. Build the Docker images and start the containers by running the following command in the terminal:
@@ -98,7 +87,6 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 
     - InfluxDB: [http://localhost:8086](http://localhost:8086)
     - Grafana: [http://localhost:3000](http://localhost:3000)
-    - Chronograf: [http://localhost:8888](http://localhost:8888)
 
 5. To stop the containers, run the following command:
 

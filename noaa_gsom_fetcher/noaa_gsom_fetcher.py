@@ -1,8 +1,9 @@
 import logging
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging.handlers import TimedRotatingFileHandler
+from zoneinfo import ZoneInfo
 
 import requests
 from dateutil.parser import parse
@@ -12,11 +13,11 @@ from requests.packages.urllib3.util.retry import Retry
 
 INFLUXDB_HOST = 'influxdb'
 INFLUXDB_PORT = '8086'
-INFLUXDB_USER = 'climate'
 INFLUXDB_DATABASE = 'climate'
 BATCH_SIZE = os.environ.get('BATCHSIZE') if os.environ.get('BATCHSIZE') is not None else 10
 
-INFLUXDB_PASSWORD = os.environ.get('CLIMATE_PASSWORD')
+INFLUXDB_USER = os.environ.get('INFLUXDB_ADMIN_USER')
+INFLUXDB_PASSWORD = os.environ.get('INFLUXDB_ADMIN_PASSWORD')
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2/"
 DATATYPE_ID = "TMAX,TMIN,TAVG,PRCP,SNOW,EVAP,WDMV,AWND,WSF2,WSF5,WSFG,WSFI,WSFM,DYFG,DYHF,DYTS,RHAV"
@@ -156,11 +157,24 @@ def get_last_record_date_for_country(country_id, client):
     :return: The date of the last record for the country.
     :rtype: datetime.datetime or None
     """
-    result = client.query(
-        f'SELECT last("value") FROM "climate" WHERE "country_id" = \'{country_id}\'')
+    try:
+        result = client.query(
+            f'SELECT last("value") FROM "climate" WHERE "country_id" = \'{country_id}\'')
+    except Exception as e:
+        logging.info(f'Error querying the database: {e}')
+        return None
     if result:
-        last_time = list(result.get_points(measurement='climate'))[0]['time']
-        return parse(last_time)
+        try:
+            last_time = list(result.get_points(measurement='climate'))[0]['time']
+            try:
+                return parse(last_time).astimezone(ZoneInfo("UTC"))
+            except ValueError:
+                # If the timestamp doesn't have a fractional part of a second,
+                # try parsing it without the fractional part.
+                return datetime.strptime(last_time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=ZoneInfo("UTC"))
+        except Exception as e:
+            logging.info(f'Error parsing the time: {e}')
+            return None
     return None
 
 
@@ -192,7 +206,7 @@ def decode_attributes(datatype, attributes_str):
 
 def fetch_and_write_climate_data_to_influxdb():
     """
-    Main function - Connects to InfluxDB and fetches climate data for each country, writing it to the database.
+    Connects to InfluxDB, fetches climate data for each country, writes them to the database.
     """
     client = InfluxDBClient(
         host=INFLUXDB_HOST,
@@ -212,11 +226,11 @@ def fetch_and_write_climate_data_to_influxdb():
                 last_record_date = get_last_record_date_for_country(country['id'], client)
 
                 if last_record_date is None:
-                    start_date = datetime.strptime(country['mindate'], '%Y-%m-%d')
+                    start_date = datetime.strptime(country['mindate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
                 else:
                     start_date = last_record_date + timedelta(days=1)
 
-                end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d')
+                end_date = datetime.strptime(country['maxdate'], '%Y-%m-%d').replace(tzinfo=ZoneInfo("UTC"))
 
                 while start_date <= end_date:
                     current_end_date = min(start_date + timedelta(days=9 * 365),
@@ -237,7 +251,7 @@ def fetch_and_write_climate_data_to_influxdb():
                                     "country_id": country['id'],
                                     "datatype": record['datatype']
                                 },
-                                "time": parse(record['date']).isoformat(),
+                                "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
                                 "fields": fields
                             })
 
@@ -247,6 +261,7 @@ def fetch_and_write_climate_data_to_influxdb():
             # Write points for all countries in the batch
             if points:
                 try:
+                    logging.info(f'Writing data for countries {i}-{i + BATCH_SIZE - 1}')
                     client.write_points(points)
                     logging.info(f'Successfully wrote data for countries {i}-{i + BATCH_SIZE - 1}')
                 except Exception as e:
@@ -257,5 +272,26 @@ def fetch_and_write_climate_data_to_influxdb():
             logging.error('Could not fetch the list of countries')
 
 
+def wait_for_influxdb():
+    """
+    Wait until the InfluxDB is ready to accept connections.
+    """
+    client = InfluxDBClient(
+        host=INFLUXDB_HOST,
+        port=INFLUXDB_PORT,
+        username=INFLUXDB_USER,
+        password=INFLUXDB_PASSWORD,
+        database=INFLUXDB_DATABASE
+    )
+    for i in range(30):  # try for 30 times
+        try:
+            client.ping()
+            return
+        except Exception as e:
+            time.sleep(1)
+    raise Exception("Cannot connect to InfluxDB")
+
+
 if __name__ == "__main__":
+    wait_for_influxdb()
     fetch_and_write_climate_data_to_influxdb()
