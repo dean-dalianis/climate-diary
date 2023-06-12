@@ -1,29 +1,27 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo
+
+from dateutil.parser import parse
+from dateutil.tz import tzutc
 
 
 def string_to_datetime(date_string):
     """
-    Convert a string to a datetime object. The input string should be in ISO 8601 format.
+    Parse a date string into a datetime object with timezone information.
 
-    :param str date_string: The string to convert to a datetime.
-    :return: The converted datetime.
-    :rtype: datetime.datetime
+    :param str date_string: The date string to parse, formatted as 'YYYY-MM-DD'.
+    :return: A datetime object representing the parsed date, with timezone set to UTC.
+    :rtype: datetime
     """
-    date_string = date_string.replace('Z', '+00:00')
-    dt = datetime.fromisoformat(date_string)
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
-    return dt
+    dt = parse(date_string)
+    return dt.astimezone(tzutc())
 
 
-def datetime_to_string(dt):
+def datetime_to_string(date_time):
     """
-    Convert a datetime object to a string in ISO 8601 format.
+    Format a datetime object into a string with timezone information.
 
-    :param datetime.datetime dt: The datetime to convert to a string.
-    :return: The datetime as a string.
+    :param datetime date_time: The datetime object to format.
+    :return: A string representing the formatted date, with timezone set to UTC.
     :rtype: str
     """
-    return dt.astimezone(ZoneInfo("UTC")).strftime('%Y-%m-%dT%H:%M:%S')
-
+    return date_time.strftime('%Y-%m-%d')

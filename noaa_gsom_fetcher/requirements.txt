@@ -3,4 +3,3 @@ python-dateutil
 tqdm
 influxdb
 numpy
-matplotlib

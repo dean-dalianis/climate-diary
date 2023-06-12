@@ -40,13 +40,14 @@ def write_points_to_influx(points, country):
     """
     num_points = len(points)
     num_batches = (num_points + BATCHSIZE - 1) // BATCHSIZE
-    logger.info(f'Writing {num_points} points in {num_batches} batches to db')
+
     for i in range(0, num_points, BATCHSIZE):
         current_batch_number = i // BATCHSIZE + 1
         batch_points = points[i: i + BATCHSIZE]
 
         if batch_points:
             try:
+                logger.info(f'Writing data for {country["name"]}, batch {current_batch_number}/{num_batches}')
                 client.write_points(batch_points)
                 logger.info(
                     f'Successfully wrote data for {country["name"]}, batch {current_batch_number}/{num_batches}')
@@ -68,9 +69,11 @@ def fetch_latest_timestamp_for_average_temperature(country):
     query = f"SELECT last(\"value\") FROM \"Average Temperature\" WHERE \"country\" = '{country['name']}'"
     result = client.query(query)
     if result:
+        logger.info("result")
         point = list(result.get_points())[0]
         timestamp_str = point['time']
-        return string_to_datetime(timestamp_str)
+        date = string_to_datetime(timestamp_str)
+        return date
     return None
 
 
