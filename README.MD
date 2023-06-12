@@ -147,9 +147,9 @@ List of stuff to do within the following week (12 - 17 / 06):
 
 1. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and
    time-variable).
-
 2. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.
-
 3. **Cloud Configuration**: configure a cloud environment to run the containers
+4. **Grafana datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
+5. **Grafana dashboard provisioning**: add provisioning for the dashboard itself
 
 Update and cross-out at will.

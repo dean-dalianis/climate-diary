@@ -163,6 +163,7 @@ def fetch_and_write_climate_data_to_influxdb():
         while start_date <= end_date:
             current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
             if (climate_data := fetch_climate_data(country['id'], start_date, current_end_date)) is not None:
+                logger.info(f'Fetched climate data for {country}: {start_date} - {current_end_date}')
                 for record in climate_data:
                     station_details = station_map.get(record['station'], empty_station_details)
                     fields = {
