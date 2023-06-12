@@ -20,6 +20,13 @@ EU_CONTINENT_FIPS = config["EU_CONTINENT_FIPS"]
 ATTRIBUTES = config["ATTRIBUTES"]
 MEASUREMENT_NAMES = config["MEASUREMENT_NAMES"]
 
+empty_station_details = {
+    'elevation': float('inf'),
+    'latitude': float('inf'),
+    'longitude': float('inf'),
+    'name': 'N/A'
+}
+
 
 def decode_attributes(datatype, attributes_str):
     """
@@ -150,14 +157,14 @@ def fetch_and_write_climate_data_to_influxdb():
 
         start_date = max(string_to_datetime(country['mindate']), datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC")))
         end_date = string_to_datetime(country['maxdate'])
-        print(start_date)
+
         station_map = fetch_stations(country['id'], start_date)
 
         while start_date <= end_date:
             current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
             if (climate_data := fetch_climate_data(country['id'], start_date, current_end_date)) is not None:
                 for record in climate_data:
-                    station_details = station_map[record['station']]
+                    station_details = station_map.get(record['station'], empty_station_details)
                     fields = {
                         "value": float(record['value']),
                         "country_id": country['id'].split(':')[1],
