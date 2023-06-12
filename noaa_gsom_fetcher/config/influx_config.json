@@ -1,0 +1,6 @@
+{
+  "HOST": "influxdb",
+  "PORT": 8086,
+  "DB_NAME": "noaa_gsom",
+  "BATCHSIZE": 5000
+}

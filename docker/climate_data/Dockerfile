@@ -6,9 +6,8 @@ RUN apt-get update && apt-get install -y cron
 # Set the working directory
 WORKDIR /app
 
-# Copy the Python script and requirements.txt to the container
-COPY ../../noaa_gsom_fetcher/noaa_gsom_fetcher.py /app/noaa_gsom_fetcher.py
-COPY ../../noaa_gsom_fetcher/requirements.txt /app/requirements.txt
+# Copy the Python script(s) and requirements.txt to the container
+COPY noaa_gsom_fetcher/ /app/
 
 # Install required Python packages
 RUN pip install --no-cache-dir -r requirements.txt

@@ -89,7 +89,7 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 3. Build the Docker images and start the containers by running the following command in the terminal:
 
     ```bash
-    docker compose -f ./docker/docker-compose.yml up --remove-orphans --build
+    docker compose --env-file .\docker\.env -f ./docker/docker-compose.yml up --remove-orphans --build
     ```
 
    If you need to clean-up docker deployments:
