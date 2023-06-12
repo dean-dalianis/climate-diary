@@ -5,6 +5,7 @@ import time
 from influxdb import InfluxDBClient
 
 from logging_config import logger
+from util import string_to_datetime
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/influx_config.json')
 with open(CONFIG_FILE, 'r') as file:
@@ -55,6 +56,25 @@ def write_points_to_influx(points, country):
                     f'Failed to write data for {country["name"]}, batch {current_batch_number}/{num_batches}, {e}')
         else:
             logger.warn('No data to write')
+
+
+def fetch_latest_timestamp_for_average_temperature(country):
+    """
+    Fetch the latest timestamp for the 'Average Temperature' for a specified country.
+
+    :param dict country: The country to fetch the latest timestamp for.
+    :return: The latest timestamp as a datetime object.
+    :rtype: datetime or None
+    """
+    query = f"SELECT last(\"value\") FROM \"Average Temperature\" WHERE \"country\" = '{country['name']}'"
+    result = client.query(query)
+    if result:
+        logger.info("result")
+        point = list(result.get_points())[0]
+        timestamp_str = point['time']
+        date = string_to_datetime(timestamp_str)
+        return date
+    return None
 
 
 def wait_for_influx():

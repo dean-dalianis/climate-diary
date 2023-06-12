@@ -3,9 +3,10 @@ import os
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+import numpy as np
 from dateutil.parser import parse
 
-from influx import write_points_to_influx, wait_for_influx
+from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp_for_average_temperature
 from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime
@@ -145,6 +146,22 @@ def fetch_climate_data(country_id, start_date, end_date):
     return data
 
 
+def calculate_decadal_averages(data):
+    # Group data by decade
+    decadal_data = {}
+    for record in data:
+        # Here we assume that the 'date' field in record is a datetime object
+        decade = (record['date'].year // 10) * 10
+        if decade not in decadal_data:
+            decadal_data[decade] = []
+        decadal_data[decade].append(record['value'])
+
+    # Calculate averages
+    decadal_averages = {decade: sum(values) / len(values) for decade, values in decadal_data.items()}
+
+    return decadal_averages
+
+
 def fetch_and_write_climate_data_to_influxdb():
     """
     Fetches climate data for each country and writes them to the influx.
@@ -155,37 +172,62 @@ def fetch_and_write_climate_data_to_influxdb():
         points = []
         logger.info(f'Fetching climate data for country: {country["name"]}')
 
-        start_date = max(string_to_datetime(country['mindate']), datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC")))
+        latest_timestamp = fetch_latest_timestamp_for_average_temperature(country)
+        if latest_timestamp is not None:
+            latest_timestamp = latest_timestamp + timedelta(days=1)
+        else:
+            latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
+
+        start_date = max(
+            string_to_datetime(country['mindate']),
+            datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC")),
+            latest_timestamp
+        )
+
         end_date = string_to_datetime(country['maxdate'])
 
         station_map = fetch_stations(country['id'], start_date)
+
+        data_for_trend = {datatype: [] for datatype in MEASUREMENT_NAMES.keys()}
 
         while start_date <= end_date:
             current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
             if (climate_data := fetch_climate_data(country['id'], start_date, current_end_date)) is not None:
                 logger.info(f'Fetched climate data for {country}: {start_date} - {current_end_date}')
+
+                avg_temp_data = [record for record in climate_data if record['datatype'] == 'TAVG']
+                decadal_averages = calculate_decadal_averages(avg_temp_data)
+
                 for record in climate_data:
                     station_details = station_map.get(record['station'], empty_station_details)
                     fields = {
                         "value": float(record['value']),
                         "country_id": country['id'].split(':')[1],
+                        "station": record['station'],
                         "latitude": float(station_details['latitude']),
                         "longitude": float(station_details['longitude']),
                         "elevation": float(station_details['elevation'])
                     }
+
                     if 'attributes' in record:
                         fields.update(decode_attributes(record['datatype'], record['attributes']))
 
+                    decade = (parse(record['date']).year // 10) * 10
                     points.append({
                         "measurement": MEASUREMENT_NAMES.get(record['datatype']),
                         "tags": {
-                            "country": country['name'],
-                            "station": record['station'],
-                            "station_name": station_details['name']
+                            "country": country['name']
                         },
                         "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
-                        "fields": fields
+                        "fields": {
+                            **fields,
+                            "decadal_average_temperature": decadal_averages[decade]
+                            if record['datatype'] == 'TAVG' else None
+                        }
                     })
+
+                    data_for_trend[record['datatype']].append(
+                        (parse(record['date']).timestamp(), float(record['value'])))
 
             start_date = current_end_date + timedelta(days=1)
 
@@ -193,6 +235,25 @@ def fetch_and_write_climate_data_to_influxdb():
             write_points_to_influx(points, country)
         else:
             logger.error('No data to write')
+
+        for datatype, data in data_for_trend.items():
+            if data:
+                timestamps, values = zip(*data)
+                trend_slope, trend_intercept = np.polyfit(timestamps, values, 1)
+
+                trend_point = {
+                    "measurement": f"{MEASUREMENT_NAMES[datatype]}_trend",
+                    "tags": {
+                        "country": country['name']
+                    },
+                    "fields": {
+                        "slope": trend_slope,
+                        "intercept": trend_intercept,
+                    }
+                }
+                write_points_to_influx([trend_point], country)
+            else:
+                logger.error(f'No data for trend calculation for {datatype}')
 
 
 if __name__ == "__main__":
