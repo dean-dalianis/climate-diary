@@ -368,7 +368,7 @@ def fetch_and_write_climate_data_to_influxdb():
             write_points_to_influx(points, country)
             if wrote_new_data:
                 logger.info('Fetching data from influx to recalculate trend lines')
-                for datatype in MEASUREMENT_NAMES.keys:
+                for datatype in MEASUREMENT_NAMES.keys():
                     drop_trend(country['name'], f'{MEASUREMENT_NAMES[datatype]}_trend')
                 for datatype in MEASUREMENT_NAMES.keys():
                     influx_data = fetch_climate_data_from_influx(country, MEASUREMENT_NAMES[datatype])

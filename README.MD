@@ -2,8 +2,10 @@
 
 Climate Data Fetcher fetches and stores historical climate data from the Global Summary of the Month (GSOM) dataset in
 NOAA's Climate Data Online (CDO) API. It fetches data such as daily maximum and minimum temperatures, average
-temperature, precipitation, snowfall, and other metrics for all available countries. The script manages API request rate
-limiting and handles possible API response errors.
+temperature, precipitation, snowfall, and other metrics for a selected subset of countries*. The script manages API
+request rate limiting and handles possible API response errors.
+
+**Due to resource limits, this analysis is currently performed only for countries in the European continent*
 
 ## Data Types and Attribute Decoding
 
@@ -13,16 +15,28 @@ measurement or quality flags, and source codes.
 
 Below are the data types the script fetches and the associated attributes:
 
-- TMAX: Maximum temperature. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- TMIN: Minimum temperature. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- TAVG: Average temperature. Attributes: days_missing, source_code
-- PRCP: Precipitation. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- SNOW: Snowfall. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- EVAP: Evaporation. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- WDMV: Wind movement. Attributes: days_missing, measurement_flag, quality_flag, source_code
-- DYFG: Days with fog. Attributes: None
-- DYTS: Days with thunder. Attributes: None
-- RHAV: Average relative humidity. Attributes: days_missing, measurement_flag, quality_flag, source_code
+```json
+  "ATTRIBUTES": {
+"TAVG": ["days_missing", "source_code"],
+"TMAX": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+"TMIN": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+"EMXT": ["days_missing", "daily_dataset_source_code", "day", "more_than_once"],
+"EMNT": ["days_missing", "daily_dataset_source_code", "day", "more_than_once"],
+"PRCP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
+"EMXP": ["days_missing", "daily_dataset_flag", "daily_dataset_source_code", "day", "more_than_once"],
+"EMSD": ["days_missing", "daily_dataset_flag", "daily_dataset_source_code", "day", "more_than_once"]
+},
+"MEASUREMENT_NAMES": {
+"TAVG": "Average_Temperature",
+"TMAX": "Maximum_Temperature",
+"TMIN": "Minimum_Temperature",
+"EMXT": "Extreme_Maximum_Temperature",
+"EMNT": "Extreme_Minimum_Temperature",
+"PRCP": "Precipitation",
+"EMXP": "Highest_Daily_Total_Of_Precipitation",
+"EMSD": "Highest_Daily_Snow_Depth"
+}
+```
 
 The decode_attributes function in the script takes care of decoding these attributes from the API response and storing
 them in the InfluxDB along with the corresponding data.
@@ -140,7 +154,6 @@ This project is licensed under the terms of the MIT license.
 
 ---
 
-
 # To-Do list
 
 List of stuff to do within the following week (12 - 17 / 06):
@@ -151,6 +164,9 @@ List of stuff to do within the following week (12 - 17 / 06):
 3. **Cloud Configuration**: configure a cloud environment to run the containers
 4. **Grafana datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
 5. **Grafana dashboard provisioning**: add provisioning for the dashboard itself
-6. **D3 dashboard implementation**: showcase temperature change, in an animation-like manner, in a worldmap
+6. **Nginx server on docker**
+7. **Flask backend**
+8. **React frontend // otherwise plain html/css/js**
+9. **D3/Chart.js dashboard implementation**: showcase temperature change, in an animation-like manner, in a worldmap
 
 Update and cross-out at will.

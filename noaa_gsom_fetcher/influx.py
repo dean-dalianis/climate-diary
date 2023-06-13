@@ -131,8 +131,8 @@ def drop_trend(country, trend):
     :return: None
     """
     try:
-        query = f"DROP SERIES FROM \"{trend}\" WHERE \"country\" = '{country['name']}'"
+        query = f"DROP SERIES FROM \"{trend}\" WHERE \"country\" = '{country}'"
         client.query(query)
-        logger.info(f'Successfully dropped {trend} data for {country["name"]}')
+        logger.info(f'Successfully dropped {trend} data for {country}')
     except Exception as e:
-        logger.error(f'Failed to drop {trend} data for {country["name"]}, {e}')
+        logger.error(f'Failed to drop {trend} data for {country}, {e}')
