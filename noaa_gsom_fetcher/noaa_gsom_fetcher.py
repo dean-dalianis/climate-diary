@@ -1,8 +1,9 @@
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import matplotlib.dates as mdates
 import numpy as np
 from dateutil.parser import parse
 
@@ -146,25 +147,155 @@ def fetch_climate_data(country_id, start_date, end_date):
     return data
 
 
-def calculate_decadal_averages(data):
-    # Group data by decade
+def calculate_avg_temp_decadal_averages(data):
+    """
+    This function calculates the average temperature for each decade in the given dataset. It first groups the temperature data by decade, then computes the average temperature for each decade.
+
+    :param list data: The data from which to calculate averages, each element is a dictionary containing a 'date' and 'value'.
+    :return: A dictionary where keys are decades (e.g., 1990, 2000) and values are the respective average temperature.
+    :rtype: dict
+    """
     decadal_data = {}
     for record in data:
-        # Here we assume that the 'date' field in record is a datetime object
-        decade = (record['date'].year // 10) * 10
+        decade = (parse(record['date']).year // 10) * 10
         if decade not in decadal_data:
             decadal_data[decade] = []
         decadal_data[decade].append(record['value'])
 
-    # Calculate averages
     decadal_averages = {decade: sum(values) / len(values) for decade, values in decadal_data.items()}
 
     return decadal_averages
 
 
+def calculate_trends_and_write_to_influx(country, data_for_trend):
+    """
+    This function calculates the trend (linear regression) for each data type (e.g., average temperature) and writes this trend data to InfluxDB.
+    It uses numpy's polyfit method to calculate the slope and intercept of the trend line. If there's no data available for a certain datatype for the given country, it logs a warning.
+
+    :param dict country: The country for which to calculate trends.
+    :param dict data_for_trend: A dictionary where the key is the datatype, and the value is a list of tuples, each containing a timestamp and a value.
+    """
+    for datatype, data in data_for_trend.items():
+        if data:
+            timestamps, values = zip(*data)
+            timestamps = [mdates.date2num(ts) for ts in timestamps]
+            trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
+            trend_point = {
+                'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
+                'tags': {
+                    'country': country['name']
+                },
+                'fields': {
+                    'slope': trend_slope,
+                    'intercept': trend_intercept,
+                }
+            }
+            logger.info(f'Writing data trend info for {country["name"]} to db')
+            write_points_to_influx([trend_point], country)
+        else:
+            logger.warn(f'No data for trend calculation for {datatype} for {country["name"]}')
+
+
+def init_dates(country):
+    """
+    Initialize start and end dates for fetching climate data based on the country's information.
+
+    :param dict country: The country for which to initialize dates.
+    :return: The end date and start date.
+    """
+    latest_timestamp = fetch_latest_timestamp_for_average_temperature(country)
+    if latest_timestamp is not None:
+        latest_timestamp = latest_timestamp + timedelta(days=1)
+    else:
+        latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
+    start_date = max(
+        string_to_datetime(country['mindate']),
+        datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC")),
+        latest_timestamp
+    )
+    end_date = string_to_datetime(country['maxdate'])
+    return end_date, start_date
+
+
+def calculate_yoy_and_dod_change(decade, prev_decade_values, prev_year_values, record, year):
+    """
+    Calculate year-over-year (YoY) and decade-over-decade (DoD) changes in temperature based on previous values.
+
+    :param int decade: The decade of the current record.
+    :param dict prev_decade_values: Dictionary containing previous decade values.
+    :param dict prev_year_values: Dictionary containing previous year values.
+    :param dict record: The current climate data record.
+    :param int year: The year of the current record.
+    :return: The DoD and YoY changes in temperature.
+    :rtype: tuple
+    """
+    if year - 1 in prev_year_values:
+        yoy_change = float(record['value']) - prev_year_values[year - 1]
+    else:
+        yoy_change = None
+    if decade - 10 in prev_decade_values:
+        dod_change = float(record['value']) - prev_decade_values[decade - 10]
+    else:
+        dod_change = None
+    return dod_change, yoy_change
+
+
+def create_fields_map(country, record, station_details):
+    """
+    Create a map of fields for a climate data record.
+
+    :param dict country: The country information.
+    :param dict record: The current climate data record.
+    :param dict station_details: The details of the station associated with the record.
+    :return: A map of fields for the climate data record.
+    :rtype: dict
+    """
+    fields = {
+        'value': float(record['value']),
+        'country_id': country['id'].split(':')[1],
+        'station': record['station'],
+        'latitude': float(station_details['latitude']),
+        'longitude': float(station_details['longitude']),
+        'elevation': float(station_details['elevation'])
+    }
+    if 'attributes' in record:
+        fields.update(decode_attributes(record['datatype'], record['attributes']))
+    return fields
+
+
+def create_points_dict(avg_temp_decadal_averages, country, decade, dod_change, fields, record, yoy_change):
+    """
+    Create a dictionary representing a data point for writing to InfluxDB.
+
+    :param dict avg_temp_decadal_averages: Decadal average temperatures.
+    :param dict country: The country information.
+    :param int decade: The decade associated with the data point.
+    :param float dod_change: Day-over-day temperature change.
+    :param dict fields: The map of fields for the data point.
+    :param dict record: The current climate data record.
+    :param float yoy_change: Year-over-year temperature change.
+    :return: A dictionary representing a data point for InfluxDB.
+    :rtype: dict
+    """
+    return {
+        'measurement': MEASUREMENT_NAMES.get(record['datatype']),
+        'tags': {
+            'country': country['name']
+        },
+        'time': string_to_datetime(record['date']),
+        'fields': {
+            **fields,
+            'yoy_change': yoy_change,
+            'dod_change': dod_change,
+            'decadal_average_temperature': avg_temp_decadal_averages[decade]
+            if record['datatype'] == 'TAVG' else None
+        }
+    }
+
+
 def fetch_and_write_climate_data_to_influxdb():
     """
-    Fetches climate data for each country and writes them to the influx.
+    Fetches climate data for each country, calculates temperature changes, creates data points, and writes them to InfluxDB.
     """
     countries = fetch_european_countries() or []
 
@@ -172,88 +303,51 @@ def fetch_and_write_climate_data_to_influxdb():
         points = []
         logger.info(f'Fetching climate data for country: {country["name"]}')
 
-        latest_timestamp = fetch_latest_timestamp_for_average_temperature(country)
-        if latest_timestamp is not None:
-            latest_timestamp = latest_timestamp + timedelta(days=1)
-        else:
-            latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
-
-        start_date = max(
-            string_to_datetime(country['mindate']),
-            datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC")),
-            latest_timestamp
-        )
-
-        end_date = string_to_datetime(country['maxdate'])
+        end_date, start_date = init_dates(country)
 
         station_map = fetch_stations(country['id'], start_date)
 
         data_for_trend = {datatype: [] for datatype in MEASUREMENT_NAMES.keys()}
+        prev_year_values = {}
+        prev_decade_values = {}
 
         while start_date <= end_date:
             current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
             if (climate_data := fetch_climate_data(country['id'], start_date, current_end_date)) is not None:
-                logger.info(f'Fetched climate data for {country}: {start_date} - {current_end_date}')
+                logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
 
                 avg_temp_data = [record for record in climate_data if record['datatype'] == 'TAVG']
-                decadal_averages = calculate_decadal_averages(avg_temp_data)
+                avg_temp_decadal_averages = calculate_avg_temp_decadal_averages(avg_temp_data)
 
                 for record in climate_data:
                     station_details = station_map.get(record['station'], empty_station_details)
-                    fields = {
-                        "value": float(record['value']),
-                        "country_id": country['id'].split(':')[1],
-                        "station": record['station'],
-                        "latitude": float(station_details['latitude']),
-                        "longitude": float(station_details['longitude']),
-                        "elevation": float(station_details['elevation'])
-                    }
+                    fields = create_fields_map(country, record, station_details)
 
-                    if 'attributes' in record:
-                        fields.update(decode_attributes(record['datatype'], record['attributes']))
+                    year = string_to_datetime(record['date']).year
+                    decade = (year // 10) * 10
 
-                    decade = (parse(record['date']).year // 10) * 10
-                    points.append({
-                        "measurement": MEASUREMENT_NAMES.get(record['datatype']),
-                        "tags": {
-                            "country": country['name']
-                        },
-                        "time": parse(record['date']).astimezone(timezone.utc).isoformat(),
-                        "fields": {
-                            **fields,
-                            "decadal_average_temperature": decadal_averages[decade]
-                            if record['datatype'] == 'TAVG' else None
-                        }
-                    })
+                    dod_change, yoy_change = calculate_yoy_and_dod_change(decade, prev_decade_values, prev_year_values,
+                                                                          record, year)
+
+                    prev_year_values[year] = float(record['value'])
+                    prev_decade_values[decade] = float(record['value'])
+
+                    points_dict = create_points_dict(avg_temp_decadal_averages, country, decade, dod_change, fields,
+                                                     record, yoy_change)
+                    points.append(points_dict)
 
                     data_for_trend[record['datatype']].append(
-                        (parse(record['date']).timestamp(), float(record['value'])))
+                        (string_to_datetime(record['date']), float(record['value'])))
 
             start_date = current_end_date + timedelta(days=1)
 
         if points:
+            logger.info(f'Writing climate info for {country} to db')
             write_points_to_influx(points, country)
         else:
-            logger.error('No data to write')
+            logger.warn('No data to write. Maybe everything is already there?')
 
-        for datatype, data in data_for_trend.items():
-            if data:
-                timestamps, values = zip(*data)
-                trend_slope, trend_intercept = np.polyfit(timestamps, values, 1)
-
-                trend_point = {
-                    "measurement": f"{MEASUREMENT_NAMES[datatype]}_trend",
-                    "tags": {
-                        "country": country['name']
-                    },
-                    "fields": {
-                        "slope": trend_slope,
-                        "intercept": trend_intercept,
-                    }
-                }
-                write_points_to_influx([trend_point], country)
-            else:
-                logger.error(f'No data for trend calculation for {datatype}')
+        calculate_trends_and_write_to_influx(country, data_for_trend)
 
 
 if __name__ == "__main__":
