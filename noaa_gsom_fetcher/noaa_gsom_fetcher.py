@@ -45,17 +45,27 @@ def decode_attributes(datatype, attributes_str):
     """
     attribute_names = ATTRIBUTES.get(datatype, [])
     attributes = attributes_str.split(',')
-    default_values = {'days_missing': 0, 'day': 0, 'more_than_once': False}
 
     decoded_attributes = {}
     for i, name in enumerate(attribute_names):
-        if name not in EXCLUDED_ATTRIBUTES:
-            if i < len(attributes):
-                value = int(attributes[i]) if name in ['days_missing', 'day'] else \
-                    (attributes[i] == '+') if name == 'more_than_once' else attributes[i]
+        # Check if the attribute value exists, else provide default.
+        if i < len(attributes):
+            if name == 'days_missing' or name == 'day':
+                value = int(attributes[i]) if attributes[i] != '' else 0
+            elif name == 'more_than_once':
+                value = True if attributes[i] == '+' else False
             else:
-                value = default_values.get(name, '')
+                value = attributes[i]
+        else:
+            if name == 'days_missing' or name == 'day':
+                value = 0
+            elif name == 'more_than_once':
+                value = False
+            else:
+                value = ''
 
+        # Add attribute to the decoded attributes dictionary if it's not excluded
+        if name not in EXCLUDED_ATTRIBUTES:
             decoded_attributes[name] = value
 
     return decoded_attributes
