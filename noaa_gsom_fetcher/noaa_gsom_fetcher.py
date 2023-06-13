@@ -7,7 +7,8 @@ import matplotlib.dates as mdates
 import numpy as np
 from dateutil.parser import parse
 
-from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp_for_average_temperature
+from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp_for_average_temperature, \
+    fetch_climate_data_from_influx, drop_trend
 from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime
@@ -29,6 +30,9 @@ empty_station_details = {
     'name': 'N/A'
 }
 
+EXCLUDED_ATTRIBUTES = ['source_code', 'daily_dataset_measurement_source_code', 'daily_dataset_flag', 'measurement_flag',
+                       'quality_flag']
+
 
 def decode_attributes(datatype, attributes_str):
     """
@@ -41,19 +45,20 @@ def decode_attributes(datatype, attributes_str):
     """
     attribute_names = ATTRIBUTES.get(datatype, [])
     attributes = attributes_str.split(',')
+    default_values = {'days_missing': 0, 'day': 0, 'more_than_once': False}
 
-    # Fill missing attributes with default values
-    while len(attributes) < len(attribute_names):
-        if attribute_names[len(attributes)] == 'days_missing':
-            attributes.append('0')
-        else:
-            attributes.append('')
+    decoded_attributes = {}
+    for i, name in enumerate(attribute_names):
+        if name not in EXCLUDED_ATTRIBUTES:
+            if i < len(attributes):
+                value = int(attributes[i]) if name in ['days_missing', 'day'] else \
+                    (attributes[i] == '+') if name == 'more_than_once' else attributes[i]
+            else:
+                value = default_values.get(name, '')
 
-    return {
-        name: attributes[i]
-        for i, name in enumerate(attribute_names)
-        if name != 'source_code'
-    }
+            decoded_attributes[name] = value
+
+    return decoded_attributes
 
 
 def fetch_countries():
@@ -190,7 +195,7 @@ def calculate_trends_and_write_to_influx(country, data_for_trend):
                     'intercept': trend_intercept,
                 }
             }
-            logger.info(f'Writing data trend info for {country["name"]} to db')
+            logger.info(f'Writing data trend for {datatype} for {country["name"]} to db')
             write_points_to_influx([trend_point], country)
         else:
             logger.warn(f'No data for trend calculation for {datatype} for {country["name"]}')
@@ -201,11 +206,13 @@ def init_dates(country):
     Initialize start and end dates for fetching climate data based on the country's information.
 
     :param dict country: The country for which to initialize dates.
-    :return: The end date and start date.
+    :return: The end date, start date, and a flag if it finds previous written data.
     """
+    found_previous_data = False
     latest_timestamp = fetch_latest_timestamp_for_average_temperature(country)
     if latest_timestamp is not None:
         latest_timestamp = latest_timestamp + timedelta(days=1)
+        found_previous_data = True
     else:
         latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
     start_date = max(
@@ -214,7 +221,7 @@ def init_dates(country):
         latest_timestamp
     )
     end_date = string_to_datetime(country['maxdate'])
-    return end_date, start_date
+    return end_date, start_date, found_previous_data
 
 
 def calculate_yoy_and_dod_change(decade, prev_decade_values, prev_year_values, record, year):
@@ -303,7 +310,9 @@ def fetch_and_write_climate_data_to_influxdb():
         points = []
         logger.info(f'Fetching climate data for country: {country["name"]}')
 
-        end_date, start_date = init_dates(country)
+        end_date, start_date, found_previous_data = init_dates(country)
+
+        wrote_new_data = False
 
         station_map = fetch_stations(country['id'], start_date)
 
@@ -315,6 +324,8 @@ def fetch_and_write_climate_data_to_influxdb():
             current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
             if (climate_data := fetch_climate_data(country['id'], start_date, current_end_date)) is not None:
                 logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
+
+                wrote_new_data = True
 
                 avg_temp_data = [record for record in climate_data if record['datatype'] == 'TAVG']
                 avg_temp_decadal_averages = calculate_avg_temp_decadal_averages(avg_temp_data)
@@ -336,14 +347,26 @@ def fetch_and_write_climate_data_to_influxdb():
                                                      record, yoy_change)
                     points.append(points_dict)
 
-                    data_for_trend[record['datatype']].append(
-                        (string_to_datetime(record['date']), float(record['value'])))
+                    if not found_previous_data:
+                        data_for_trend[record['datatype']].append(
+                            (string_to_datetime(record['date']), float(record['value'])))
 
             start_date = current_end_date + timedelta(days=1)
 
         if points:
             logger.info(f'Writing climate info for {country} to db')
             write_points_to_influx(points, country)
+            if wrote_new_data:
+                logger.info('Fetching data from influx to recalculate trend lines')
+                for datatype in MEASUREMENT_NAMES.keys:
+                    drop_trend(country['name'], f'{MEASUREMENT_NAMES[datatype]}_trend')
+                for datatype in MEASUREMENT_NAMES.keys():
+                    influx_data = fetch_climate_data_from_influx(country, MEASUREMENT_NAMES[datatype])
+                    if influx_data is not None:
+                        for record in influx_data:
+                            data_for_trend[datatype].append((record['date'], record['value']))
+                    logger.info(
+                        f'Fetched {len(data_for_trend[datatype])} points to calculate trend lines for {MEASUREMENT_NAMES[datatype]}')
         else:
             logger.warn('No data to write. Maybe everything is already there?')
 
@@ -353,3 +376,4 @@ def fetch_and_write_climate_data_to_influxdb():
 if __name__ == "__main__":
     wait_for_influx()
     fetch_and_write_climate_data_to_influxdb()
+    logger.info('Fetching climate data finished')

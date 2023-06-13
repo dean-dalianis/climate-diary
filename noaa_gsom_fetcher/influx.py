@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import time
@@ -5,7 +6,7 @@ import time
 from influxdb import InfluxDBClient
 
 from logging_config import logger
-from util import string_to_datetime
+from util import string_to_datetime, ms_to_timestamp
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/influx_config.json')
 with open(CONFIG_FILE, 'r') as file:
@@ -74,6 +75,32 @@ def fetch_latest_timestamp_for_average_temperature(country):
     return None
 
 
+def fetch_climate_data_from_influx(country, datatype):
+    """
+    Fetch all climate data for a specified country and datatype from InfluxDB.
+
+    :param dict country: The country to fetch the climate data for.
+    :param str datatype: The datatype corresponding to a measurement in InfluxDB.
+    :return: A list of records, where each record is a dictionary with 'date' and 'value'.
+    :rtype: list[dict] or None
+    """
+    query = f"SELECT * FROM \"{datatype}\" WHERE \"country\" = '{country['name']}'"
+    result = client.query(query, epoch='ms')
+
+    if result:
+        records = []
+        for point in result.get_points():
+            record = {
+                'date': ms_to_timestamp(point['time']),
+                'value': point['value']
+            }
+            records.append(record)
+        return records
+    else:
+        logger.warn(f"No data found in InfluxDB for country: {country['name']} and datatype: {datatype}")
+        return None
+
+
 def wait_for_influx():
     """
     Wait until the InfluxDB is ready to accept connections.
@@ -93,3 +120,19 @@ def wait_for_influx():
 
     logger.error(f'Failed to connect to InfluxDB "{HOST}:{PORT}" after multiple attempts.')
     raise Exception(f'Cannot connect to InfluxDB: "{HOST}:{PORT}"')
+
+
+def drop_trend(country, trend):
+    """
+    Drop specific trend data for a specified country from InfluxDB.
+
+    :param dict country: The country to drop the trend data for.
+    :param str trend: The trend to drop.
+    :return: None
+    """
+    try:
+        query = f"DROP SERIES FROM \"{trend}\" WHERE \"country\" = '{country['name']}'"
+        client.query(query)
+        logger.info(f'Successfully dropped {trend} data for {country["name"]}')
+    except Exception as e:
+        logger.error(f'Failed to drop {trend} data for {country["name"]}, {e}')

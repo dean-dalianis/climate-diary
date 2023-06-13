@@ -1,5 +1,8 @@
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
+
+os.makedirs('log', exist_ok=True)  # Create the log directory if it doesn't exist
 
 # Set up log rotation
 log_filename = 'log/climate_data.log'
