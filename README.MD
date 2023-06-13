@@ -158,15 +158,18 @@ This project is licensed under the terms of the MIT license.
 
 List of stuff to do within the following week (12 - 17 / 06):
 
-1. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and
+1. **co2 data**
+2. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and
    time-variable).
-2. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.
-3. **Cloud Configuration**: configure a cloud environment to run the containers
-4. **Grafana datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
-5. **Grafana dashboard provisioning**: add provisioning for the dashboard itself
-6. **Nginx server on docker**
-7. **Flask backend**
-8. **React frontend // otherwise plain html/css/js**
-9. **D3/Chart.js dashboard implementation**: showcase temperature change, in an animation-like manner, in a worldmap
+3. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.
+4. **Cloud Configuration**: configure a cloud environment to run the containers
+5. **Grafana datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
+6. **Grafana dashboard provisioning**: add provisioning for the dashboard itself
+7. **Nginx server on docker**
+8. **Flask backend**
+9. **React frontend // otherwise plain html/css/js**
+10. **D3/Chart.js dashboard implementation**: showcase temperature change, in an animation-like manner, in a worldmap
+11. **Ice melting data**
+12. **Live temperature & co2 data**
 
 Update and cross-out at will.
