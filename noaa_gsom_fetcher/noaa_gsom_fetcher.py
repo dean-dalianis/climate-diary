@@ -7,7 +7,7 @@ import matplotlib.dates as mdates
 import numpy as np
 from dateutil.parser import parse
 
-from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp_for_average_temperature, \
+from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp, \
     fetch_climate_data_from_influx, drop_trend
 from logging_config import logger
 from noaa_requests import make_api_request
@@ -219,8 +219,9 @@ def init_dates(country):
     :return: The end date, start date, and a flag if it finds previous written data.
     """
     found_previous_data = False
-    latest_timestamp = fetch_latest_timestamp_for_average_temperature(country)
+    latest_timestamp = fetch_latest_timestamp(country, MEASUREMENT_NAMES['TMAX'])
     if latest_timestamp is not None:
+        print(f'Found previous timestamp for {country["name"]: {latest_timestamp}}')
         latest_timestamp = latest_timestamp + timedelta(days=1)
         found_previous_data = True
     else:
