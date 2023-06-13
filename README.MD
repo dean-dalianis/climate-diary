@@ -151,5 +151,6 @@ List of stuff to do within the following week (12 - 17 / 06):
 3. **Cloud Configuration**: configure a cloud environment to run the containers
 4. **Grafana datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
 5. **Grafana dashboard provisioning**: add provisioning for the dashboard itself
+6. **D3 dashboard implementation**: showcase temperature change, in an animation-like manner, in a worldmap
 
 Update and cross-out at will.
