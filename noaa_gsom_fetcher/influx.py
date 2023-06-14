@@ -58,16 +58,15 @@ def write_points_to_influx(points, country):
             logger.warn('No data to write')
 
 
-def fetch_latest_timestamp(country, measurement_name):
+def fetch_latest_timestamp(country):
     """
     Fetch the latest timestamp for the 'Average Temperature' for a specified country.
 
     :param dict country: The country to fetch the latest timestamp for.
-    :param string measurement_name: The measurement to fetch the latest timestamp for.
     :return: The latest timestamp as a datetime object.
     :rtype: datetime or None
     """
-    query = f"SELECT last(\"value\") FROM '{measurement_name}' WHERE \"country\" = '{country['name']}'"
+    query = f"SELECT last(\"value\") FROM \"Average_Temperature\" WHERE \"country\" = '{country['name']}'"
     result = client.query(query)
     if result:
         point = list(result.get_points())[0]

@@ -219,9 +219,9 @@ def init_dates(country):
     :return: The end date, start date, and a flag if it finds previous written data.
     """
     found_previous_data = False
-    latest_timestamp = fetch_latest_timestamp(country, MEASUREMENT_NAMES['TMAX'])
+    latest_timestamp = fetch_latest_timestamp(country)
     if latest_timestamp is not None:
-        print(f'Found previous timestamp for {country["name"]: {latest_timestamp}}')
+        print(f'Found previous timestamp for {country}: {latest_timestamp}')
         latest_timestamp = latest_timestamp + timedelta(days=1)
         found_previous_data = True
     else:
