@@ -100,17 +100,22 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     NOAA_TOKEN_5=<noaa_token_5>
     ```
 
-3. Build the Docker images and start the containers by running the following command in the terminal:
+3. Build the Docker images and start all the containers by running the following command in the terminal:
 
     ```bash
     docker compose --env-file .\docker\.env -f ./docker/docker-compose.yml up --remove-orphans --build
     ```
 
+   If you need to start containers selectively (e.g. the influxdb & grafana ones):
+   ```bash
+   docker compose --env-file .\docker\.env -f ./docker/docker-compose.yml up --remove-orphans --build influxdb grafana
+    ```
+
    If you need to clean-up docker deployments:
 
-    ```bash
-    docker-compose --env-file .\docker\.env -f .\docker\docker-compose.yml down --volumes --remove-orphans
-    ```
+     ```bash
+     docker-compose --env-file .\docker\.env -f .\docker\docker-compose.yml down --volumes --remove-orphans
+     ```
 
    And manually remove the created directories in your local host machine.
 
@@ -158,18 +163,29 @@ This project is licensed under the terms of the MIT license.
 
 List of stuff to do within the following week (12 - 17 / 06):
 
-1. **co2 data**
-2. **Fetch Socioeconomic Data**: expand the functionality of the script to fetch socioeconomic data (both static and
-   time-variable).
-3. **Live Temperature Data Feed**: integrate a live temperature data feed into the script.
-4. **Cloud Configuration**: configure a cloud environment to run the containers
-5. **Grafana datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
-6. **Grafana dashboard provisioning**: add provisioning for the dashboard itself
-7. **Nginx server on docker**
-8. **Flask backend**
-9. **React frontend // otherwise plain html/css/js**
-10. **D3/Chart.js dashboard implementation**: showcase temperature change, in an animation-like manner, in a worldmap
-11. **Ice melting data**
-12. **Live temperature & co2 data**
+1. **More data:**
+    1. co2 historic data
+    2. co2 live data
+    3. temperature live data
+    4. ice melting historic data
+    5. ice melting live data
+    6. socioeconomic data
+2. **Frontend**: In react
+    1. World map - possibly one of the libraries (https://www.react-simple-maps.io/
+       , https://github.com/sgratzl/chartjs-chart-geo):
+        1. Each country should be clickable. On click, pop up a modal with some more info, iframes with grafana panels
+           or chart.js/d3 visualizations.
+        2. Figure out how to display time-ranges, animation, etc.
+        3. Maybe show all stations (?) -- if the browser can handle the number of points
+        4. Maybe show median temperatures above each station
+        5. If the above is not feasible, show temperatures in the middle of each country (?) depending on the year (?)
+3. **nginx**: Docker configuration to serve react
+4. **Backend**: Simple flask backend to fetch data from influxdb (to be decided which data -- depending on which ones we
+   showcase in grafana)
+6. **Cloud Configuration**: configure a cloud environment to run the containers 7.**Grafana datasource provisioning**:
+   current datasource provisioning doesn't create the password (it's empty)
+7. **Grafana dashboard provisioning**: add provisioning for the dashboard itself 9**Smart fetching issue (while checking
+   for existing data)**: When fetching the latest date from DB, there is some weird issue that is still of by 1 month,
+   so it still tries to fetch this month, even if the data is already there
 
 Update and cross-out at will.
