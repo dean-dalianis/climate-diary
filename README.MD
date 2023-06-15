@@ -136,7 +136,7 @@ The configuration files for the services are stored in their respective director
 
 - **InfluxDB**: `./docker/influxdb/influxdb.conf`
 - **Grafana**: `./docker/grafana/grafana.ini`
-- **Climate Data Fetcher**: `./docker/climate_data/Dockerfile`
+- **Climate Data Fetcher**: `./docker/gsom_fetcher/Dockerfile`
 
 Remember to edit these configuration files according to your needs.
 
@@ -147,8 +147,8 @@ Remember to edit these configuration files according to your needs.
 - The Grafana container mounts the `grafana_data/` directory as a volume to persist data such as dashboards and
   configuration.
 - The InfluxDB container mounts the `influxdb_data/` directory as a volume for data persistence.
-- The climate data fetcher script container (`climate-data`) mounts the `docker/climate_data/log/` directory as a volume
-  for logging.
+- The gsom data fetcher script container (`gsom-fetcher`) mounts the `docker/gsom-fetcher/log/` directory as a volume
+  for logging and `docker/gsom-fetcher/.
 - There is an issue with Grafana datasource provisioning. The password for the `Basic Auth Details` and the DB user
   should be set manually.
 

@@ -1,7 +1,8 @@
 ## Operations and data fetching
 docker/influxdb_data
 docker/grafana_data
-*.log
+gsom_fetcher/last_run
+gsom_fetcher/log
 *.env
 venv
 

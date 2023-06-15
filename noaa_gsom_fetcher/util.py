@@ -1,6 +1,6 @@
+import os
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-
 
 def string_to_datetime(date_string):
     """
@@ -43,3 +43,49 @@ def ms_to_timestamp(timestamp_ms):
         delta = timedelta(milliseconds=timestamp_ms)
         timestamp = epoch_start + delta
     return timestamp
+
+
+def should_run():
+    """
+     Determines if 15 days have passed since the last run.
+
+     :return: Whether the script should run.
+     :rtype: bool
+     """
+    last_run_file = "/tmp/last_run.txt"
+
+    if not os.path.exists(last_run_file):
+        return True
+
+    with open(last_run_file, "r") as f:
+        last_run = datetime.strptime(f.read(), "%Y-%m-%d %H:%M:%S")
+
+    return datetime.now() - last_run >= timedelta(days=15)
+
+
+def update_last_run():
+    """
+    Records the current time as the 'last run' time in a file and the database.
+
+    :return: None
+    """
+    current_time = datetime.now()
+
+    last_run_point = [
+        {
+            "measurement": "metadata",
+            "tags": {
+                "script": "noaa_gsom_fetcher"
+            },
+            "time": current_time,
+            "fields": {
+                "last_run": current_time.isoformat()
+            }
+        }
+    ]
+
+    from noaa_gsom_fetcher.influx import write_to_influx
+    write_to_influx(last_run_point)
+
+    with open("/tmp/last_run.txt", "w") as f:
+        f.write(current_time.strftime("%Y-%m-%d %H:%M:%S"))

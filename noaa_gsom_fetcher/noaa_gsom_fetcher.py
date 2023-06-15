@@ -8,10 +8,10 @@ import numpy as np
 from dateutil.parser import parse
 
 from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp, \
-    fetch_climate_data_from_influx, drop_trend
+    fetch_gsom_data_from_influx, drop_trend
 from logging_config import logger
 from noaa_requests import make_api_request
-from util import datetime_to_string, string_to_datetime
+from util import datetime_to_string, string_to_datetime, update_last_run, should_run
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/config.json')
 with open(CONFIG_FILE, 'r') as file:
@@ -143,7 +143,7 @@ def fetch_stations(country_id, start_date):
     return station_map
 
 
-def fetch_climate_data(country_id, start_date, end_date):
+def fetch_gsom_data(country_id, start_date, end_date):
     """
     Fetch and return climate data for the specified country and date range.
 
@@ -208,7 +208,7 @@ def calculate_trends_and_write_to_influx(country, data_for_trend):
             logger.info(f'Writing data trend for {datatype} for {country["name"]} to db')
             write_points_to_influx([trend_point], country)
         else:
-            logger.warn(f'No data for trend calculation for {datatype} for {country["name"]}')
+            logger.warning(f'No data for trend calculation for {datatype} for {country["name"]}')
 
 
 def init_dates(country):
@@ -311,7 +311,7 @@ def create_points_dict(avg_temp_decadal_averages, country, decade, dod_change, f
     }
 
 
-def fetch_and_write_climate_data_to_influxdb():
+def fetch_gsom_data_from_noaa_and_write_to_database():
     """
     Fetches climate data for each country, calculates temperature changes, creates data points, and writes them to InfluxDB.
     """
@@ -333,15 +333,15 @@ def fetch_and_write_climate_data_to_influxdb():
 
         while start_date <= end_date:
             current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
-            if (climate_data := fetch_climate_data(country['id'], start_date, current_end_date)) is not None:
+            if (gsom_data := fetch_gsom_data(country['id'], start_date, current_end_date)) is not None:
                 logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
 
                 wrote_new_data = True
 
-                avg_temp_data = [record for record in climate_data if record['datatype'] == 'TAVG']
+                avg_temp_data = [record for record in gsom_data if record['datatype'] == 'TAVG']
                 avg_temp_decadal_averages = calculate_avg_temp_decadal_averages(avg_temp_data)
 
-                for record in climate_data:
+                for record in gsom_data:
                     station_details = station_map.get(record['station'], empty_station_details)
                     fields = create_fields_map(country, record, station_details)
 
@@ -372,19 +372,22 @@ def fetch_and_write_climate_data_to_influxdb():
                 for datatype in MEASUREMENT_NAMES.keys():
                     drop_trend(country['name'], f'{MEASUREMENT_NAMES[datatype]}_trend')
                 for datatype in MEASUREMENT_NAMES.keys():
-                    influx_data = fetch_climate_data_from_influx(country, MEASUREMENT_NAMES[datatype])
+                    influx_data = fetch_gsom_data_from_influx(country, MEASUREMENT_NAMES[datatype])
                     if influx_data is not None:
                         for record in influx_data:
                             data_for_trend[datatype].append((record['date'], record['value']))
                     logger.info(
                         f'Fetched {len(data_for_trend[datatype])} points to calculate trend lines for {MEASUREMENT_NAMES[datatype]}')
         else:
-            logger.warn('No data to write. Maybe everything is already there?')
+            logger.warning('No data to write. Maybe everything is already there?')
 
         calculate_trends_and_write_to_influx(country, data_for_trend)
 
 
 if __name__ == "__main__":
-    wait_for_influx()
-    fetch_and_write_climate_data_to_influxdb()
-    logger.info('Fetching climate data finished')
+    if should_run():
+        wait_for_influx()
+        fetch_gsom_data_from_noaa_and_write_to_database()
+        logger.info('Fetching climate data finished')
+        update_last_run()
+    exit(0)

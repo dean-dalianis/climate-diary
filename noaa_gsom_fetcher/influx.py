@@ -28,6 +28,7 @@ client = InfluxDBClient(
 )
 
 
+
 def write_points_to_influx(points, country):
     """
     Write climate data points for a specific country to InfluxDB in batches.
@@ -48,14 +49,23 @@ def write_points_to_influx(points, country):
 
         if batch_points:
             try:
-                client.write_points(batch_points)
+                write_to_influx(batch_points)
                 logger.info(
                     f'Successfully wrote data for {country["name"]}, batch {current_batch_number}/{num_batches}')
             except Exception as e:
                 logger.error(
                     f'Failed to write data for {country["name"]}, batch {current_batch_number}/{num_batches}, {e}')
         else:
-            logger.warn('No data to write')
+            logger.warning('No data to write')
+
+
+def write_to_influx(points):
+    """
+    Write a list of points to the database.
+
+    :param points: the list of points to be written in the database
+    """
+    client.write_points(points)
 
 
 def fetch_latest_timestamp(country):
@@ -75,7 +85,7 @@ def fetch_latest_timestamp(country):
     return None
 
 
-def fetch_climate_data_from_influx(country, datatype):
+def fetch_gsom_data_from_influx(country, datatype):
     """
     Fetch all climate data for a specified country and datatype from InfluxDB.
 
@@ -97,7 +107,7 @@ def fetch_climate_data_from_influx(country, datatype):
             records.append(record)
         return records
     else:
-        logger.warn(f"No data found in InfluxDB for country: {country['name']} and datatype: {datatype}")
+        logger.warning(f"No data found in InfluxDB for country: {country['name']} and datatype: {datatype}")
         return None
 
 
