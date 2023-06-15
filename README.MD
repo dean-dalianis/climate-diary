@@ -114,9 +114,9 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 
    If you need to clean-up docker deployments:
 
-     ```bash
-     docker-compose --env-file .\docker\.env -f .\docker\docker-compose.yml down --volumes --remove-orphans
-     ```
+    ```bash
+    docker-compose --env-file .\docker\.env -f .\docker\docker-compose.yml down --volumes --remove-orphans
+    ```
 
    And manually remove the created directories in your local host machine.
 
