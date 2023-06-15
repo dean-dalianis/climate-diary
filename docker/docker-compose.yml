@@ -37,11 +37,11 @@ services:
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
       - ./grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
 
-  gsom-fetcher:
+  gsom_fetcher:
     build:
       context: ../
       dockerfile: ./docker/gsom_fetcher/Dockerfile
-    container_name: gsom-fetcher
+    container_name: gsom_fetcher
     restart: always
     depends_on:
       - influxdb
@@ -64,6 +64,18 @@ services:
         max-size: "10m"
         max-file: "7"
 
+  diary:
+    build:
+      context: ../
+      dockerfile: /docker/diary/Dockerfile
+    container_name: diary
+    restart: always
+    networks:
+      - metrics-network
+    ports:
+      - "8081:3000"
+    expose:
+      - 8081
 networks:
   metrics-network:
     driver: bridge

@@ -221,7 +221,7 @@ def init_dates(country):
     found_previous_data = False
     latest_timestamp = fetch_latest_timestamp(country)
     if latest_timestamp is not None:
-        print(f'Found previous timestamp for {country}: {latest_timestamp}')
+        print(f'Found previous timestamp for {country["name"]}: {latest_timestamp}')
         latest_timestamp = latest_timestamp + timedelta(days=1)
         found_previous_data = True
     else:
@@ -365,7 +365,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database():
             start_date = current_end_date + timedelta(days=1)
 
         if points:
-            logger.info(f'Writing climate info for {country} to db')
+            logger.info(f'Writing climate info for {country["name"]} to db')
             write_points_to_influx(points, country)
             if wrote_new_data:
                 logger.info('Fetching data from influx to recalculate trend lines')

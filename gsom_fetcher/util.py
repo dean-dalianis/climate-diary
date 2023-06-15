@@ -2,6 +2,9 @@ import os
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+LAST_RUN_LAST_RUN_FILE_PATH = "/gsom_fetcher/last_run/last_run.txt"
+
+
 def string_to_datetime(date_string):
     """
     Convert a string to a datetime object. The input string should be in ISO 8601 format.
@@ -52,15 +55,19 @@ def should_run():
      :return: Whether the script should run.
      :rtype: bool
      """
-    last_run_file = "/tmp/last_run.txt"
+    from logging_config import logger
 
-    if not os.path.exists(last_run_file):
+    if not os.path.exists(LAST_RUN_LAST_RUN_FILE_PATH):
+        logger.info('No last_run_file found.')
         return True
 
-    with open(last_run_file, "r") as f:
+    with open(LAST_RUN_LAST_RUN_FILE_PATH, "r") as f:
         last_run = datetime.strptime(f.read(), "%Y-%m-%d %H:%M:%S")
 
-    return datetime.now() - last_run >= timedelta(days=15)
+    run = datetime.now() - last_run >= timedelta(days=15)
+
+    logger.info(f'Found last_run_file. Last run was {"less" if run is False else "more"} that 15 days ago.')
+    return run
 
 
 def update_last_run():
@@ -75,7 +82,7 @@ def update_last_run():
         {
             "measurement": "metadata",
             "tags": {
-                "script": "noaa_gsom_fetcher"
+                "script": "gsom_fetcher"
             },
             "time": current_time,
             "fields": {
@@ -84,8 +91,8 @@ def update_last_run():
         }
     ]
 
-    from noaa_gsom_fetcher.influx import write_to_influx
+    from influx import write_to_influx
     write_to_influx(last_run_point)
 
-    with open("/tmp/last_run.txt", "w") as f:
+    with open(LAST_RUN_LAST_RUN_FILE_PATH, "w") as f:
         f.write(current_time.strftime("%Y-%m-%d %H:%M:%S"))

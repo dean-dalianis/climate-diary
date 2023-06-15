@@ -77,9 +77,10 @@ custom climate data fetcher script for periodically fetching data from the NOAA 
 
 The services included in the stack are:
 
-1. **InfluxDB**: A time series database for storing metrics and time-based data.
-2. **Grafana**: A platform for visualizing and analyzing metrics with customizable dashboards and plugins.
-3. **Climate Data Fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
+1. **influxDB**: A time series database for storing metrics and time-based data.
+2. **grafana**: A platform for visualizing and analyzing metrics with customizable dashboards and plugins.
+3. **gsom_fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
+4. **diary**: The React app for the diary.
 
 ## Setup
 
@@ -121,8 +122,9 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 
 4. After the containers are up and running, you can access the following services:
 
-    - InfluxDB: [http://localhost:8086](http://localhost:8086)
-    - Grafana: [http://localhost:3000](http://localhost:3000)
+    - influxDB: [http://localhost:8086](http://localhost:8086)
+    - grafana: [http://localhost:3000](http://localhost:3000)
+    - diary: [http://localhost:8081](http://localhost:8081)
 
 5. To stop the containers, run the following command:
 
@@ -147,8 +149,8 @@ Remember to edit these configuration files according to your needs.
 - The Grafana container mounts the `grafana_data/` directory as a volume to persist data such as dashboards and
   configuration.
 - The InfluxDB container mounts the `influxdb_data/` directory as a volume for data persistence.
-- The gsom data fetcher script container (`gsom-fetcher`) mounts the `docker/gsom-fetcher/log/` directory as a volume
-  for logging and `docker/gsom-fetcher/.
+- The gsom data fetcher script container (`gsom_fetcher`) mounts the `docker/gsom_fetcher/log/` directory as a volume
+  for logging and `docker/gsom_fetcher/`.
 - There is an issue with Grafana datasource provisioning. The password for the `Basic Auth Details` and the DB user
   should be set manually.
 
@@ -170,7 +172,7 @@ List of stuff to do within the following week (12 - 17 / 06):
     4. ice melting historic data
     5. ice melting live data
     6. socioeconomic data
-2. **Frontend**: In react
+2. **Frontend**: In React
     1. World map - possibly one of the libraries (https://www.react-simple-maps.io/
        , https://github.com/sgratzl/chartjs-chart-geo):
         1. Each country should be clickable. On click, pop up a modal with some more info, iframes with grafana panels
