@@ -70,11 +70,12 @@ services:
     networks:
       - metrics-network
     ports:
-      - '8080:8000'
+      - '8000:8000'
     volumes:
       - ./diary_api/container/log:/diary_api/log
     environment:
       - DB_NAME=${DB_NAME}
+      - DB_ADMIN_USER=admin
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
 
   frontend:

@@ -1,19 +1,20 @@
 # NOAA GSOM fetcher
 
-Climate Data Fetcher fetches and stores historical climate data from the Global Summary of the Month (GSOM) dataset in
-NOAA's Climate Data Online (CDO) API. It fetches data such as daily maximum and minimum temperatures, average
-temperature, precipitation, snowfall, and other metrics for a selected subset of countries*. The script manages API
-request rate limiting and handles possible API response errors.
+This repository contains multiple projects that
 
-**Due to resource limits, this analysis is currently performed only for countries in the European continent*
+- fetch, analyze, and write climate data to an InfluxDb database for world's countries (easily extendable to all
+  countries, but due to resource constraints, only European countries are currently supported)
+- provide an API to access the data
+- provide a web application to visualize the data
+- provide a Grafana instance to visualize the data
+
+Each project has its own README file with more detailed documentation.
 
 ## Data Types and Attribute Decoding
 
-The script fetches various types of climate data, each of which may have associated attributes. These attributes provide
-additional information about the data. For example, the number of days a particular measurement was missing, any
-measurement or quality flags, and source codes.
+**gsom_fetcher** fetches various types of climate data from the NOAA API.
 
-Below are the data types the script fetches and the associated attributes:
+The data types, their attributes, and the full names of the measurements can be found below.
 
 ```json
   "ATTRIBUTES": {
@@ -38,13 +39,7 @@ Below are the data types the script fetches and the associated attributes:
 }
 ```
 
-The decode_attributes function in the script takes care of decoding these attributes from the API response and storing
-them in the InfluxDB along with the corresponding data.
-
-For any new data type that you want to fetch, ensure that you add the associated attributes to the ATTRIBUTES dictionary
-in the script.
-
-Please note that the 'source_code' attribute, if present, is excluded during the attribute decoding process.
+**not all attributes are stored in the database*
 
 ## Station Information
 
@@ -58,22 +53,24 @@ following information:
 - Data Coverage: The percentage of data coverage for the station.
 - ID: The ID of the station.
 
-## Rate Limiting
+**not all station details are stored in the database*
 
-The script manages rate limiting based on the `MAX_REQUESTS_PER_SECOND` constant. By default, it is set to 5 requests
-per second, which is the limit of NOAA API. Also, the API has a limit of 10.000 requests per token per day.
+## Data Analysis
 
-## Note
+The data analysis is done in the gsom_fetcher project. The analysis produces the following results:
 
-This is an unofficial script and is not affiliated with or endorsed by NOAA. Always check
-the [NOAA's API terms of service](https://www.ncdc.noaa.gov/cdo-web/webservices/v2) before using the script.
+- monthly averages
+- yearly averages
+- decadal averages
+- year-over-year changes
+- decade-over-decade changes
+- trends
 
-# Climate Monitoring Stack Using Docker
+## Docker
 
-This project provides a Docker Compose configuration for setting up a monitoring stack with InfluxDB, Grafana, and a
-custom climate data fetcher script for periodically fetching data from the NOAA GSOM dataset.
+The project uses Docker to run all the services. The services are defined in the `docker-compose.yml`.
 
-## Services
+### Services
 
 The services included in the stack are:
 
@@ -83,14 +80,13 @@ The services included in the stack are:
 4. **diary**: The React app for the diary.
 5. **diary_api**: The API for the diary app.
 
-## Setup
+### Running the Stack
 
-To set up the monitoring stack with the climate data fetcher, follow these steps:
+To run the stack, follow these steps:
 
 1. Clone this repository to your local system.
 
-2. Create an `.env` file in the same directory as the `docker-compose.yml` file. Set the following environment variables
-   in the `.env` file with your desired values:
+2. Create an `.env` file in the root directory of the project and add the following environment variables to it:
 
     ```
     DB_ADMIN_PASSWORD=<admin_password>
@@ -102,31 +98,34 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     NOAA_TOKEN_5=<noaa_token_5>
     ```
 
-3. Build the Docker images and start all the containers by running the following command in the terminal:
+3. Run the following command to start the containers:
 
     ```bash
-    docker compose --env-file .\docker\.env -f ./docker-compose.yml up --remove-orphans --build
+    docker compose --env-file ./.env -f ./docker-compose.yml up --remove-orphans --build
     ```
 
-   If you need to start containers selectively (e.g. the influxdb & grafana ones):
+   If you need to start containers selectively (e.g. the influxdb & grafana or any other combination):
    ```bash
-   docker compose --env-file .\.env -f ./docker-compose.yml up --remove-orphans --build influxdb grafana
+   docker compose --env-file ./.env -f ./docker-compose.yml up --remove-orphans --build influxdb grafana
     ```
 
    If you need to clean-up docker deployments:
 
     ```bash
-    docker-compose --env-file .\.env -f .\docker-compose.yml down --volumes --remove-orphans
+    docker-compose --env-file ./.env -f ./docker-compose.yml down --volumes --remove-orphans
     ```
 
-   And manually remove the created directories in your local host machine.
+   And manually remove the created directories in your local host machine:
+    - containers
+    - gsom_fetcher/container/
+    - diary_api/container/
 
 4. After the containers are up and running, you can access the following services:
 
     - influxDB: [http://localhost:8086](http://localhost:8086)
     - grafana: [http://localhost:3000](http://localhost:3000)
-    - diary: [http://localhost:8081](http://localhost:8081)
-    - diary_api: [http://localhost:8080](http://localhost:8080)
+    - frontend: [http://localhost:8081](http://localhost:8081)
+    - backend: [http://localhost:8000](http://localhost:8000)
 
 5. To stop the containers, run the following command:
 
@@ -134,62 +133,61 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     docker-compose down
     ```
 
-## Configuration
+### Configuration
 
 The Docker configuration files for the services are stored in their respective directories:
 
-- **InfluxDB**: `./provisioning/influxdb/influxdb.conf`
-- **Grafana**: `./provisioning/grafana/grafana.ini`
-- **Climate Data Fetcher**: `./gsom_fetcher/Dockerfile`
+- **influxdb**: `./provisioning/influxdb/influxdb.conf`
+- **grafana**: `./provisioning/grafana/grafana.ini`
+- **gsom_fetcher**: `./gsom_fetcher/Dockerfile`
+- **frontend**: `./diary/Dockerfile`
+- **backend**: `./diary_api/Dockerfile`
 
-Remember to edit these configuration files according to your needs.
+You can modify these files to change the configuration of the services.
 
-## Additional Notes
+### Docker Volumes
 
-- The InfluxDB container is initialized using the `init-influxdb.sh` script, which creates the necessary databases and
-  users. The passwords for the users are set in the `.env` file.
-- The Grafana container mounts the `grafana_data/` directory as a volume to persist data such as dashboards and
-  configuration.
-- The InfluxDB container mounts the `influxdb_data/` directory as a volume for data persistence.
-- The gsom data fetcher script container (`gsom_fetcher`) mounts the `gsom_fetcher/container/log/` directory as a volume
-  for logging.
-- There is an issue with Grafana datasource provisioning. The password for the `Basic Auth Details` and the DB user
-  should be set manually.
+- **grafana** mounts
+    - `containers/grafana_data/` directory as a volume for data persistence.
+    - `provisioning/grafana/` directory as a volume for provisioning.
+- **influxdb** mounts
+    - `containers/influxdb_data/` directory as a volume for data persistence.
+- **gsom_fetcher** mounts
+    - `gsom_fetcher/container/log/` directory as a volume for logging.
+- **backend** mounts
+    - `diary_api/container/log/` directory as a volume for logging.
 
 ## License
 
 This project is licensed under the terms of the MIT license.
 
+___
 
----
+## In Progress && To-Do
 
-# To-Do list
-
-List of stuff to do within the following week (12 - 17 / 06):
-
-1. **More data:**
-    1. co2 historic data
-    2. co2 live data
-    3. temperature live data
-    4. ice melting historic data
-    5. ice melting live data
-    6. socioeconomic data
-2. **Frontend**: In React
-    1. World map - possibly one of the libraries (https://www.react-simple-maps.io/
-       , https://github.com/sgratzl/chartjs-chart-geo):
-        1. Each country should be clickable. On click, pop up a modal with some more info, iframes with grafana panels
-           or chart.js/d3 visualizations.
-        2. Figure out how to display time-ranges, animation, etc.
-        3. Maybe show all stations (?) -- if the browser can handle the number of points
-        4. Maybe show median temperatures above each station
-        5. If the above is not feasible, show temperatures in the middle of each country (?) depending on the year (?)
-3. **nginx**: Docker configuration to serve react
-4. **Backend**: Simple flask backend to fetch data from influxdb (to be decided which data -- depending on which ones we
-   showcase in grafana)
-6. **Cloud Configuration**: configure a cloud environment to run the containers 7.**Grafana datasource provisioning**:
-   current datasource provisioning doesn't create the password (it's empty)
-7. **Grafana dashboard provisioning**: add provisioning for the dashboard itself 9**Smart fetching issue (while checking
-   for existing data)**: When fetching the latest date from DB, there is some weird issue that is still of by 1 month,
-   so it still tries to fetch this month, even if the data is already there
-
-Update and cross-out at will.
+- [ ] **frontend**:
+    - [x] Added ([react-simple-maps](https://www.react-simple-maps.io/)
+    - [x] Currently, deployed using docker-compose
+    - [ ] Implement a proper frontend
+    - [ ] Deploy with Nginx on Docker
+- [ ] **backend**:
+    - [x] Created a simple API with Flask and Flask-RESTful
+    - [x] Root endpoint loads the Swaaaggggeerrr UI
+    - [x] Currently, deployed using docker-compose
+    - [ ] Add more endpoints according to the frontend needs
+- [x] **gsom_fetcher**
+    - [x] **Smart fetching issue (while checking for existing data)**: When fetching the latest date from DB, there is
+      some weird issue that is still of by 1 month, so it still tries to fetch this month, even if the data is already
+      there
+- [ ] **grafana**
+    - [ ] **datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
+    - [ ] **dashboard provisioning**: add provisioning for the dashboard itself
+- [ ] **Cloud Configuration**: configure a cloud environment to run the containers
+- [ ] **More data:**
+    - [ ] co2 historic data
+    - [ ] co2 live data
+    - [ ] temperature live data
+    - [ ] ice melting historic data
+    - [ ] ice melting live data
+    - [ ] socioeconomic data
+- [ ] **Cloud Configuration**: configure a cloud environment to run the containers

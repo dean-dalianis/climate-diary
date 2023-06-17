@@ -1,1 +1,4 @@
 flask
+Flask-RESTX
+influxdb
+python-dateutil

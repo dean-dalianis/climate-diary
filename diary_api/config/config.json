@@ -1,0 +1,12 @@
+{
+  "TABLE_NAMES": [
+    "Average_Temperature",
+    "Maximum_Temperature",
+    "Minimum_Temperature",
+    "Extreme_Maximum_Temperature",
+    "Extreme_Minimum_Temperature",
+    "Precipitation",
+    "Highest_Daily_Total_Of_Precipitation",
+    "Highest_Daily_Snow_Depth"
+  ]
+}

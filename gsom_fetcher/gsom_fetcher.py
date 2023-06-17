@@ -283,7 +283,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database():
     :return: None
     :rtype: None
     """
-    countries = fetch_countries() or []
+    countries = fetch_european_countries() or []
 
     for country in countries:
         points = []
