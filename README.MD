@@ -81,6 +81,7 @@ The services included in the stack are:
 2. **grafana**: A platform for visualizing and analyzing metrics with customizable dashboards and plugins.
 3. **gsom_fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
 4. **diary**: The React app for the diary.
+5. **diary_api**: The API for the diary app.
 
 ## Setup
 
@@ -125,6 +126,7 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
     - influxDB: [http://localhost:8086](http://localhost:8086)
     - grafana: [http://localhost:3000](http://localhost:3000)
     - diary: [http://localhost:8081](http://localhost:8081)
+    - diary_api: [http://localhost:8080](http://localhost:8080)
 
 5. To stop the containers, run the following command:
 
