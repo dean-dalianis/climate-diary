@@ -104,18 +104,18 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 3. Build the Docker images and start all the containers by running the following command in the terminal:
 
     ```bash
-    docker compose --env-file .\docker\.env -f ./docker/docker-compose.yml up --remove-orphans --build
+    docker compose --env-file .\docker\.env -f ./docker-compose.yml up --remove-orphans --build
     ```
 
    If you need to start containers selectively (e.g. the influxdb & grafana ones):
    ```bash
-   docker compose --env-file .\docker\.env -f ./docker/docker-compose.yml up --remove-orphans --build influxdb grafana
+   docker compose --env-file .\.env -f ./docker-compose.yml up --remove-orphans --build influxdb grafana
     ```
 
    If you need to clean-up docker deployments:
 
     ```bash
-    docker-compose --env-file .\docker\.env -f .\docker\docker-compose.yml down --volumes --remove-orphans
+    docker-compose --env-file .\.env -f .\docker-compose.yml down --volumes --remove-orphans
     ```
 
    And manually remove the created directories in your local host machine.
@@ -134,11 +134,11 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
 
 ## Configuration
 
-The configuration files for the services are stored in their respective directories:
+The Docker configuration files for the services are stored in their respective directories:
 
-- **InfluxDB**: `./docker/influxdb/influxdb.conf`
-- **Grafana**: `./docker/grafana/grafana.ini`
-- **Climate Data Fetcher**: `./docker/gsom_fetcher/Dockerfile`
+- **InfluxDB**: `./provisioning/influxdb/influxdb.conf`
+- **Grafana**: `./provisioning/grafana/grafana.ini`
+- **Climate Data Fetcher**: `./gsom_fetcher/Dockerfile`
 
 Remember to edit these configuration files according to your needs.
 
@@ -149,8 +149,8 @@ Remember to edit these configuration files according to your needs.
 - The Grafana container mounts the `grafana_data/` directory as a volume to persist data such as dashboards and
   configuration.
 - The InfluxDB container mounts the `influxdb_data/` directory as a volume for data persistence.
-- The gsom data fetcher script container (`gsom_fetcher`) mounts the `docker/gsom_fetcher/log/` directory as a volume
-  for logging and `docker/gsom_fetcher/`.
+- The gsom data fetcher script container (`gsom_fetcher`) mounts the `gsom_fetcher/container/log/` directory as a volume
+  for logging.
 - There is an issue with Grafana datasource provisioning. The password for the `Basic Auth Details` and the DB user
   should be set manually.
 
