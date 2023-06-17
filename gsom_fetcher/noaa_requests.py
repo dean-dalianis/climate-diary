@@ -38,6 +38,9 @@ http.mount("http://", adapter)
 def update_token():
     """
     Update the current token index and reset the number of requests for the token.
+
+    :return: None
+    :rtype: None
     """
     global current_token_index, current_token_requests
     current_token_index = (current_token_index + 1) % len(TOKENS)
@@ -47,6 +50,9 @@ def update_token():
 def get_headers():
     """
     Get the headers for making an API request, including the current token.
+
+    :return: The headers for making an API request.
+    :rtype: dict
     """
     global current_token_requests
     current_token_requests += 1
@@ -61,6 +67,9 @@ def get_headers():
 def sleep_until_next_request():
     """
     Sleep until it's time for the next request, based on the maximum request rate.
+
+    :return: None
+    :rtype: None
     """
     global last_request_time
     if last_request_time is not None:

@@ -1,11 +1,14 @@
-## Operations and data fetching
-docker/influxdb_data
-docker/grafana_data
-/docker/gsom_fetcher/last_run
-/docker/gsom_fetcher/log
-*.env
+## Container runtime data
+containers/
+gsom_fetcher/container/
+diary_api/container/
+
+## Environment variables and python virtualenvs
+*env
 venv
 
+## Node.js
+diary/node_modules/
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

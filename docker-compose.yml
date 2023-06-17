@@ -12,14 +12,13 @@ services:
     environment:
       - INFLUXDB_DB=${DB_NAME}
       - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - INFLUXDB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
     volumes:
-      - ./influxdb_data:/var/lib/influxdb
-      - ./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - ./containers/influxdb_data:/var/lib/influxdb
+      - ./provisioning/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
 
   grafana:
     image: grafana/grafana:latest
-    user: "$UID:$GID"
     container_name: grafana
     restart: always
     depends_on:
@@ -30,17 +29,17 @@ services:
       - '3000:3000'
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
       - DB_NAME=${DB_NAME}
     volumes:
-      - ./grafana_data:/var/lib/grafana
-      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
-      - ./grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./containers/grafana_data:/var/lib/grafana
+      - ./provisioning/grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./provisioning/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
 
   gsom_fetcher:
     build:
-      context: ../
-      dockerfile: ./docker/gsom_fetcher/Dockerfile
+      context: gsom_fetcher
+      dockerfile: ./Dockerfile
     container_name: gsom_fetcher
     restart: always
     depends_on:
@@ -48,34 +47,49 @@ services:
     networks:
       - metrics-network
     volumes:
-      - ./gsom_fetcher/log:/gsom_fetcher/log
-      - ./gsom_fetcher/last_run/:/gsom_fetcher/last_run
+      - ./gsom_fetcher/container/log:/gsom_fetcher/log
+      - ./gsom_fetcher/container/last_run/:/gsom_fetcher/last_run
     environment:
-      - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_ADMIN_USER=admin
+      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
       - NOAA_TOKEN_1=${NOAA_TOKEN_1}
       - NOAA_TOKEN_2=${NOAA_TOKEN_2}
       - NOAA_TOKEN_3=${NOAA_TOKEN_3}
       - NOAA_TOKEN_4=${NOAA_TOKEN_4}
       - NOAA_TOKEN_5=${NOAA_TOKEN_5}
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "7"
 
-  diary:
+  backend:
     build:
-      context: ../
-      dockerfile: /docker/diary/Dockerfile
+      context: diary_api
+      dockerfile: ./Dockerfile
+    container_name: backend
+    restart: always
+    depends_on:
+      - influxdb
+    networks:
+      - metrics-network
+    ports:
+      - '8080:8000'
+    volumes:
+      - ./diary_api/container/log:/diary_api/log
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+
+  frontend:
+    build:
+      context: diary
+      dockerfile: ./Dockerfile
     container_name: diary
     restart: always
     networks:
       - metrics-network
     ports:
-      - "8081:3000"
+      - "8081:3006"
     expose:
       - 8081
+
 networks:
   metrics-network:
     driver: bridge

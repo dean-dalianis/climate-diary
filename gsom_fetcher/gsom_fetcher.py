@@ -1,27 +1,15 @@
-import json
-import os
+import calendar
+import concurrent.futures
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-import matplotlib.dates as mdates
-import numpy as np
-from dateutil.parser import parse
-
-from influx import write_points_to_influx, wait_for_influx, fetch_latest_timestamp, \
-    fetch_gsom_data_from_influx, drop_trend
+from analysis import drop_analysis_data, analyze_data_and_write_to_db
+from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, EU_CONTINENT_FIPS, DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
+    MAX_WORKERS
+from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp
 from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime, update_last_run, should_run
-
-CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/config.json')
-with open(CONFIG_FILE, 'r') as file:
-    config = json.load(file)
-
-MIN_START_YEAR = config["MIN_START_YEAR"]
-DATATYPE_ID = config["DATATYPE_ID"]
-EU_CONTINENT_FIPS = config["EU_CONTINENT_FIPS"]
-ATTRIBUTES = config["ATTRIBUTES"]
-MEASUREMENT_NAMES = config["MEASUREMENT_NAMES"]
 
 empty_station_details = {
     'elevation': float('inf'),
@@ -30,13 +18,19 @@ empty_station_details = {
     'name': 'N/A'
 }
 
-EXCLUDED_ATTRIBUTES = ['source_code', 'daily_dataset_measurement_source_code', 'daily_dataset_flag', 'measurement_flag',
-                       'quality_flag']
+COUNTRIES_TO_ANALYZE = []
 
 
 def decode_attributes(datatype, attributes_str):
     """
-    Decode the attributes string for a given datatype and return as a dictionary.
+    Decode the attributes string for a specified datatype.
+    The attributes string is a comma separated string of values in the order specified in the config file.
+
+    Attributes are decoded as follows:
+        - days_missing: int
+        - day: int (optional)
+        - more_than_once: bool (optional)
+
 
     :param str datatype: The datatype of the attributes.
     :param str attributes_str: The attributes string to decode.
@@ -116,8 +110,8 @@ def fetch_stations(country_id, start_date):
 
     :param dict country_id: The country_id to fetch the stations for.
     :param datetime start_date: The start of the date range.
-    :return: A map of stations. Each key is the id of the station, and its value is a dictionary containing the 'elevation', 'latitude', 'longitude', and 'name' of the station.
-    :rtype: dict
+    :return: A map of all stations for the given country with the station ID as the key and the station details as the value.
+    :rtype: dict or None
     """
     start_date_str = datetime_to_string(start_date)
     stations_url = f"stations?datasetid=GSOM&&units=metric&locationid={country_id}&startdate={start_date_str}&limit=1000"
@@ -150,7 +144,7 @@ def fetch_gsom_data(country_id, start_date, end_date):
     :param str country_id: The ID of the country to fetch data for.
     :param datetime start_date: The start of the date range.
     :param datetime end_date: The end of the date range.
-    :return: Climate data for the specified country and date range.
+    :return: A list of climate data for the specified country and date range.
     :rtype: list or None
     """
     start_date_str = datetime_to_string(start_date)
@@ -162,66 +156,18 @@ def fetch_gsom_data(country_id, start_date, end_date):
     return data
 
 
-def calculate_avg_temp_decadal_averages(data):
-    """
-    This function calculates the average temperature for each decade in the given dataset. It first groups the temperature data by decade, then computes the average temperature for each decade.
-
-    :param list data: The data from which to calculate averages, each element is a dictionary containing a 'date' and 'value'.
-    :return: A dictionary where keys are decades (e.g., 1990, 2000) and values are the respective average temperature.
-    :rtype: dict
-    """
-    decadal_data = {}
-    for record in data:
-        decade = (parse(record['date']).year // 10) * 10
-        if decade not in decadal_data:
-            decadal_data[decade] = []
-        decadal_data[decade].append(record['value'])
-
-    decadal_averages = {decade: sum(values) / len(values) for decade, values in decadal_data.items()}
-
-    return decadal_averages
-
-
-def calculate_trends_and_write_to_influx(country, data_for_trend):
-    """
-    This function calculates the trend (linear regression) for each data type (e.g., average temperature) and writes this trend data to InfluxDB.
-    It uses numpy's polyfit method to calculate the slope and intercept of the trend line. If there's no data available for a certain datatype for the given country, it logs a warning.
-
-    :param dict country: The country for which to calculate trends.
-    :param dict data_for_trend: A dictionary where the key is the datatype, and the value is a list of tuples, each containing a timestamp and a value.
-    """
-    for datatype, data in data_for_trend.items():
-        if data:
-            timestamps, values = zip(*data)
-            timestamps = [mdates.date2num(ts) for ts in timestamps]
-            trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
-            trend_point = {
-                'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
-                'tags': {
-                    'country': country['name']
-                },
-                'fields': {
-                    'slope': trend_slope,
-                    'intercept': trend_intercept,
-                }
-            }
-            logger.info(f'Writing data trend for {datatype} for {country["name"]} to db')
-            write_points_to_influx([trend_point], country)
-        else:
-            logger.warning(f'No data for trend calculation for {datatype} for {country["name"]}')
-
-
 def init_dates(country):
     """
     Initialize start and end dates for fetching climate data based on the country's information.
 
     :param dict country: The country for which to initialize dates.
-    :return: The end date, start date, and a flag if it finds previous written data.
+    :return: The end date, start date, and whether previous data was found.
+    :rtype: tuple
     """
     found_previous_data = False
     latest_timestamp = fetch_latest_timestamp(country)
     if latest_timestamp is not None:
-        print(f'Found previous timestamp for {country["name"]}: {latest_timestamp}')
+        logger.info(f'Found previous timestamp for {country["name"]}: {latest_timestamp}')
         latest_timestamp = latest_timestamp + timedelta(days=1)
         found_previous_data = True
     else:
@@ -235,27 +181,20 @@ def init_dates(country):
     return end_date, start_date, found_previous_data
 
 
-def calculate_yoy_and_dod_change(decade, prev_decade_values, prev_year_values, record, year):
+def calculate_current_end_date(end_date, start_date):
     """
-    Calculate year-over-year (YoY) and decade-over-decade (DoD) changes in temperature based on previous values.
+    Calculate the end date for the current year taking into account leap years.
 
-    :param int decade: The decade of the current record.
-    :param dict prev_decade_values: Dictionary containing previous decade values.
-    :param dict prev_year_values: Dictionary containing previous year values.
-    :param dict record: The current climate data record.
-    :param int year: The year of the current record.
-    :return: The DoD and YoY changes in temperature.
-    :rtype: tuple
+    :param datetime end_date: The end date of the date range.
+    :param datetime start_date: The start date of the date range.
+    :return: The end date for the current year.
+    :rtype: datetime
     """
-    if year - 1 in prev_year_values:
-        yoy_change = float(record['value']) - prev_year_values[year - 1]
-    else:
-        yoy_change = None
-    if decade - 10 in prev_decade_values:
-        dod_change = float(record['value']) - prev_decade_values[decade - 10]
-    else:
-        dod_change = None
-    return dod_change, yoy_change
+    current_year = start_date.year
+    days_in_year = 366 if calendar.isleap(current_year) else 365
+    current_end_date = start_date + timedelta(days=days_in_year)
+    current_end_date = min(current_end_date, end_date)
+    return current_end_date
 
 
 def create_fields_map(country, record, station_details):
@@ -270,7 +209,7 @@ def create_fields_map(country, record, station_details):
     """
     fields = {
         'value': float(record['value']),
-        'country_id': country['id'].split(':')[1],
+        'country_name': country['name'],
         'station': record['station'],
         'latitude': float(station_details['latitude']),
         'longitude': float(station_details['longitude']),
@@ -281,41 +220,70 @@ def create_fields_map(country, record, station_details):
     return fields
 
 
-def create_points_dict(avg_temp_decadal_averages, country, decade, dod_change, fields, record, yoy_change):
+def create_points_dict(country, fields, record):
     """
-    Create a dictionary representing a data point for writing to InfluxDB.
+    Create a dictionary representing a data point for writing to DB.
 
-    :param dict avg_temp_decadal_averages: Decadal average temperatures.
+    Data includes:
+    - measurement: The name of the measurement. e.g. TMAX
+    - tags: country_id
+    - time: The date of the data point.
+    - fields: The map of fields for the data point:
+        - value
+        - country_name
+        - station
+        - latitude
+        - longitude
+        - elevation
+        - other attributes
+
     :param dict country: The country information.
-    :param int decade: The decade associated with the data point.
-    :param float dod_change: Day-over-day temperature change.
     :param dict fields: The map of fields for the data point.
     :param dict record: The current climate data record.
-    :param float yoy_change: Year-over-year temperature change.
-    :return: A dictionary representing a data point for InfluxDB.
+    :return: A dictionary representing a data point for DB.
     :rtype: dict
     """
     return {
         'measurement': MEASUREMENT_NAMES.get(record['datatype']),
         'tags': {
-            'country': country['name']
+            'country_id': country['id'].split(':')[1]
         },
         'time': string_to_datetime(record['date']),
         'fields': {
             **fields,
-            'yoy_change': yoy_change,
-            'dod_change': dod_change,
-            'decadal_average_temperature': avg_temp_decadal_averages[decade]
-            if record['datatype'] == 'TAVG' else None
         }
     }
 
 
+def fetch_measurements_from_db(country):
+    """
+    Fetches all measurements from DB for a country.
+
+    :param dict country: The country for which to fetch measurements.
+    :return: A map of measurements. Each key is the name of the measurement, and its value is a list of tuples containing the date and value of the measurement.
+    :rtype: dict
+    """
+    data_for_analysis = {datatype: [] for datatype in MEASUREMENT_NAMES.keys()}
+
+    for datatype in MEASUREMENT_NAMES.keys():
+        db_data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
+        if db_data is not None:
+            for record in db_data:
+                data_for_analysis[datatype].append((record['date'], record['value']))
+        logger.info(
+            f'Fetched {len(data_for_analysis[datatype])} points to analyze for {MEASUREMENT_NAMES[datatype]}')
+
+    return data_for_analysis
+
+
 def fetch_gsom_data_from_noaa_and_write_to_database():
     """
-    Fetches climate data for each country, calculates temperature changes, creates data points, and writes them to InfluxDB.
+    Fetches climate data from NOAA and writes it to the database.
+
+    :return: None
+    :rtype: None
     """
-    countries = fetch_european_countries() or []
+    countries = fetch_countries() or []
 
     for country in countries:
         points = []
@@ -327,67 +295,73 @@ def fetch_gsom_data_from_noaa_and_write_to_database():
 
         station_map = fetch_stations(country['id'], start_date)
 
-        data_for_trend = {datatype: [] for datatype in MEASUREMENT_NAMES.keys()}
-        prev_year_values = {}
-        prev_decade_values = {}
-
         while start_date <= end_date:
-            current_end_date = min(start_date + timedelta(days=9 * 365), end_date)
+            current_end_date = calculate_current_end_date(end_date, start_date)
             if (gsom_data := fetch_gsom_data(country['id'], start_date, current_end_date)) is not None:
                 logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
 
                 wrote_new_data = True
 
-                avg_temp_data = [record for record in gsom_data if record['datatype'] == 'TAVG']
-                avg_temp_decadal_averages = calculate_avg_temp_decadal_averages(avg_temp_data)
-
                 for record in gsom_data:
                     station_details = station_map.get(record['station'], empty_station_details)
                     fields = create_fields_map(country, record, station_details)
-
-                    year = string_to_datetime(record['date']).year
-                    decade = (year // 10) * 10
-
-                    dod_change, yoy_change = calculate_yoy_and_dod_change(decade, prev_decade_values, prev_year_values,
-                                                                          record, year)
-
-                    prev_year_values[year] = float(record['value'])
-                    prev_decade_values[decade] = float(record['value'])
-
-                    points_dict = create_points_dict(avg_temp_decadal_averages, country, decade, dod_change, fields,
-                                                     record, yoy_change)
+                    points_dict = create_points_dict(country, fields, record)
                     points.append(points_dict)
-
-                    if not found_previous_data:
-                        data_for_trend[record['datatype']].append(
-                            (string_to_datetime(record['date']), float(record['value'])))
 
             start_date = current_end_date + timedelta(days=1)
 
         if points:
             logger.info(f'Writing climate info for {country["name"]} to db')
-            write_points_to_influx(points, country)
+
+            from influx import write_points_to_db
+            write_points_to_db(points, country)
+
             if wrote_new_data:
-                logger.info('Fetching data from influx to recalculate trend lines')
-                for datatype in MEASUREMENT_NAMES.keys():
-                    drop_trend(country['name'], f'{MEASUREMENT_NAMES[datatype]}_trend')
-                for datatype in MEASUREMENT_NAMES.keys():
-                    influx_data = fetch_gsom_data_from_influx(country, MEASUREMENT_NAMES[datatype])
-                    if influx_data is not None:
-                        for record in influx_data:
-                            data_for_trend[datatype].append((record['date'], record['value']))
-                    logger.info(
-                        f'Fetched {len(data_for_trend[datatype])} points to calculate trend lines for {MEASUREMENT_NAMES[datatype]}')
+                COUNTRIES_TO_ANALYZE.append(country)
         else:
             logger.warning('No data to write. Maybe everything is already there?')
 
-        calculate_trends_and_write_to_influx(country, data_for_trend)
+
+def analyze_countries():
+    """
+    Analyzes the data for each country in COUNTRIES_TO_ANALYZE using multiple threads.
+
+    :return: None
+    :rtype: None
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        executor.map(analyze_data, COUNTRIES_TO_ANALYZE)
 
 
-if __name__ == "__main__":
+def analyze_data(country):
+    """
+    Analyzes the data for a country.
+
+    :param dict country: The country to analyze.
+    :return: None
+    """
+    logger.info(f'Starting analysis for {country["name"]}')
+    drop_analysis_data(country)
+    data_for_analysis = fetch_measurements_from_db(country)
+    logger.info(f'Fetched {len(data_for_analysis)} measurements for {country["name"]}')
+    analyze_data_and_write_to_db(country, data_for_analysis)
+    logger.info(f'Analysis finished for {country["name"]}')
+
+
+def main():
     if should_run():
-        wait_for_influx()
+        wait_for_db()
+
+        logger.info('Fetching climate data...')
         fetch_gsom_data_from_noaa_and_write_to_database()
-        logger.info('Fetching climate data finished')
+        logger.info('Fetching climate data finished.')
+
+        logger.info('Analyzing countries with new data...')
+        analyze_countries()
+        logger.info('Analysis finished.')
+
         update_last_run()
-    exit(0)
+
+
+if __name__ == '__main__':
+    main()

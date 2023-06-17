@@ -5,13 +5,13 @@ FROM node:20.3.0-alpine
 WORKDIR /diary
 
 # Copy package.json and package-lock.json to the container
-COPY diary/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy the entire React app source code to the container
-COPY diary/ ./
+COPY ./ ./
 
 # Build the React app
 RUN npm run build

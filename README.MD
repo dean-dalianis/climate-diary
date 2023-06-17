@@ -92,7 +92,7 @@ To set up the monitoring stack with the climate data fetcher, follow these steps
    in the `.env` file with your desired values:
 
     ```
-    INFLUXDB_ADMIN_PASSWORD=<admin_password>
+    DB_ADMIN_PASSWORD=<admin_password>
     DB_NAME=noaa_gsom
     NOAA_TOKEN_1=<noaa_token_1>
     NOAA_TOKEN_2=<noaa_token_2>

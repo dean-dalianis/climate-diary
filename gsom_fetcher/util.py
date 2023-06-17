@@ -2,6 +2,8 @@ import os
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from dateutil.tz import tz
+
 LAST_RUN_LAST_RUN_FILE_PATH = "/gsom_fetcher/last_run/last_run.txt"
 
 
@@ -18,7 +20,6 @@ def string_to_datetime(date_string):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=ZoneInfo("UTC"))
     return dt
-
 
 def datetime_to_string(dt):
     """
@@ -75,6 +76,7 @@ def update_last_run():
     Records the current time as the 'last run' time in a file and the database.
 
     :return: None
+    :rtype: None
     """
     current_time = datetime.now()
 
@@ -91,8 +93,8 @@ def update_last_run():
         }
     ]
 
-    from influx import write_to_influx
-    write_to_influx(last_run_point)
+    from influx import write_to_db
+    write_to_db(last_run_point)
 
     with open(LAST_RUN_LAST_RUN_FILE_PATH, "w") as f:
         f.write(current_time.strftime("%Y-%m-%d %H:%M:%S"))
