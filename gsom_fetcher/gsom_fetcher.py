@@ -1,4 +1,3 @@
-import calendar
 import concurrent.futures
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -183,16 +182,14 @@ def init_dates(country):
 
 def calculate_current_end_date(end_date, start_date):
     """
-    Calculate the end date for the current year taking into account leap years.
+    Calculate the end date for the current 10 years taking into account leap years.
 
     :param datetime end_date: The end date of the date range.
     :param datetime start_date: The start date of the date range.
-    :return: The end date for the current year.
+    :return: The end date for the current 10 years.
     :rtype: datetime
     """
-    current_year = start_date.year
-    days_in_year = 366 if calendar.isleap(current_year) else 365
-    current_end_date = start_date + timedelta(days=days_in_year)
+    current_end_date = start_date + timedelta(days=3652)  # 10 years * 365 days + 2 extra for potential leap years
     current_end_date = min(current_end_date, end_date)
     return current_end_date
 
