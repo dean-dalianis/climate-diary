@@ -5,7 +5,7 @@ from logging.handlers import TimedRotatingFileHandler
 os.makedirs('log', exist_ok=True)  # Create the log directory if it doesn't exist
 
 # Set up log rotation
-log_filename = 'log/gsom_fetcher.log'
+log_filename = 'log/diaryapi.log'
 log_handler = TimedRotatingFileHandler(log_filename, when='D', interval=1, backupCount=7)
 log_handler.suffix = "%Y-%m-%d"
 log_handler.setLevel(logging.INFO)

@@ -66,6 +66,8 @@ The data analysis is done in the gsom_fetcher project. The analysis produces the
 - decade-over-decade changes
 - trends
 
+*More details about the analysis can be found in the gsom_fetcher README.*
+
 ## Docker
 
 The project uses Docker to run all the services. The services are defined in the `docker-compose.yml`.
@@ -77,8 +79,9 @@ The services included in the stack are:
 1. **influxDB**: A time series database for storing metrics and time-based data.
 2. **grafana**: A platform for visualizing and analyzing metrics with customizable dashboards and plugins.
 3. **gsom_fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
-4. **diary**: The React app for the diary.
-5. **diary_api**: The API for the diary app.
+4. **frontend**: The React app for the diary.
+5. **backent**: The API for the diary app.
+6. **nginx**: A web server for serving the frontend and backend.
 
 ### Running the Stack
 
@@ -142,6 +145,7 @@ The Docker configuration files for the services are stored in their respective d
 - **gsom_fetcher**: `./gsom_fetcher/Dockerfile`
 - **frontend**: `./diary/Dockerfile`
 - **backend**: `./diary_api/Dockerfile`
+- **nginx**: `./nginx/Dockerfile`
 
 You can modify these files to change the configuration of the services.
 
@@ -156,6 +160,10 @@ You can modify these files to change the configuration of the services.
     - `gsom_fetcher/container/log/` directory as a volume for logging.
 - **backend** mounts
     - `diary_api/container/log/` directory as a volume for logging.
+- **nginx** mounts
+    - `nginx/container/log/` directory as a volume for logging.
+    - `nginx/container/nginx.conf` file as a volume for configuration.
+    - `nginx/container/conf.d/` directory as a volume for configuration.
 
 ## License
 
@@ -169,21 +177,24 @@ ___
     - [x] Added ([react-simple-maps](https://www.react-simple-maps.io/)
     - [x] Currently, deployed using docker-compose
     - [ ] Implement a proper frontend
-    - [ ] Deploy with Nginx on Docker
 - [x] **backend**:
     - [x] Created a simple API with Flask and Flask-RESTful
     - [x] Root endpoint loads the Swaaaggggeerrr UI
     - [x] Currently, deployed using docker-compose
     - [x] Add more endpoints according to the frontend needs
     - [ ] Add endpoint for the metadata measurement (only includes the last udpate date)
-- [x] **gsom_fetcher**
-    - [x] **Smart fetching issue (while checking for existing data)**: When fetching the latest date from DB, there is
-      some weird issue that is still of by 1 month, so it still tries to fetch this month, even if the data is already
-      there
+- [ ] **nginx**:
+    - [x] Add nginx to the docker-compose stack
+    - [x] Serve the backend with nginx
+    - [ ] Serve the frontend with nginx
+    - [ ] Remove the backend serve after the frontend is ready
+- [ ] **minor file restructure**:
+    - [ ] Move the provisioning files to their respective directories (influxdb, grafana, etc.)
+    - [ ] Change all the docker container generated files to be stored in a `container` directory or their respective
+      directories
 - [ ] **grafana**
     - [ ] **datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
     - [ ] **dashboard provisioning**: add provisioning for the dashboard itself
-- [ ] **Cloud Configuration**: configure a cloud environment to run the containers
 - [ ] **More data:**
     - [ ] co2 historic data
     - [ ] co2 live data

@@ -2,6 +2,7 @@
 containers/
 gsom_fetcher/container/
 diary_api/container/
+nginx/logs
 
 ## Environment variables and python virtualenvs
 *env
