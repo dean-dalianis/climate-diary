@@ -170,11 +170,12 @@ ___
     - [x] Currently, deployed using docker-compose
     - [ ] Implement a proper frontend
     - [ ] Deploy with Nginx on Docker
-- [ ] **backend**:
+- [x] **backend**:
     - [x] Created a simple API with Flask and Flask-RESTful
     - [x] Root endpoint loads the Swaaaggggeerrr UI
     - [x] Currently, deployed using docker-compose
-    - [ ] Add more endpoints according to the frontend needs
+    - [x] Add more endpoints according to the frontend needs
+    - [ ] Add endpoint for the metadata measurement (only includes the last udpate date)
 - [x] **gsom_fetcher**
     - [x] **Smart fetching issue (while checking for existing data)**: When fetching the latest date from DB, there is
       some weird issue that is still of by 1 month, so it still tries to fetch this month, even if the data is already

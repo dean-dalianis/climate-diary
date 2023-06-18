@@ -167,6 +167,74 @@ The base URL for all API endpoints is `/`.
 - `slope` (number): Measurement value
 - `intercept` (number): Measurement value
 
+## Available measurements
+
+The API supports querying the following measurements as created by `gsom_fetcher`:
+
+- `DEFAULT_MEASUREMENTS`:
+    - Average_Temperature
+    - Maximum_Temperature
+    - Minimum_Temperature
+    - Extreme_Maximum_Temperature
+    - Extreme_Minimum_Temperature
+    - Precipitation
+    - Highest_Daily_Total_Of_Precipitation
+    - Highest_Daily_Snow_Depth
+
+- `TRENDS_MEASUREMENTS`:
+    - Average_Temperature_trend
+    - Extreme_Maximum_Temperature_trend
+    - Extreme_Minimum_Temperature_yearly_average
+    - Highest_Daily_Snow_Depth_trend
+    - Highest_Daily_Total_Of_Precipitation_trend
+    - Maximum_Temperature_trend
+    - Minimum_Temperature_trend
+    - Precipitation_trend
+
+- `ANALYSIS_MEASUREMENTS`:
+    - Average_Temperature_decadal_average
+    - Average_Temperature_dod_change
+    - Average_Temperature_monthly_average
+    - Average_Temperature_yearly_average
+    - Average_Temperature_yoy_change
+    - Extreme_Maximum_Temperature_decadal_average
+    - Extreme_Maximum_Temperature_dod_change
+    - Extreme_Maximum_Temperature_monthly_average
+    - Extreme_Maximum_Temperature_yearly_average
+    - Extreme_Maximum_Temperature_yoy_change
+    - Extreme_Minimum_Temperature_decadal_average
+    - Extreme_Minimum_Temperature_dod_change
+    - Extreme_Minimum_Temperature_monthly_average
+    - Extreme_Minimum_Temperature_yearly_average
+    - Extreme_Minimum_Temperature_yoy_change
+    - Highest_Daily_Snow_Depth_decadal_average
+    - Highest_Daily_Snow_Depth_dod_change
+    - Highest_Daily_Snow_Depth_monthly_average
+    - Highest_Daily_Snow_Depth_yearly_average
+    - Highest_Daily_Snow_Depth_yoy_change
+    - Highest_Daily_Total_Of_Precipitation_decadal_average
+    - Highest_Daily_Total_Of_Precipitation_dod_change
+    - Highest_Daily_Total_Of_Precipitation_monthly_average
+    - Highest_Daily_Total_Of_Precipitation_yearly_average
+    - Highest_Daily_Total_Of_Precipitation_yoy_change
+    - Maximum_Temperature_decadal_average
+    - Maximum_Temperature_dod_change
+    - Maximum_Temperature_monthly_average
+    - Maximum_Temperature_yearly_average
+    - Maximum_Temperature_yoy_change
+    - Minimum_Temperature_decadal_average
+    - Minimum_Temperature_dod_change
+    - Minimum_Temperature_monthly_average
+    - Minimum_Temperature_yearly_average
+    - Minimum_Temperature_yoy_change
+    - Precipitation_decadal_average
+    - Precipitation_dod_change
+    - Precipitation_monthly_average
+    - Precipitation_yearly_average
+    - Precipitation_yoy_change
+
+- `METADATA_MEASUREMENT`: metadata
+
 ## Running and Deployment
 
 Please refer to the [README](../README.MD) file in the root directory of the project for instructions on how to run the
