@@ -1,6 +1,6 @@
 {
   "MAX_WORKERS": 10,
-  "MIN_START_YEAR": 2010,
+  "MIN_START_YEAR": 1880,
   "DATATYPE_ID": "TAVG,TMAX,TMIN,EMXT,EMNT,PRCP,EMXP,EMSD",
   "EU_CONTINENT_FIPS": [
     "AL", "AN", "AU", "BO", "BE", "BU", "HR", "CY", "EZ", "DA", "EN", "FI", "FR", "GM", "GR", "HU",

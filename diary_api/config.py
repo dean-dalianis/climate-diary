@@ -5,7 +5,10 @@ CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/config.json')
 with open(CONFIG_FILE, 'r') as file:
     config = json.load(file)
 
-TABLE_NAMES = config["TABLE_NAMES"]
+DEFAULT_MEASUREMENTS = config['DEFAULT_MEASUREMENTS']
+ANALYSIS_MEASUREMENTS = config['ANALYSIS_MEASUREMENTS']
+TRENDS_MEASUREMENTS = config['TRENDS_MEASUREMENTS']
+METADATA_MEASUREMENT = config['METADATA_MEASUREMENT']
 
 DB_CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/db_config.json')
 with open(DB_CONFIG_FILE, 'r') as file:

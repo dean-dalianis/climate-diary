@@ -30,16 +30,11 @@ def datetime_to_string(dt):
 
 def ms_to_timestamp(timestamp_ms):
     """
-    Convert a timestamp in milliseconds to a datetime object.
+    Convert a timestamp in milliseconds to a string format.
 
     :param int timestamp_ms: The timestamp in milliseconds.
-    :return: The converted timestamp as a datetime object.
-    :rtype: datetime.datetime
+    :return: The converted timestamp as a string.
+    :rtype: str
     """
     timestamp = datetime.utcfromtimestamp(timestamp_ms / 1000.0)
-    # Handle timestamps before 1970
-    if timestamp.year < 1970:
-        epoch_start = datetime(1970, 1, 1)
-        delta = timedelta(milliseconds=timestamp_ms)
-        timestamp = epoch_start + delta
-    return timestamp
+    return timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')

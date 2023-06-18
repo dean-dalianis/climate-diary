@@ -42,7 +42,7 @@ def analyze_data_and_write_to_db(country, data):
                 'fields': {
                     'slope': trend_slope,
                     'intercept': trend_intercept,
-                }
+                    'country_name': country['name']}
             }
             trend_points.append(trend_point)
 
@@ -107,7 +107,8 @@ def write_monthly_averages_to_db(country, monthly_averages, datatype):
                 },
                 'time': f"{year}-{month:02d}-01T00:00:00Z",  # Setting time at the start of the month
                 'fields': {
-                    'value': metric
+                    'value': metric,
+                    'country_name': country['name']
                 }
             }
             points.append(point)
@@ -135,7 +136,8 @@ def write_yearly_averages_to_db(country, yearly_averages, datatype):
             },
             'time': f"{year}-01-01T00:00:00Z",  # Setting time at the start of the year
             'fields': {
-                'value': metric
+                'value': metric,
+                'country_name': country['name']
             }
         }
         points.append(point)
@@ -163,7 +165,8 @@ def write_decadal_averages_to_db(country, decadal_averages, datatype):
             },
             'time': f"{decade}-01-01T00:00:00Z",  # Setting time at the start of the decade
             'fields': {
-                'value': metric
+                'value': metric,
+                'country_name': country['name']
             }
         }
         points.append(point)
@@ -192,7 +195,8 @@ def write_yoy_changes_to_db(country, yoy_changes, datatype):
                     },
                     'time': f"{year}-01-01T00:00:00Z",  # Setting time at the start of the year
                     'fields': {
-                        'value': change
+                        'value': change,
+                        'country_name': country['name']
                     }
                 }
                 points.append(point)
@@ -221,7 +225,8 @@ def write_dod_changes_to_db(country, dod_changes, datatype):
                     },
                     'time': f"{decade}-01-01T00:00:00Z",  # Setting time at the start of the decade
                     'fields': {
-                        'value': change
+                        'value': change,
+                        'country_name': country['name']
                     }
                 }
                 points.append(point)
