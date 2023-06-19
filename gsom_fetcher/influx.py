@@ -67,13 +67,12 @@ def fetch_latest_timestamp(country):
     :rtype: datetime or None
     """
     query = f"SELECT last(\"value\") FROM \"Average_Temperature\" WHERE \"country_id\" = '{country['id'].split(':')[1]}'"
-    result = client.query(query)
+    result = client.query(query, epoch='ms')
     if result:
         point = list(result.get_points())[0]
-        timestamp_str = point['time']
-        return string_to_datetime(timestamp_str)
+        timestamp_ms = point['time']
+        return ms_to_timestamp(timestamp_ms)
     return None
-
 
 def fetch_gsom_data_from_db(country, datatype):
     """

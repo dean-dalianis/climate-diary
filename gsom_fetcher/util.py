@@ -1,8 +1,6 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-
-from dateutil.tz import tz
 
 LAST_RUN_LAST_RUN_FILE_PATH = "/gsom_fetcher/last_run/last_run.txt"
 
@@ -17,9 +15,10 @@ def string_to_datetime(date_string):
     """
     date_string = date_string.replace('Z', '+00:00')
     dt = datetime.fromisoformat(date_string)
-    if dt.tzinfo is None:
+    if dt.tzinfo is not None:
         dt = dt.replace(tzinfo=ZoneInfo("UTC"))
     return dt
+
 
 def datetime_to_string(dt):
     """
@@ -34,19 +33,19 @@ def datetime_to_string(dt):
 
 def ms_to_timestamp(timestamp_ms):
     """
-    Convert a timestamp in milliseconds to a datetime object.
+    Convert a timestamp in milliseconds to a datetime object with UTC timezone.
 
     :param int timestamp_ms: The timestamp in milliseconds.
-    :return: The converted timestamp as a datetime object.
+    :return: The converted timestamp as a datetime object with UTC timezone.
     :rtype: datetime.datetime
     """
     timestamp = datetime.utcfromtimestamp(timestamp_ms / 1000.0)
     # Handle timestamps before 1970
     if timestamp.year < 1970:
-        epoch_start = datetime(1970, 1, 1)
+        epoch_start = datetime(1970, 1, 1, tzinfo=timezone.utc)
         delta = timedelta(milliseconds=timestamp_ms)
         timestamp = epoch_start + delta
-    return timestamp
+    return timestamp.replace(tzinfo=timezone.utc)
 
 
 def should_run():

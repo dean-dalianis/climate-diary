@@ -1,6 +1,5 @@
 import concurrent.futures
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta, timezone
 
 from analysis import drop_analysis_data, analyze_data_and_write_to_db
 from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, EU_CONTINENT_FIPS, DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
@@ -156,13 +155,6 @@ def fetch_gsom_data(country_id, start_date, end_date):
 
 
 def init_dates(country):
-    """
-    Initialize start and end dates for fetching climate data based on the country's information.
-
-    :param dict country: The country for which to initialize dates.
-    :return: The end date, start date, and whether previous data was found.
-    :rtype: tuple
-    """
     found_previous_data = False
     latest_timestamp = fetch_latest_timestamp(country)
     if latest_timestamp is not None:
@@ -170,13 +162,10 @@ def init_dates(country):
         latest_timestamp = latest_timestamp + timedelta(days=1)
         found_previous_data = True
     else:
-        latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC"))
-    start_date = max(
-        string_to_datetime(country['mindate']),
-        datetime(MIN_START_YEAR, 1, 1, tzinfo=ZoneInfo("UTC")),
-        latest_timestamp
-    )
-    end_date = string_to_datetime(country['maxdate'])
+        latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=timezone.utc)
+    earliest_timestamp = string_to_datetime(country['mindate']).replace(tzinfo=timezone.utc)
+    start_date = max(earliest_timestamp, latest_timestamp)
+    end_date = string_to_datetime(country['maxdate']).replace(tzinfo=timezone.utc)
     return end_date, start_date, found_previous_data
 
 
