@@ -18,17 +18,118 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
   "liveNow": false,
   "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P0C89709D7A7DC177"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "id": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Last Run$/",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "alias": "Last Run",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "none"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "metadata",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "last_run"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "script::tag",
+              "operator": "=",
+              "value": "gsom_fetcher"
+            }
+          ]
+        }
+      ],
+      "title": "Last Update",
+      "type": "stat"
+    },
     {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 6
       },
       "id": 18,
       "panels": [],
@@ -133,7 +234,7 @@
         "h": 15,
         "w": 24,
         "x": 0,
-        "y": 1
+        "y": 7
       },
       "id": 1,
       "options": {
@@ -163,7 +264,7 @@
               "type": "max"
             }
           ],
-          "alias": "Max Temp: [[tag_country]]",
+          "alias": "[[tag_country_id]]",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -178,7 +279,7 @@
             },
             {
               "params": [
-                "country::tag"
+                "country_id"
               ],
               "type": "tag"
             },
@@ -189,8 +290,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "Maximum Temperature",
+          "measurement": "Maximum_Temperature",
           "orderByTime": "ASC",
+          "policy": "autogen",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -209,9 +311,9 @@
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -236,7 +338,7 @@
             }
           ],
           "hide": false,
-          "measurement": "Average Temperature",
+          "measurement": "Average_Temperature",
           "orderByTime": "ASC",
           "policy": "autogen",
           "refId": "B",
@@ -389,7 +491,7 @@
         "h": 15,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 22
       },
       "id": 21,
       "options": {
@@ -420,7 +522,7 @@
               "type": "max"
             }
           ],
-          "alias": "Min Temp: [[tag_country]]",
+          "alias": "[[tag_country_id]]",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -435,7 +537,7 @@
             },
             {
               "params": [
-                "country::tag"
+                "country_id"
               ],
               "type": "tag"
             },
@@ -446,7 +548,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "Minimum Temperature",
+          "measurement": "Minimum_Temperature",
           "orderByTime": "ASC",
           "policy": "autogen",
           "refId": "A",
@@ -467,9 +569,9 @@
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -494,7 +596,7 @@
             }
           ],
           "hide": false,
-          "measurement": "Average Temperature",
+          "measurement": "Average_Temperature",
           "orderByTime": "ASC",
           "policy": "autogen",
           "refId": "B",
@@ -642,7 +744,7 @@
         "h": 15,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 37
       },
       "id": 22,
       "options": {
@@ -673,7 +775,7 @@
               "type": "max"
             }
           ],
-          "alias": "Avg Temp: [[tag_country]]",
+          "alias": "[[tag_country_id]]",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -688,7 +790,7 @@
             },
             {
               "params": [
-                "country::tag"
+                "country_id"
               ],
               "type": "tag"
             },
@@ -699,7 +801,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "Average Temperature",
+          "measurement": "Average_Temperature",
           "orderByTime": "ASC",
           "policy": "autogen",
           "refId": "A",
@@ -720,168 +822,14 @@
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
       ],
       "title": "Average Temperature (per country)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd",
-            "seriesBy": "last"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": -1,
-            "drawStyle": "bars",
-            "fillOpacity": 15,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 3,
-            "pointSize": 15,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line+area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue"
-              },
-              {
-                "color": "super-light-blue",
-                "value": 10
-              },
-              {
-                "color": "green",
-                "value": 20
-              },
-              {
-                "color": "#EAB839",
-                "value": 30
-              },
-              {
-                "color": "red",
-                "value": 40
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 24,
-        "x": 0,
-        "y": 46
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "timezone": [
-          "utc"
-        ],
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "aggregations": [
-            {
-              "field": "value",
-              "type": "mean"
-            }
-          ],
-          "alias": "Average temperature: $country",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Average Temperature",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Average Temperature",
       "type": "timeseries"
     },
     {
@@ -934,7 +882,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue"
+                "color": "blue",
+                "value": null
               },
               {
                 "color": "super-light-blue",
@@ -1003,10 +952,10 @@
         ]
       },
       "gridPos": {
-        "h": 15,
+        "h": 13,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 52
       },
       "id": 23,
       "options": {
@@ -1037,7 +986,7 @@
               "type": "max"
             }
           ],
-          "alias": "Avg Temp: [[tag_country]]",
+          "alias": "[[tag_country_id]]",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1052,7 +1001,7 @@
             },
             {
               "params": [
-                "country::tag"
+                "country_id"
               ],
               "type": "tag"
             },
@@ -1063,7 +1012,374 @@
               "type": "fill"
             }
           ],
-          "measurement": "Average Temperature",
+          "measurement": "Extreme_Maximum_Temperature",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "min"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "country_id::tag",
+              "operator": "=~",
+              "value": "/^$country_id$/"
+            }
+          ]
+        }
+      ],
+      "title": "Extreme Maximum Temperature",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P0C89709D7A7DC177"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": -1,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "super-light-blue",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 20
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max Average Temperature"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#37872d78",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Min Max Average Temperature"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Min Average Temperature"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "timezone": [
+          "utc"
+        ],
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "aggregations": [
+            {
+              "field": "value",
+              "type": "max"
+            }
+          ],
+          "alias": "[[tag_country_id]]",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "fields": "value",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "country_id"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "linear"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "Extreme_Minimum_Temperature",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "min"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "country_id::tag",
+              "operator": "=~",
+              "value": "/^$country_id$/"
+            }
+          ]
+        }
+      ],
+      "title": "Extreme Minimum Temperature",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P0C89709D7A7DC177"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": -1,
+            "drawStyle": "bars",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 3,
+            "pointSize": 15,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "super-light-blue",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 20
+              },
+              {
+                "color": "#EAB839",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 78
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "timezone": [
+          "utc"
+        ],
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "aggregations": [
+            {
+              "field": "value",
+              "type": "mean"
+            }
+          ],
+          "alias": "Average temperature: [[tag_country_id]]",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
+          },
+          "fields": "value",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "country_id"
+              ],
+              "type": "tag"
+            }
+          ],
+          "measurement": "Average_Temperature_decadal_average",
           "orderByTime": "ASC",
           "policy": "autogen",
           "refId": "A",
@@ -1084,142 +1400,14 @@
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
       ],
-      "title": "Average Temperature",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Number of Days",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 73
-      },
-      "id": 15,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Days with Heat Index >= 90F/32.2C",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Days with Heat Index >= 90F/32.2C",
+      "title": "Decadal Average Temperature average",
       "type": "timeseries"
     },
     {
@@ -1228,7 +1416,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 80
+        "y": 90
       },
       "id": 20,
       "panels": [],
@@ -1243,29 +1431,29 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-GrYlRd"
           },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "Precipitation (mm)",
-            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1280,7 +1468,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1292,10 +1481,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 10,
         "w": 12,
         "x": 0,
-        "y": 81
+        "y": 91
       },
       "id": 4,
       "options": {
@@ -1306,14 +1495,14 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
       "pluginVersion": "9.5.3",
       "targets": [
         {
-          "alias": "$tag_country_name",
+          "alias": "$tag_country_id",
           "datasource": {
             "type": "influxdb",
             "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
@@ -1328,13 +1517,14 @@
             },
             {
               "params": [
-                "country_name"
+                "country_id"
               ],
               "type": "tag"
             }
           ],
           "measurement": "Precipitation",
           "orderByTime": "ASC",
+          "policy": "autogen",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1353,9 +1543,9 @@
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1371,29 +1561,29 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-GrYlRd"
           },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "Number of Days",
-            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1408,7 +1598,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1420,10 +1611,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 10,
         "w": 12,
         "x": 12,
-        "y": 81
+        "y": 91
       },
       "id": 16,
       "options": {
@@ -1434,14 +1625,14 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
       "pluginVersion": "9.5.3",
       "targets": [
         {
-          "alias": "$tag_country_name",
+          "alias": "$tag_country_id",
           "datasource": {
             "type": "influxdb",
             "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
@@ -1461,8 +1652,9 @@
               "type": "tag"
             }
           ],
-          "measurement": "Days with Thunder",
+          "measurement": "Highest_Daily_Total_Of_Precipitation",
           "orderByTime": "ASC",
+          "policy": "autogen",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1475,20 +1667,20 @@
               },
               {
                 "params": [],
-                "type": "mean"
+                "type": "max"
               }
             ]
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
       ],
-      "title": "Days with Thunder",
+      "title": "Highest Daily Of Total Precipitation",
       "type": "timeseries"
     },
     {
@@ -1504,11 +1696,11 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "Relative Humidity",
-            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1521,7 +1713,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1536,7 +1728,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1548,10 +1741,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 12,
+        "h": 13,
+        "w": 24,
         "x": 0,
-        "y": 87
+        "y": 101
       },
       "id": 17,
       "options": {
@@ -1562,14 +1755,14 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
       "pluginVersion": "9.5.3",
       "targets": [
         {
-          "alias": "$tag_country_name",
+          "alias": "$tag_country_id",
           "datasource": {
             "type": "influxdb",
             "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
@@ -1584,13 +1777,14 @@
             },
             {
               "params": [
-                "country_name"
+                "country_id"
               ],
               "type": "tag"
             }
           ],
-          "measurement": "Average Relative Humidity",
+          "measurement": "Highest_Daily_Snow_Depth",
           "orderByTime": "ASC",
+          "policy": "autogen",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1609,1203 +1803,18 @@
           ],
           "tags": [
             {
-              "key": "country::tag",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
       ],
-      "title": "Average Relative Humidity",
+      "title": "Highest Daily Snow Depth",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Snowfall (mm)",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 87
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Snowfall",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Snowfall",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Evaporation (mm)",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 93
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Evaporation",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Evaporation",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Number of Days",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 93
-      },
-      "id": 14,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Days with Fog",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Days with Fog",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 99
-      },
-      "id": 19,
-      "panels": [],
-      "title": "Wind",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Wind Speed",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 7,
-        "x": 0,
-        "y": 100
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Fastest 5-Second Wind Speed",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Fastest 5-Second Wind Speed",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Wind Speed",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 7,
-        "y": 100
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Fastest 2-Minute Wind Speed",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Fastest 2-Minute Wind Speed",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Wind Speed",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
-        "y": 100
-      },
-      "id": 13,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Fastest 5-Minute Wind Speed",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Fastest 5-Minute Wind Speed",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Wind Movement",
-            "axisPlacement": "hidden",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 106
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Wind Movement",
-          "orderByTime": "ASC",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country::tag",
-              "operator": "=~",
-              "value": "/^$country$/"
-            }
-          ]
-        }
-      ],
-      "title": "Wind Movement",
-      "type": "timeseries"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "type": "influxdb",
-        "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 113
-      },
-      "hiddenSeries": false,
-      "id": 12,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "9.5.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Fastest Instantaneous Wind Speed",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Fastest Instantaneous Wind Speed",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "label": "Wind Speed"
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "type": "influxdb",
-        "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 113
-      },
-      "hiddenSeries": false,
-      "id": 11,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "9.5.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Peak Gust Wind Speed",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Peak Gust Wind Speed",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "label": "Wind Speed"
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "type": "influxdb",
-        "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 119
-      },
-      "hiddenSeries": false,
-      "id": 8,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "9.5.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$tag_country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "b4644aec-75c8-4c26-8dc7-9d4b20b22398"
-          },
-          "fields": "value",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "Average Daily Wind Speed",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Average Daily Wind Speed",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "label": "Wind Speed"
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -2815,24 +1824,20 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "GM"
           ],
           "value": [
-            "$__all"
+            "GM"
           ]
         },
-        "datasource": {
-          "type": "influxdb",
-          "uid": "P0C89709D7A7DC177"
-        },
-        "definition": "SHOW TAG VALUES WITH KEY = \"country\"",
+        "definition": "SHOW TAG VALUES WITH KEY = \"country_id\"",
         "hide": 0,
         "includeAll": true,
-        "label": "Country Name",
+        "label": "Country ID",
         "multi": true,
-        "name": "country",
+        "name": "country_id",
         "options": [],
-        "query": "SHOW TAG VALUES WITH KEY = \"country\"",
+        "query": "SHOW TAG VALUES WITH KEY = \"country_id\"",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2843,12 +1848,12 @@
   },
   "time": {
     "from": "1990-01-01T00:00:00.000Z",
-    "to": "2023-06-11T00:00:00.000Z"
+    "to": "2023-06-20T00:00:00.000Z"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "NOAA GSOM Dashboard",
   "uid": "c351f1fe-59e9-4758-b061-93603cbedc6d",
-  "version": 18,
+  "version": 4,
   "weekStart": ""
 }

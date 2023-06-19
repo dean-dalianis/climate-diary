@@ -140,20 +140,20 @@ To run the stack, follow these steps:
 
 The Docker configuration files for the services are stored in their respective directories:
 
-- **influxdb**: `./provisioning/influxdb/influxdb.conf`
-- **grafana**: `./provisioning/grafana/grafana.ini`
-- **gsom_fetcher**: `./gsom_fetcher/Dockerfile`
-- **frontend**: `./diary/Dockerfile`
-- **backend**: `./diary_api/Dockerfile`
-- **nginx**: `./nginx/Dockerfile`
+- **influxdb**: `provisioning/influxdb/influxdb.conf`
+- **grafana**: `grafana/grafana.ini`
+- **gsom_fetcher**: `gsom_fetcher/Dockerfile`
+- **frontend**: `diary/Dockerfile`
+- **backend**: `diary_api/Dockerfile`
+- **nginx**: `nginx/Dockerfile`
 
 You can modify these files to change the configuration of the services.
 
 ### Docker Volumes
 
 - **grafana** mounts
-    - `containers/grafana_data/` directory as a volume for data persistence.
-    - `provisioning/grafana/` directory as a volume for provisioning.
+    - `grafana/counteiner/grafana_data` directory as a volume for data persistence.
+    - `grafana/provisioning` directory as a volume for provisioning.
 - **influxdb** mounts
     - `containers/influxdb_data/` directory as a volume for data persistence.
 - **gsom_fetcher** mounts
@@ -182,19 +182,18 @@ ___
     - [x] Root endpoint loads the Swaaaggggeerrr UI
     - [x] Currently, deployed using docker-compose
     - [x] Add more endpoints according to the frontend needs
-    - [ ] Add endpoint for the metadata measurement (only includes the last udpate date)
+    - [x] Add endpoint for the metadata measurement (only includes the last udpate date)
 - [ ] **nginx**:
     - [x] Add nginx to the docker-compose stack
     - [x] Serve the backend with nginx
     - [ ] Serve the frontend with nginx
     - [ ] Remove the backend serve after the frontend is ready
 - [ ] **minor file restructure**:
-    - [ ] Move the provisioning files to their respective directories (influxdb, grafana, etc.)
-    - [ ] Change all the docker container generated files to be stored in a `container` directory or their respective
-      directories
-- [ ] **grafana**
-    - [ ] **datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
-    - [ ] **dashboard provisioning**: add provisioning for the dashboard itself
+    - [ ] Move the provisioning file for influx outside from `provisioning/influxdb` `influxdb` directory
+    - [ ] Move the `containers/influxdb_data/` directory to the `influxdb/container/influxdb_data/` directory
+- [x] **grafana**
+    - [x] **datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
+    - [x] **dashboard provisioning**: add provisioning for the dashboard itself
 - [ ] **More data:**
     - [ ] co2 historic data
     - [ ] co2 live data

@@ -19,6 +19,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    user: "0"
     container_name: grafana
     restart: always
     depends_on:
@@ -32,9 +33,10 @@ services:
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
       - DB_NAME=${DB_NAME}
     volumes:
-      - ./containers/grafana_data:/var/lib/grafana
-      - ./provisioning/grafana/grafana.ini:/etc/grafana/grafana.ini
-      - ./provisioning/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana/container/grafana_data:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
 
   gsom_fetcher:
     build:

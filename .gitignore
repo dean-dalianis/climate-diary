@@ -2,6 +2,7 @@
 containers/
 gsom_fetcher/container/
 diary_api/container/
+grafana/container
 nginx/logs
 
 ## Environment variables and python virtualenvs
