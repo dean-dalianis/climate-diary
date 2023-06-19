@@ -73,9 +73,9 @@ def initialize_routes(api: Api):
             Fetch a list of available measurements for the specified country or all countries if no country ID is specified
             """
             logger.info(f'Fetching measurements for country ID: {country_id}.')
-            data = fetch_available_measurements(country_id)
-            logger.info(f'Fetched {len(data)} measurements.')
-            if data:
-                return data, 200
+            timestamp = fetch_available_measurements(country_id)
+            logger.info(f'Fetched latest timestamp: {timestamp}.')
+            if timestamp:
+                return timestamp, 200
             else:
                 return {"message": "No measurements found for this country ID."}, 404

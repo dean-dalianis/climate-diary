@@ -48,9 +48,9 @@ def fetch_data(country_id=None, measurement=None):
                 latest_point = points[0]
                 latest_data = {
                     'measurement': measurement,
-                    'country_name': latest_point['country_name'],
-                    'slope': latest_point['slope'],
-                    'intercept': latest_point['intercept']
+                    'country_name': latest_point['last_country_name'],
+                    'slope': latest_point['last_slope'],
+                    'intercept': latest_point['last_intercept']
                 }
             else:
                 logger.warning(f"No data found in DB for measurement: {measurement}")

@@ -80,7 +80,7 @@ def fetch_countries():
 
     logger.info(f'Fetched {len(countries)} countries.')
 
-    return countries
+    return [country for country in countries if not country['id'].split(':')[1] in EU_CONTINENT_FIPS]
 
 
 def fetch_european_countries():
@@ -280,7 +280,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database():
     :return: None
     :rtype: None
     """
-    countries = fetch_european_countries() or []
+    countries = fetch_countries() or []
 
     for country in countries:
         points = []

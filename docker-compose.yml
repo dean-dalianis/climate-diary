@@ -72,7 +72,7 @@ services:
     expose:
       - '8000'
     volumes:
-      - ./diary_api/container/log:/diary_api/log
+      - ./diary_api/container/log:/app/log
     environment:
       - DB_NAME=${DB_NAME}
       - DB_ADMIN_USER=admin

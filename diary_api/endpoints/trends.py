@@ -35,9 +35,10 @@ def initialize_routes(api: Api):
             logger.info(
                 f'Fetching climate data trends for country ID: {country_id}, measurement: {measurement}')
             data = fetch_data(country_id, measurement)
-            logger.info(f'Fetched {len(data)} climate data trends records.')
+            logger.info(f'Fetched {len(data) if data is not None else ""} climate data trends records.')
 
             if data:
                 return data, 200
             else:
-                return {"message": "No climate data trends found for the specified conditions."}, 404
+                return {
+                           "message": "No climate data trends found for the specified conditions. Are you sure you are using the correct API endpoint?"}, 404

@@ -3,6 +3,7 @@ from flask_restx import Api
 
 from endpoints.analysis import initialize_routes as initialize_analysis_routes
 from endpoints.gsom import initialize_routes as initialize_gsom_routes
+from endpoints.metadata import initialize_routes as initialize_metadata_routes
 from endpoints.other import initialize_routes as initialize_other_routes
 from endpoints.trends import initialize_routes as initialize_trends_routes
 
@@ -20,6 +21,7 @@ def create_app():
     initialize_other_routes(api)
     initialize_analysis_routes(api)
     initialize_trends_routes(api)
+    initialize_metadata_routes(api)
 
     return app
 
