@@ -22,7 +22,7 @@ def fetch_country_list():
     """
     countries = []
     query = f"SHOW TAG VALUES WITH KEY = \"country_id\""
-    result = client.query(query)
+    result = client.query(query, epoch='ms')
     if result:
         for point in result.get_points():
             if point['value'] not in countries:
@@ -84,9 +84,41 @@ def fetch_available_measurements(country_id=None):
         query = f"SHOW TAG VALUES FROM \"{measurement}\" WITH KEY = \"country_id\""
         if country_id is not None:
             query += f" WHERE \"country_id\" = '{country_id}'"
-        result = client.query(query)
+        result = client.query(query, epoch='ms')
         if result:
             for point in result.get_points():
                 if measurement not in available_measurements:
                     available_measurements.append(measurement)
     return available_measurements if available_measurements else None
+
+
+def fetch_maximum_temperature(measurement):
+    """
+    Fetch the maximum temperature for the specified measurement.
+
+    :param str measurement: The measurement name to fetch the maximum temperature for.
+    :return: The maximum temperature for the specified measurement.
+    :rtype: float or None
+    """
+    query = f'SELECT max(*) FROM "{measurement}"'
+    result = client.query(query, epoch='ms')
+    if result:
+        point = list(result.get_points())[0]
+        return point['max_value']
+    return None
+
+
+def fetch_minimum_temperature(measurement):
+    """
+    Fetch the minimum temperature for the specified measurement.
+
+    :param str measurement: The measurement name to fetch the minimum temperature for.
+    :return: The minimum temperature for the specified measurement.
+    :rtype: float or None
+    """
+    query = f'SELECT min(*) FROM "{measurement}"'
+    result = client.query(query, epoch='ms')
+    if result:
+        point = list(result.get_points())[0]
+        return point['min_value']
+    return None

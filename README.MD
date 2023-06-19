@@ -186,7 +186,7 @@ ___
 - [ ] **nginx**:
     - [x] Add nginx to the docker-compose stack
     - [x] Serve the backend with nginx
-    - [ ] Serve the frontend with nginx
+    - [x] Serve the frontend with nginx
     - [ ] Remove the backend serve after the frontend is ready
 - [ ] **minor file restructure**:
     - [ ] Move the provisioning file for influx outside from `provisioning/influxdb` `influxdb` directory
