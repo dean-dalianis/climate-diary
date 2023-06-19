@@ -48,6 +48,7 @@ def fetch_data(country_id=None, measurement=None):
                 latest_point = points[0]
                 latest_data = {
                     'measurement': measurement,
+                    'country_id': latest_point['country_id'],
                     'country_name': latest_point['last_country_name'],
                     'slope': latest_point['last_slope'],
                     'intercept': latest_point['last_intercept']

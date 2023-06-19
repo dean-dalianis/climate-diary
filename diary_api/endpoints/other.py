@@ -1,4 +1,4 @@
-from flask_restx import Api, Resource, fields
+from flask_restx import Api, Resource
 
 from influx.other import fetch_country_list, fetch_latest_timestamp, fetch_earliest_timestamp, \
     fetch_available_measurements
@@ -37,7 +37,7 @@ def initialize_routes(api: Api):
             """
             logger.info('Fetching latest timestamp.')
             timestamp = fetch_latest_timestamp()
-            logger.info(f'Fetched latest timestamp: {timestamp}.')
+            logger.info(f'Fetched latest timestamp.')
             if timestamp:
                 return timestamp, 200
             else:
@@ -54,7 +54,7 @@ def initialize_routes(api: Api):
             """
             logger.info('Fetching earliest timestamp.')
             timestamp = fetch_earliest_timestamp()
-            logger.info(f'Fetched earliest timestamp: {timestamp}.')
+            logger.info(f'Fetched earliest timestamp.')
             if timestamp:
                 return timestamp, 200
             else:
@@ -72,9 +72,9 @@ def initialize_routes(api: Api):
             """
             Fetch a list of available measurements for the specified country or all countries if no country ID is specified
             """
-            logger.info(f'Fetching measurements for country ID: {country_id}.')
+            logger.info(f'Fetching available measurements for country ID: {country_id}.')
             timestamp = fetch_available_measurements(country_id)
-            logger.info(f'Fetched latest timestamp: {timestamp}.')
+            logger.info(f'Fetched available measurements.')
             if timestamp:
                 return timestamp, 200
             else:

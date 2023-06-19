@@ -9,6 +9,7 @@ def initialize_routes(api: Api):
 
     analysis_measurement = api.model('Analysis_Measurement', {
         'measurement': fields.String(required=True, description='Measurement name'),
+        'country_id': fields.String(required=True, description='Country ID'),
         'country_name': fields.String(required=True, description='Country name'),
         'value': fields.Float(required=True, description='Measurement value'),
         'time': fields.DateTime(required=True, description='Timestamp', dt_format='iso8601'),

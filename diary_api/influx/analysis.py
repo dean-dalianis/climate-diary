@@ -55,6 +55,7 @@ def fetch_data(country_id=None, measurement=None, date=None, start_date=None, en
             for point in result.get_points():
                 record = {
                     'measurement': measurement,
+                    'country_id': point['country_id'],
                     'country_name': point['country_name'],
                     'value': point['value'],
                     'time': ms_to_timestamp(point['time'])

@@ -61,6 +61,20 @@ services:
       - NOAA_TOKEN_4=${NOAA_TOKEN_4}
       - NOAA_TOKEN_5=${NOAA_TOKEN_5}
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    networks:
+      - metrics-network
+    ports:
+      - '8000:8000'
+      - '9000:9000'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/logs:/var/log/nginx
+
   backend:
     build:
       context: diary_api
@@ -69,6 +83,7 @@ services:
     restart: always
     depends_on:
       - influxdb
+      - nginx
     networks:
       - metrics-network
     expose:
@@ -84,29 +99,17 @@ services:
     build:
       context: diary
       dockerfile: ./Dockerfile
-    container_name: diary
-    restart: always
-    networks:
-      - metrics-network
-    ports:
-      - "8081:3006"
-    expose:
-      - 8081
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx
+    container_name: frontend
     restart: always
     depends_on:
+      - influxdb
       - backend
+      - grafana
+      - nginx
     networks:
       - metrics-network
-    ports:
-      - '8000:8000'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/logs:/var/log/nginx
+    expose:
+      - '9000'
 
 networks:
   metrics-network:

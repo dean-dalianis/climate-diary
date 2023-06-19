@@ -9,6 +9,7 @@ def initialize_routes(api: Api):
 
     gsom_measurement = api.model('Gsom_Measurement', {
         'measurement': fields.String(required=True, description='Measurement name'),
+        'country_id': fields.String(required=True, description='Country ID'),
         'country_name': fields.String(required=True, description='Country name'),
         'day': fields.Integer(required=False,
                               description='Day of the month (1-31) for the Highest Temperature measurement (applicable only to specific measurements)'),

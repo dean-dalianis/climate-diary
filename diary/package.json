@@ -13,7 +13,7 @@
     "cross-env": "^7.0.3"
   },
   "scripts": {
-    "start": "cross-env PORT=3006 react-scripts start",
+    "start": "cross-env PORT=9000 react-scripts start",
     "build": "react-scripts build"
   },
   "eslintConfig": {

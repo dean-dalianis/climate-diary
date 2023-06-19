@@ -9,6 +9,7 @@ def initialize_routes(api: Api):
 
     trend_measurement = api.model('Trends_Measurement', {
         'measurement': fields.String(required=True, description='Measurement name'),
+        'country_id': fields.String(required=True, description='Country ID'),
         'country_name': fields.String(required=True, description='Country name'),
         'slope': fields.Float(required=True, description='Measurement value'),
         'intercept': fields.Float(required=True, description='Measurement value'),
