@@ -5,7 +5,7 @@ from influxdb import InfluxDBClient
 
 from config import HOST, PORT, USERNAME, PASSWORD, DB_NAME, BATCHSIZE
 from logging_config import logger
-from util import string_to_datetime, ms_to_timestamp
+from util import ms_to_timestamp
 
 client = InfluxDBClient(
     host=HOST,
@@ -74,6 +74,7 @@ def fetch_latest_timestamp(country):
         return ms_to_timestamp(timestamp_ms)
     return None
 
+
 def fetch_gsom_data_from_db(country, datatype):
     """
     Fetch all climate data for a specified country and datatype from DB.
@@ -139,3 +140,21 @@ def drop(country, measurement):
         logger.info(f'Successfully dropped {measurement} data for {country}')
     except Exception as e:
         logger.warning(f'Failed to drop {measurement} data for {country}, {e}')
+
+
+def no_analysis_data(country):
+    """
+    Check if there is any analysis data for a specified country in DB.
+
+    :param dict country: The country to check the analysis data for.
+    :return: True if there is no analysis data for the country, False otherwise.
+    :rtype: bool
+    """
+    try:
+        query = f"SELECT * FROM \"Average_Temperature_decadal_average\" WHERE \"country_id\" = '{country['id'].split(':')[1]}'"
+        result = client.query(query, epoch='ms')
+        if not result:
+            return True
+    except Exception as e:
+        logger.warning(f'Failed to check analysis data for {country}, {e}')
+    return False

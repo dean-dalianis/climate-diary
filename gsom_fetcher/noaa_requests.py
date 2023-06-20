@@ -8,7 +8,7 @@ from urllib3 import Retry
 
 from logging_config import logger
 
-TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 6)]
+TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 7)]
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/api_config.json')
 with open(CONFIG_FILE, 'r') as file:
@@ -78,6 +78,31 @@ def sleep_until_next_request():
             time.sleep(REQUESTS_INTERVAL - elapsed_time)
 
 
+def do_get(url):
+    global last_request_time
+
+    while True:
+        try:
+            sleep_until_next_request()
+            response = http.get(url, headers=get_headers())
+            last_request_time = time.time()
+            if response.status_code == 429:
+                logger.warning(f'Rate limit reached for token {current_token_index} - retrying with new token...')
+                if current_token_index == 7:
+                    logger.error('All tokens have been used. Exiting...')
+                    exit(1)
+                update_token()
+                continue
+            return response
+        except Exception as e:
+            last_request_time = time.time()
+            logger.warning(f'Connection error occurred: {e} - retrying with new token...')
+            if current_token_index == 7:
+                logger.error('All tokens have been used. Exiting...')
+                exit(1)
+            update_token()
+
+
 def make_api_request(url):
     """
     Make an API request to the specified URL, handling rate limiting and token rotation.
@@ -86,17 +111,12 @@ def make_api_request(url):
     :return: The JSON response from the API request.
     :rtype: list
     """
-    global last_request_time
 
     offset = 0
     all_results = []
     while True:
-        headers = get_headers()
-
-        sleep_until_next_request()
-        paged_url = f"{BASE_URL}{url}&offset={offset}"
-        response = http.get(paged_url, headers=headers)
-        last_request_time = time.time()
+        paged_url = f'{BASE_URL}{url}&offset={offset}'
+        response = do_get(paged_url)
 
         if response.status_code == 200:
             json_data = response.json()
@@ -118,13 +138,9 @@ def make_api_request(url):
                 logger.error(
                     f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
                 break
-        elif response.status_code == 429:
-            logger.warning(
-                f'Received status code {response.status_code} for URL {paged_url}. Changing token...')
-            update_token()
         else:
             logger.error(
-                f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}. Headers: {headers}')
+                f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}.')
             break
 
     return all_results
