@@ -1,11 +1,11 @@
-import moment from "moment";
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {AppShell, Group, Header, LoadingOverlay, Select, Skeleton,} from "@mantine/core";
+import moment from 'moment';
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {AppShell, Group, Header, LoadingOverlay, Select, Skeleton} from '@mantine/core';
 
-import DarkModeSwitch from "./components/DarkModeSwitch";
-import DateSlider from "./components/DateSlider";
-import Map from "./components/Map";
-
+import DarkModeSwitch from './components/DarkModeSwitch';
+import DateSlider from './components/DateSlider';
+import Map from './components/Map';
+import PlayButton from './components/PlayButton';
 import {
     getAnalysis,
     getEarliest,
@@ -70,8 +70,11 @@ const measurementOptions = [
         label: "Extreme Minimum Temperature by year",
         interval: "year"
     },
-
-
+    {
+        value: "Average_Temperature",
+        label: "Average Temperature",
+        interval: "year"
+    }
 ];
 
 function App() {
@@ -92,11 +95,18 @@ function App() {
         to: null,
     });
 
-
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedMeasurement, setSelectedMeasurement] = useState(null);
     const [maximumTemperature, setMaximumTemperature] = useState(null);
     const [minimumTemperature, setMinimumTemperature] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const handleAnimationButtonClick = (date) => {
+        if (!isPlaying && date) {
+            setSelectedDate(date);
+        }
+        setIsPlaying(!isPlaying);
+    };
 
     const fetchMeasurements = useCallback(async () => {
         const data = await getMeasurements();
@@ -169,56 +179,77 @@ function App() {
     useEffect(() => {
         if (selectedMeasurement || selectedDateRange.from || selectedDateRange.to) {
             fetchData();
-
         }
     }, [selectedDateRange, selectedMeasurement]);
 
     useEffect(() => {
-        if (selectedMeasurement) fetchMinMaxTemperature()
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
+    useEffect(() => {
+        if (selectedMeasurement) fetchMinMaxTemperature();
     }, [selectedMeasurement]);
 
-
     const dates = useMemo(
-        () =>
-            [...new Set(data.map(({time}) => time))].map((time) =>
-                moment(time).format("YYYY-MM-DD")
-            ),
+        () => [...new Set(data.map(({time}) => time))].map((time) => moment(time).format('YYYY-MM-DD')),
         [data]
     );
 
+    useEffect(() => {
+        if (isPlaying) {
+            const currentIndex = dates.indexOf(selectedDate);
+            if (currentIndex < dates.length - 1) {
+                const delay = 10000 / dates.length;
+                const timeoutId = setTimeout(() => setSelectedDate(dates[currentIndex + 1]), delay);
+                return () => clearTimeout(timeoutId);
+            } else {
+                setIsPlaying(false);
+            }
+        }
+    }, [selectedDate, isPlaying, dates]);
+
     return (
         <>
-            <LoadingOverlay visible={loadingOptions} overlayBlur={2}/>
+            <div style={{position: 'relative', height: '100vh'}}>
+                <LoadingOverlay visible={loadingOptions} overlayBlur={2}/>
 
-            <AppShell
-                padding="0"
-                header={
-                    <Header height={80}>
-                        <Group sx={{height: "100%"}} px={20}>
-                            <DateSlider
-                                selectedDate={selectedDate}
-                                dates={dates}
-                                onChange={setSelectedDate}
-                            />
-                            <Select
-                                data={measurements}
-                                value={selectedMeasurement}
-                                onChange={setSelectedMeasurement}
-                                placeholder="Measurment"
-                                sx={{
-                                    minWidth: "250px",
-                                }}
-                            />
-                            <DarkModeSwitch/>
-                        </Group>
+                <Header height={80} style={{position: 'fixed', top: 0, width: '100%', zIndex: 2}}>
+                    <Group sx={{height: '100%'}} px={20}>
+                        <DateSlider selectedDate={selectedDate} dates={dates} onChange={setSelectedDate}/>
+                        <PlayButton
+                            isPlaying={isPlaying}
+                            selectedDate={selectedDate}
+                            dates={dates}
+                            handleAnimationButtonClick={handleAnimationButtonClick}
+                        />
+                        <Select
+                            data={measurements}
+                            value={selectedMeasurement}
+                            onChange={setSelectedMeasurement}
+                            placeholder="Measurement"
+                            sx={{
+                                minWidth: '250px',
+                            }}
+                        />
+                        <DarkModeSwitch/>
+                    </Group>
+                    {loadingData && <Skeleton height={4} radius="xl"/>}
+                </Header>
 
-                        {loadingData && <Skeleton height={4} radius="xl"/>}
-                    </Header>
-                }
-            >
-                <Map data={data} selectedDate={selectedDate}
-                     minTemperature={minimumTemperature} maxTemperature={maximumTemperature}/>
-            </AppShell>
+                <div style={{paddingTop: 80}}>
+                    <AppShell padding="0">
+                        <Map
+                            data={data}
+                            selectedDate={selectedDate}
+                            minTemperature={minimumTemperature}
+                            maxTemperature={maximumTemperature}
+                        />
+                    </AppShell>
+                </div>
+            </div>
         </>
     );
 }

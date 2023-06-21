@@ -85,3 +85,16 @@ export const getGsom = async (params) => {
         .then((res) => res.data);
     return data;
 };
+
+export const getCountryFromCoordinates = async (lat, lng) => {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+
+  try {
+    const response = await axios.get(url);
+    const { country_code, country } = response.data.address;
+    return { countryCode: country_code, countryName: country };
+  } catch (error) {
+    console.error('Error fetching country information:', error);
+    return null;
+  }
+};

@@ -1,88 +1,126 @@
-import moment from "moment";
-import {Box, ColorSwatch, Group, Stack, Text, useMantineTheme,} from "@mantine/core";
-import {useEffect, useMemo, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {GeoJSON, MapContainer, TileLayer} from 'react-leaflet';
+import {Box, ColorSwatch, Group, Modal, Stack, Text} from '@mantine/core';
+import 'leaflet/dist/leaflet.css';
+import moment from 'moment';
 import {scaleLinear} from 'd3-scale';
 import {interpolateRgb} from 'd3-interpolate';
-
-import {ComposableMap, Geographies, Geography, ZoomableGroup,} from "react-simple-maps";
-
-const geoUrl =
-    "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json";
-
-const initalZoomParams = {
-    center: [9.502771447726788, 25.100818733935455],
-    zoom: 2.002266295581086,
-};
+import {getCountryFromCoordinates} from "../utils/api";
+import countriesJson from '../map.json'; // Import the local GeoJSON file
 
 function MapWrapper({data, selectedDate, minTemperature, maxTemperature}) {
-    for (const row of data) {
-        if (row.country_name === "France") {
-            console.log('heyy');
-        }
-    }
-    const {colorScheme, colors} = useMantineTheme();
+    const [geoJsonData, setGeoJsonData] = useState(null);
+    const [mapData, setMapData] = useState({});
+    const [selectedCountryCode, setSelectedCountryCode] = useState(null);
+    const [selectedCountryName, setSelectedCountryName] = useState(null);
+    const ref = useRef(null);
 
-    const getColorForTemperature = (temp, minTemperature, maxTemperature) => {
+    const getColorForTemperature = (temp) => {
         const colorScale = scaleLinear()
             .domain([minTemperature, (minTemperature + maxTemperature) / 2, maxTemperature])
-            .range(["#80adf1", "#73ff00", "#ff0000"])
+            .range(['#80adf1', '#73ff00', '#ff0000'])
             .interpolate(interpolateRgb);
         return colorScale(temp);
     };
 
-
-    const geographyTheme = useMemo(() => {
-        if (colorScheme === "light") {
-            return {
-                fill: colors.gray[3],
-                stroke: colors.gray[5],
-            };
-        } else {
-            return {
-                fill: colors.dark[5],
-                stroke: colors.dark[7],
-            };
-        }
-    }, [colorScheme]);
-
-    const [height, setHeight] = useState(0);
-    const [width, setWidth] = useState(0);
-    const [zoomParams, setZoomParams] = useState({});
-    const ref = useRef(null);
-
     useEffect(() => {
-        setHeight(ref.current.clientHeight);
-        setWidth(ref.current.clientWidth);
-        setZoomParams(initalZoomParams);
-    }, []);
+        // Set the GeoJSON data from the local file
+        setGeoJsonData(countriesJson);
 
-    const mapData = useMemo(() => {
         const mapData = {};
         if (!data) return mapData;
 
         for (const row of data) {
-            if (!mapData[row.country_name]) {
-                mapData[row.country_name] = {};
+            const countryId = row.country_id;
+            const countryName = row.country_name;
+            const countryCode = row.country_code;
+
+            if (!mapData[countryId]) {
+                mapData[countryId] = {};
             }
-            mapData[row.country_name][moment(row.time).format("YYYY-MM-DD")] =
-                row.value;
+            mapData[countryId][moment(row.time).format("YYYY-MM-DD")] = row.value;
+
+            if (!mapData[countryCode]) {
+                mapData[countryCode] = {};
+            }
+            mapData[countryCode][moment(row.time).format("YYYY-MM-DD")] = row.value;
+
+            if (!mapData[countryName]) {
+                mapData[countryName] = {};
+            }
+            mapData[countryName][moment(row.time).format("YYYY-MM-DD")] = row.value;
         }
-        return mapData;
+        setMapData(mapData);
     }, [data]);
 
+    const style = (feature) => {
+        const countryId = feature.properties['ISO_A2'];
+        const countryName = feature.properties['ADMIN'];
+
+        const avgTemp =
+            mapData?.[countryId]?.[selectedDate] ||
+            mapData?.[countryName]?.[selectedDate];
+        if (!avgTemp) {
+            console.log('no data for', countryId, countryName, selectedDate)
+        }
+        return {
+            fillColor: avgTemp ? getColorForTemperature(avgTemp) : 'transparent',
+            weight: 2,
+            opacity: 1,
+            color: 'white',
+            fillOpacity: 0.7,
+        };
+    };
+
+    const temperatureRange = useMemo(() => {
+        const range = [];
+        for (let temp = Math.floor(minTemperature / 10) * 10; temp <= maxTemperature; temp += 10) {
+            range.push(temp);
+        }
+        return range.reverse();
+    }, [minTemperature, maxTemperature]);
+
+    const handleCountryClick = async (event) => {
+        const lat = event.latlng.lat;
+        const lng = event.latlng.lng;
+        const countryInfo = await getCountryFromCoordinates(lat, lng);
+
+        if (countryInfo) {
+            setSelectedCountryCode(countryInfo.countryCode.toUpperCase());
+            setSelectedCountryName(countryInfo.countryName);
+        }
+    };
+    const handleCloseModal = () => {
+        setSelectedCountryCode(null);
+        setSelectedCountryName(null);
+    };
+
     return (
-        <div
-            ref={ref}
-            style={{
-                width: "100%",
-                height: "calc(100% - 10px)",
-                position: "relative",
-            }}
-        >
+        <div style={{position: 'relative', width: '100%', height: '100%'}}>
+            <MapContainer
+                center={[51.505, -0.09]}
+                zoom={3}
+                style={{height: '100vh', width: '100%', position: 'relative', zIndex: 1}}
+                worldCopyJump={true}
+                maxBounds={[[-90, -180], [90, 180]]}
+                maxBoundsViscosity={1.0}
+                minZoom={3}
+                maxZoom={10}
+            >
+                <TileLayer
+                    attribution='&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {geoJsonData && (
+                    <GeoJSON style={style} data={geoJsonData} eventHandlers={{click: handleCountryClick}}/>
+                )}
+            </MapContainer>
+
             <Box
                 sx={(theme) => ({
-                    width: "200px",
-                    position: "absolute",
+                    width: '200px',
+                    position: 'absolute',
+                    zIndex: 10,
                     bottom: 0,
                     left: 0,
                     padding: theme.spacing.md,
@@ -91,49 +129,20 @@ function MapWrapper({data, selectedDate, minTemperature, maxTemperature}) {
                 })}
             >
                 <Stack spacing="md">
-                    {Array.from({length: Math.ceil((maxTemperature - Math.floor(minTemperature / 10) * 10) / 10) + 1}, (_, i) => Math.floor(minTemperature / 10) * 10 + i * 10).reverse().map((temp) => (
-                        <Group spacing="md">
-                            <ColorSwatch color={getColorForTemperature(temp, minTemperature, maxTemperature)}/>
-                            <Text fz="md">{temp} °C </Text>
+                    {temperatureRange.map((temp) => (
+                        <Group spacing="md" key={temp}>
+                            <ColorSwatch color={getColorForTemperature(temp)}/>
+                            <Text fz="md" color="dark.5">
+                                {temp} °C
+                            </Text>{' '}
                         </Group>
                     ))}
                 </Stack>
-
             </Box>
-            <ComposableMap width={width} height={height} projection="geoMercator" projectionConfig={{
-                rotate: [0.0, -53.0, 0],
-                scale: 200,
-            }}>
-                <ZoomableGroup {...zoomParams}>
-                    <Geographies geography={geoUrl}>
-                        {({geographies}) =>
-                            geographies.map((geo) => {
-                                const country = geo.properties.name;
-                                // console.log(country);
-                                const avgTemp = mapData?.[country]?.[selectedDate];
 
-                                return (
-                                    <Geography
-                                        key={geo.rsmKey}
-                                        geography={geo}
-                                        fill={avgTemp ? getColorForTemperature(avgTemp, minTemperature, maxTemperature) : geographyTheme.fill}
-                                        stroke={geographyTheme.stroke}
-                                        style={{
-                                            default: {outline: "stroke"},
-                                            hover: {
-                                                outline: "stroke",
-                                                cursor: "pointer",
-                                            },
-                                            pressed: {outline: "none"},
-                                        }}
-                                        onClick={(e) => console.log(e)}
-                                    />
-                                );
-                            })
-                        }
-                    </Geographies>
-                </ZoomableGroup>
-            </ComposableMap>
+            <Modal opened={!!selectedCountryCode} onClose={handleCloseModal} title={selectedCountryName} centered>
+                <Modal.Title>{selectedCountryCode}</Modal.Title>
+            </Modal>
         </div>
     );
 }
