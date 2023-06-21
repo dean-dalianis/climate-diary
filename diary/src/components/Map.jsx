@@ -6,7 +6,14 @@ import moment from 'moment';
 import {scaleLinear} from 'd3-scale';
 import {interpolateRgb} from 'd3-interpolate';
 import {getCountryFromCoordinates} from "../utils/api";
-import countriesJson from '../map.json'; // Import the local GeoJSON file
+import countriesJson from '../map.json';
+
+
+function convertDateToGrafanaTime(dateString) {
+    const date = moment.utc(dateString, 'YYYY-MM-DD');
+    const timestamp = date.valueOf();
+    return timestamp;
+}
 
 function MapWrapper({data, selectedDate, minTemperature, maxTemperature}) {
     const [geoJsonData, setGeoJsonData] = useState(null);
@@ -31,37 +38,34 @@ function MapWrapper({data, selectedDate, minTemperature, maxTemperature}) {
         if (!data) return mapData;
 
         for (const row of data) {
-            const countryId = row.country_id;
+            // const countryId = getCountryCodeFromName(row.country_name)
             const countryName = row.country_name;
-            const countryCode = row.country_code;
 
-            if (!mapData[countryId]) {
-                mapData[countryId] = {};
-            }
-            mapData[countryId][moment(row.time).format("YYYY-MM-DD")] = row.value;
+            // console.log(countryId, countryName)
 
-            if (!mapData[countryCode]) {
-                mapData[countryCode] = {};
-            }
-            mapData[countryCode][moment(row.time).format("YYYY-MM-DD")] = row.value;
+            // if (!mapData[countryId]) {
+            //     mapData[countryId] = {};
+            // }
+            // mapData[countryId][moment(row.time).format("YYYY-MM-DD")] = row.value;
 
             if (!mapData[countryName]) {
                 mapData[countryName] = {};
             }
             mapData[countryName][moment(row.time).format("YYYY-MM-DD")] = row.value;
+
         }
         setMapData(mapData);
     }, [data]);
 
     const style = (feature) => {
-        const countryId = feature.properties['ISO_A2'];
+        // const countryId = feature.properties['ISO_A2'];
         const countryName = feature.properties['ADMIN'];
 
         const avgTemp =
-            mapData?.[countryId]?.[selectedDate] ||
+            // mapData?.[countryId]?.[selectedDate] ||
             mapData?.[countryName]?.[selectedDate];
         if (!avgTemp) {
-            console.log('no data for', countryId, countryName, selectedDate)
+            console.log('no data for', countryName, selectedDate)
         }
         return {
             fillColor: avgTemp ? getColorForTemperature(avgTemp) : 'transparent',
@@ -140,8 +144,73 @@ function MapWrapper({data, selectedDate, minTemperature, maxTemperature}) {
                 </Stack>
             </Box>
 
-            <Modal opened={!!selectedCountryCode} onClose={handleCloseModal} title={selectedCountryName} centered>
-                <Modal.Title>{selectedCountryCode}</Modal.Title>
+            <Modal opened={!!selectedCountryName} onClose={handleCloseModal} title={selectedCountryName} centered
+                   size='auto'>
+                <Modal.Title>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=35&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=36&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=37&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=38&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=39&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=40&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=41&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=42&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=27&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=44&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=32&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=40&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=33&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=29&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+
+                    <iframe
+                        src={`http://localhost:3000/d-solo/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1&from=${convertDateToGrafanaTime(selectedDate)}&var-country_name=${selectedCountryName}&theme=dark&panelId=30&kiosk`}
+                        width="650" height="300" frameBorder="0">
+                    </iframe>
+                </Modal.Title>
             </Modal>
         </div>
     );

@@ -87,14 +87,29 @@ export const getGsom = async (params) => {
 };
 
 export const getCountryFromCoordinates = async (lat, lng) => {
-  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
 
-  try {
-    const response = await axios.get(url);
-    const { country_code, country } = response.data.address;
-    return { countryCode: country_code, countryName: country };
-  } catch (error) {
-    console.error('Error fetching country information:', error);
-    return null;
-  }
+    try {
+        const response = await axios.get(url);
+        const {country_code, country} = response.data.address;
+        return {countryCode: country_code, countryName: country};
+    } catch (error) {
+        console.error('Error fetching country information:', error);
+        return null;
+    }
 };
+
+export const getCountryCodeFromName = async (countryName) => {
+    const url = `https://api.restcountries.com/v3.1/name/${countryName}`;
+
+    try {
+        const response = await axios.get(url);
+        const countryCode = response.data[0]['tld']['cca2'];
+        return countryCode;
+    } catch (error) {
+        console.error('Error fetching country information:', error);
+        return null;
+    }
+};
+
+

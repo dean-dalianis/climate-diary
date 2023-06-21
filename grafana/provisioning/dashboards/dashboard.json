@@ -316,7 +316,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $tag_country_id",
+          "alias": "Average: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -330,7 +330,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -344,6 +344,8 @@
           "measurement": "Precipitation_yearly_average",
           "orderByTime": "ASC",
           "policy": "autogen",
+          "query": "SELECT top(\"value\", 1) FROM \"autogen\".\"Precipitation_yearly_average\" WHERE (\"country_id\"::tag =~ /^$country_id$/) AND $timeFilter GROUP BY time($__interval), \"country_id\" fill(linear)",
+          "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -364,14 +366,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Highest Daily Total: $tag_country_id",
+          "alias": "Highest Daily Total: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -385,7 +387,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -418,9 +420,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -503,7 +505,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $tag_country_id",
+          "alias": "Average: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -517,7 +519,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -551,14 +553,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Highest Daily Total: $tag_country_id",
+          "alias": "Highest Daily Total: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -572,7 +574,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -605,9 +607,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -690,7 +692,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $tag_country_id",
+          "alias": "Average: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -704,7 +706,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -738,14 +740,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Highest Daily Total: $tag_country_id",
+          "alias": "Highest Daily Total: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -759,7 +761,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -792,9 +794,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -877,7 +879,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $tag_country_id",
+          "alias": "Average: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -891,7 +893,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -925,14 +927,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Highest Daily Total: $tag_country_id",
+          "alias": "Highest Daily Total: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -946,7 +948,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -979,9 +981,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1065,7 +1067,7 @@
       },
       "targets": [
         {
-          "alias": "Highest Daily Snow Depth: $tag_country_id",
+          "alias": "Highest Daily Snow Depth: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1079,7 +1081,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -1111,9 +1113,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1197,7 +1199,7 @@
       },
       "targets": [
         {
-          "alias": "Highest Daily Snow Depth: $tag_country_id",
+          "alias": "Highest Daily Snow Depth: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1211,7 +1213,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -1243,9 +1245,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1329,7 +1331,7 @@
       },
       "targets": [
         {
-          "alias": "Highest Daily Snow Depth: $tag_country_id",
+          "alias": "Highest Daily Snow Depth: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1343,7 +1345,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -1375,9 +1377,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1462,7 +1464,7 @@
       },
       "targets": [
         {
-          "alias": "Highest Daily Snow Depth: $tag_country_id",
+          "alias": "Highest Daily Snow Depth: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1476,7 +1478,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -1508,9 +1510,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1609,7 +1611,7 @@
       },
       "targets": [
         {
-          "alias": "Max: $tag_country_id",
+          "alias": "Max: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1623,7 +1625,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -1655,14 +1657,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Min: $tag_country_id",
+          "alias": "Min: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1676,7 +1678,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -1709,9 +1711,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1797,7 +1799,7 @@
       },
       "targets": [
         {
-          "alias": "Max: $tag_country_id",
+          "alias": "Max: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1811,7 +1813,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -1843,14 +1845,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Min: $tag_country_id",
+          "alias": "Min: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1864,7 +1866,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -1897,9 +1899,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -1982,7 +1984,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $tag_country_id",
+          "alias": "Average: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1996,7 +1998,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2028,14 +2030,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Max: $tag_country_id",
+          "alias": "Max: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2049,7 +2051,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2082,14 +2084,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Min: $tag_country_id",
+          "alias": "Min: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2136,9 +2138,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -2221,7 +2223,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $tag_country_id",
+          "alias": "Average: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2235,7 +2237,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2267,14 +2269,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Max: $tag_country_id",
+          "alias": "Max: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2288,7 +2290,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2321,14 +2323,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Min: $tag_country_id",
+          "alias": "Min: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2342,7 +2344,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2375,9 +2377,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -2460,7 +2462,7 @@
       },
       "targets": [
         {
-          "alias": "Max: $tag_country_id",
+          "alias": "Max: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2474,7 +2476,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2506,14 +2508,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Min: $tag_country_id",
+          "alias": "Min: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2527,7 +2529,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -2560,9 +2562,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -2645,7 +2647,7 @@
       },
       "targets": [
         {
-          "alias": "Max: $tag_country_id",
+          "alias": "Max: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2659,7 +2661,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2691,14 +2693,14 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         },
         {
-          "alias": "Min:$tag_country_id",
+          "alias": "Min:$country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2712,7 +2714,7 @@
             },
             {
               "params": [
-                "country_id"
+                "country_name"
               ],
               "type": "tag"
             },
@@ -2745,9 +2747,9 @@
           ],
           "tags": [
             {
-              "key": "country_id::tag",
+              "key": "country_name::field",
               "operator": "=~",
-              "value": "/^$country_id$/"
+              "value": "/^$country_name$/"
             }
           ]
         }
@@ -2765,41 +2767,33 @@
       {
         "current": {
           "selected": true,
-          "text": [
-            "GM"
-          ],
-          "value": [
-            "GM"
-          ]
+          "text": "Belgium",
+          "value": "Belgium"
         },
-        "datasource": {
-          "type": "influxdb",
-          "uid": "P0C89709D7A7DC177"
-        },
-        "definition": "SHOW TAG VALUES WITH KEY = \"country_id\"",
+        "definition": "SELECT DISTINCT(\"country_name\") FROM \"Average_Temperature\"",
         "hide": 0,
         "includeAll": false,
-        "label": "Country ID",
-        "multi": true,
-        "name": "country_id",
+        "label": "Country Name",
+        "multi": false,
+        "name": "country_name",
         "options": [],
-        "query": "SHOW TAG VALUES WITH KEY = \"country_id\"",
+        "query": "SELECT DISTINCT(\"country_name\") FROM \"Average_Temperature\"",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 1,
+        "sort": 0,
         "type": "query"
       }
     ]
   },
   "time": {
-    "from": "1900-01-01T00:00:00.000Z",
+    "from": "1930-01-01T00:00:00.000Z",
     "to": "2023-06-20T00:00:00.000Z"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "NOAA GSOM Dashboard",
   "uid": "c351f1fe-59e9-4758-b061-93603cbedc6d",
-  "version": 14,
+  "version": 20,
   "weekStart": ""
 }
