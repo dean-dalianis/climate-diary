@@ -168,37 +168,3 @@ You can modify these files to change the configuration of the services.
 ## License
 
 This project is licensed under the terms of the MIT license.
-
-___
-
-## In Progress && To-Do
-
-- [ ] **frontend**:
-    - [x] Added ([react-simple-maps](https://www.react-simple-maps.io/)
-    - [x] Currently, deployed using docker-compose
-    - [ ] Implement a proper frontend
-- [x] **backend**:
-    - [x] Created a simple API with Flask and Flask-RESTful
-    - [x] Root endpoint loads the Swaaaggggeerrr UI
-    - [x] Currently, deployed using docker-compose
-    - [x] Add more endpoints according to the frontend needs
-    - [x] Add endpoint for the metadata measurement (only includes the last udpate date)
-- [ ] **nginx**:
-    - [x] Add nginx to the docker-compose stack
-    - [x] Serve the backend with nginx
-    - [x] Serve the frontend with nginx
-    - [ ] Remove the backend serve after the frontend is ready
-- [ ] **minor file restructure**:
-    - [ ] Move the provisioning file for influx outside from `provisioning/influxdb` `influxdb` directory
-    - [ ] Move the `containers/influxdb_data/` directory to the `influxdb/container/influxdb_data/` directory
-- [x] **grafana**
-    - [x] **datasource provisioning**: current datasource provisioning doesn't create the password (it's empty)
-    - [x] **dashboard provisioning**: add provisioning for the dashboard itself
-- [ ] **More data:**
-    - [ ] co2 historic data
-    - [ ] co2 live data
-    - [ ] temperature live data
-    - [ ] ice melting historic data
-    - [ ] ice melting live data
-    - [ ] socioeconomic data
-- [ ] **Cloud Configuration**: configure a cloud environment to run the containers
