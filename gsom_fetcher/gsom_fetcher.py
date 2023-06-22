@@ -7,7 +7,7 @@ from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, EU_CONTINENT_FIPS, DATATYPE_
 from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp, no_analysis_data
 from logging_config import logger
 from noaa_requests import make_api_request
-from util import datetime_to_string, string_to_datetime, update_last_run, should_run
+from util import datetime_to_string, string_to_datetime, update_last_run, should_run, get_country_alpha_2
 
 MAX_STATIONS = 3000  # The maximum number of stations to fetch data for -- used for fetching data faster for testing purposes
 
@@ -232,7 +232,7 @@ def create_points_dict(country, fields, record):
     return {
         'measurement': MEASUREMENT_NAMES.get(record['datatype']),
         'tags': {
-            'country_id': country['id'].split(':')[1]
+            'country_id': get_country_alpha_2(country['name'])
         },
         'time': string_to_datetime(record['date']),
         'fields': {

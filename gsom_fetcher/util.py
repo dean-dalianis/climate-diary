@@ -2,6 +2,10 @@ import os
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+import pycountry
+
+from logging_config import logger
+
 LAST_RUN_LAST_RUN_FILE_PATH = "/gsom_fetcher/last_run/last_run.txt"
 
 
@@ -97,3 +101,13 @@ def update_last_run():
 
     with open(LAST_RUN_LAST_RUN_FILE_PATH, "w") as f:
         f.write(current_time.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+def get_country_alpha_2(country_name):
+    try:
+        alpha_2 = pycountry.countries.get(name=country_name).alpha_2
+    except AttributeError:
+        alpha_2 = None
+        logger.warn(f'Could not get country alpha_2 for {country_name}')
+
+    return alpha_2

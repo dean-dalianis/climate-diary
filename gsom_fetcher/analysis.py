@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib.dates import date2num
 
 from config import MEASUREMENT_NAMES
+from gsom_fetcher.util import get_country_alpha_2
 from influx import write_points_to_db, drop
 from logging_config import logger
 
@@ -37,7 +38,7 @@ def analyze_data_and_write_to_db(country, data):
             trend_point = {
                 'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
                 'tags': {
-                    'country_id': country['id'].split(':')[1]
+                    'country_id': get_country_alpha_2(country['name'])
                 },
                 'fields': {
                     'slope': trend_slope,
@@ -48,34 +49,34 @@ def analyze_data_and_write_to_db(country, data):
 
             for timestamp, value in data_points:
                 month = timestamp.month
-                year = timestamp.year
-                decade = (year // 10) * 10
+            year = timestamp.year
+            decade = (year // 10) * 10
 
-                monthly_averages.setdefault(year, {}).setdefault(month, []).append(value)
-                yearly_averages.setdefault(year, []).append(value)
-                decadal_averages.setdefault(decade, []).append(value)
+            monthly_averages.setdefault(year, {}).setdefault(month, []).append(value)
+            yearly_averages.setdefault(year, []).append(value)
+            decadal_averages.setdefault(decade, []).append(value)
 
             sorted_data_points = sorted(data_points, key=lambda x: x[0])  # Sort data points by timestamp
             for i in range(1, len(sorted_data_points)):
                 current_year = sorted_data_points[i][0].year
-                prev_year = sorted_data_points[i - 1][0].year
-                yoy_change = sorted_data_points[i][1] - sorted_data_points[i - 1][1]
-                yoy_changes.setdefault(current_year, []).append(yoy_change)
-                if current_year != prev_year + 1:
-                    # Handle missing years in the data
-                    missing_years = range(prev_year + 1, current_year)
-                    for missing_year in missing_years:
-                        yoy_changes.setdefault(missing_year, []).append(None)
+            prev_year = sorted_data_points[i - 1][0].year
+            yoy_change = sorted_data_points[i][1] - sorted_data_points[i - 1][1]
+            yoy_changes.setdefault(current_year, []).append(yoy_change)
+            if current_year != prev_year + 1:
+            # Handle missing years in the data
+                missing_years = range(prev_year + 1, current_year)
+            for missing_year in missing_years:
+                yoy_changes.setdefault(missing_year, []).append(None)
 
-                current_decade = (sorted_data_points[i][0].year // 10) * 10
-                prev_decade = (sorted_data_points[i - 1][0].year // 10) * 10
-                dod_change = sorted_data_points[i][1] - sorted_data_points[i - 1][1]
-                dod_changes.setdefault(current_decade, []).append(dod_change)
-                if current_decade != prev_decade + 10:
-                    # Handle missing decades in the data
-                    missing_decades = range(prev_decade + 10, current_decade, 10)
-                    for missing_decade in missing_decades:
-                        dod_changes.setdefault(missing_decade, []).append(None)
+            current_decade = (sorted_data_points[i][0].year // 10) * 10
+            prev_decade = (sorted_data_points[i - 1][0].year // 10) * 10
+            dod_change = sorted_data_points[i][1] - sorted_data_points[i - 1][1]
+            dod_changes.setdefault(current_decade, []).append(dod_change)
+            if current_decade != prev_decade + 10:
+            # Handle missing decades in the data
+                missing_decades = range(prev_decade + 10, current_decade, 10)
+            for missing_decade in missing_decades:
+                dod_changes.setdefault(missing_decade, []).append(None)
 
             write_points_to_db(trend_points, country)
 
@@ -103,7 +104,7 @@ def write_monthly_averages_to_db(country, monthly_averages, datatype):
             point = {
                 'measurement': f'{MEASUREMENT_NAMES[datatype]}_monthly_average',
                 'tags': {
-                    'country_id': country['id'].split(':')[1],
+                    'country_id': get_country_alpha_2(country['name']),
                 },
                 'time': f"{year}-{month:02d}-01T00:00:00Z",  # Setting time at the start of the month
                 'fields': {
@@ -132,7 +133,7 @@ def write_yearly_averages_to_db(country, yearly_averages, datatype):
         point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_yearly_average',
             'tags': {
-                'country_id': country['id'].split(':')[1]
+                'country_id': get_country_alpha_2(country['name'])
             },
             'time': f"{year}-01-01T00:00:00Z",  # Setting time at the start of the year
             'fields': {
@@ -161,7 +162,7 @@ def write_decadal_averages_to_db(country, decadal_averages, datatype):
         point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_decadal_average',
             'tags': {
-                'country_id': country['id'].split(':')[1],
+                'country_id': get_country_alpha_2(country['name']),
             },
             'time': f"{decade}-01-01T00:00:00Z",  # Setting time at the start of the decade
             'fields': {
@@ -191,7 +192,7 @@ def write_yoy_changes_to_db(country, yoy_changes, datatype):
                 point = {
                     'measurement': f'{MEASUREMENT_NAMES[datatype]}_yoy_change',
                     'tags': {
-                        'country_id': country['id'].split(':')[1],
+                        'country_id': get_country_alpha_2(country['name']),
                     },
                     'time': f"{year}-01-01T00:00:00Z",  # Setting time at the start of the year
                     'fields': {
@@ -221,7 +222,7 @@ def write_dod_changes_to_db(country, dod_changes, datatype):
                 point = {
                     'measurement': f'{MEASUREMENT_NAMES[datatype]}_dod_change',
                     'tags': {
-                        'country_id': country['id'].split(':')[1],
+                        'country_id': get_country_alpha_2(country['name']),
                     },
                     'time': f"{decade}-01-01T00:00:00Z",  # Setting time at the start of the decade
                     'fields': {
