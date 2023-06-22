@@ -270,6 +270,9 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     :rtype: None
     """
     for country in countries:
+        if get_country_alpha_2(country['name']) is None:
+            continue
+
         points = []
         logger.info(f'Fetching climate data for country: {country["name"]}')
 
