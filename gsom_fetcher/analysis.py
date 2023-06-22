@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib.dates import date2num
 
 from config import MEASUREMENT_NAMES
-from gsom_fetcher.util import get_country_alpha_2
 from influx import write_points_to_db, drop
 from logging_config import logger
 
@@ -101,6 +100,7 @@ def write_monthly_averages_to_db(country, monthly_averages, datatype):
     for year, months in monthly_averages.items():
         for month, values in months.items():
             metric = calculate_correct_metric(values, datatype)
+            from gsom_fetcher.util import get_country_alpha_2
             point = {
                 'measurement': f'{MEASUREMENT_NAMES[datatype]}_monthly_average',
                 'tags': {
@@ -130,6 +130,7 @@ def write_yearly_averages_to_db(country, yearly_averages, datatype):
     points = []
     for year, values in yearly_averages.items():
         metric = calculate_correct_metric(values, datatype)
+        from gsom_fetcher.util import get_country_alpha_2
         point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_yearly_average',
             'tags': {
@@ -159,6 +160,7 @@ def write_decadal_averages_to_db(country, decadal_averages, datatype):
     points = []
     for decade, values in decadal_averages.items():
         metric = calculate_correct_metric(values, datatype)
+        from gsom_fetcher.util import get_country_alpha_2
         point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_decadal_average',
             'tags': {
@@ -189,6 +191,7 @@ def write_yoy_changes_to_db(country, yoy_changes, datatype):
     for year, changes in yoy_changes.items():
         for change in changes:
             if change is not None:
+                from gsom_fetcher.util import get_country_alpha_2
                 point = {
                     'measurement': f'{MEASUREMENT_NAMES[datatype]}_yoy_change',
                     'tags': {
@@ -219,6 +222,7 @@ def write_dod_changes_to_db(country, dod_changes, datatype):
     for decade, changes in dod_changes.items():
         for change in changes:
             if change is not None:
+                from gsom_fetcher.util import get_country_alpha_2
                 point = {
                     'measurement': f'{MEASUREMENT_NAMES[datatype]}_dod_change',
                     'tags': {
