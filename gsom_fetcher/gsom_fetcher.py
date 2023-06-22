@@ -9,7 +9,7 @@ from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime, update_last_run, should_run
 
-MAX_STATIONS = 30000  # The maximum number of stations to fetch data for -- used for fetching data faster for testing purposes
+MAX_STATIONS = 3000  # The maximum number of stations to fetch data for -- used for fetching data faster for testing purposes
 
 empty_station_details = {
     'elevation': float('inf'),

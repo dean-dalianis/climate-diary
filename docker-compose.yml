@@ -14,8 +14,8 @@ services:
       - INFLUXDB_ADMIN_USER=admin
       - INFLUXDB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
     volumes:
-      - ./containers/influxdb_data:/var/lib/influxdb
-      - ./provisioning/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - ./influxdb/containers/influxdb_data:/var/lib/influxdb
+      - ./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
 
   grafana:
     image: grafana/grafana:latest
@@ -30,8 +30,8 @@ services:
       - '3000:3000'
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
       - DB_NAME=${DB_NAME}
+      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
     volumes:
       - ./grafana/container/grafana_data:/var/lib/grafana
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
@@ -78,16 +78,16 @@ services:
       - DB_ADMIN_USER=admin
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
 
-  frontend:
-    build:
-      context: diary
-      dockerfile: ./Dockerfile
-    container_name: diary
-    restart: always
-    networks:
-      - metrics-network
-    expose:
-      - '9000'
+#  frontend:
+#    build:
+#      context: diary
+#      dockerfile: ./Dockerfile
+#    container_name: diary
+#    restart: always
+#    networks:
+#      - metrics-network
+#    expose:
+#      - '9000'
 
   nginx:
     image: nginx:latest
