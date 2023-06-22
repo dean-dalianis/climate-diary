@@ -66,7 +66,7 @@ def fetch_latest_timestamp(country):
     :return: The latest timestamp as a datetime object.
     :rtype: datetime or None
     """
-    from gsom_fetcher.util import get_country_alpha_2
+    from util import get_country_alpha_2
 
     query = f"SELECT last(\"value\") FROM \"Average_Temperature\" WHERE \"country_id\" = '{get_country_alpha_2(country['name'])}'"
     result = client.query(query, epoch='ms')
@@ -86,7 +86,7 @@ def fetch_gsom_data_from_db(country, datatype):
     :return: A list of records, where each record is a dictionary with 'date' and 'value'.
     :rtype: list[dict] or None
     """
-    from gsom_fetcher.util import get_country_alpha_2
+    from util import get_country_alpha_2
 
     query = f"SELECT * FROM \"{datatype}\" WHERE \"country_id\" = '{get_country_alpha_2(country['name'])}'"
     result = client.query(query, epoch='ms')
@@ -138,7 +138,7 @@ def drop(country, measurement):
     :return: None
     :rtype: None
     """
-    from gsom_fetcher.util import get_country_alpha_2
+    from util import get_country_alpha_2
 
     try:
         query = f"DROP SERIES FROM \"{measurement}\" WHERE \"country_id\" = '{get_country_alpha_2(country['name'])}'"
@@ -156,7 +156,7 @@ def no_analysis_data(country):
     :return: True if there is no analysis data for the country, False otherwise.
     :rtype: bool
     """
-    from gsom_fetcher.util import get_country_alpha_2
+    from util import get_country_alpha_2
 
     try:
         query = f"SELECT * FROM \"Average_Temperature_decadal_average\" WHERE \"country_id\" = '{get_country_alpha_2(country['name'])}'"
