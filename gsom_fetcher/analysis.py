@@ -22,6 +22,8 @@ def analyze_data_and_write_to_db(country, data):
     :return: None
     :rtype: None
     """
+    from gsom_fetcher.util import get_country_alpha_2
+
     monthly_averages = {}
     yearly_averages = {}
     decadal_averages = {}
@@ -96,11 +98,12 @@ def write_monthly_averages_to_db(country, monthly_averages, datatype):
     :return: None
     :rtype: None
     """
+    from gsom_fetcher.util import get_country_alpha_2
+
     points = []
     for year, months in monthly_averages.items():
         for month, values in months.items():
             metric = calculate_correct_metric(values, datatype)
-            from gsom_fetcher.util import get_country_alpha_2
             point = {
                 'measurement': f'{MEASUREMENT_NAMES[datatype]}_monthly_average',
                 'tags': {
@@ -127,10 +130,11 @@ def write_yearly_averages_to_db(country, yearly_averages, datatype):
     :return: None
     :rtype: None
     """
+    from gsom_fetcher.util import get_country_alpha_2
+
     points = []
     for year, values in yearly_averages.items():
         metric = calculate_correct_metric(values, datatype)
-        from gsom_fetcher.util import get_country_alpha_2
         point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_yearly_average',
             'tags': {
@@ -259,10 +263,12 @@ def drop_analysis_data(country):
     :rtype: None
     """
     logger.info(f'Dropping analysis data for {country["name"]} from DB')
+    from gsom_fetcher.util import get_country_alpha_2
+
     for datatype in MEASUREMENT_NAMES.keys():
-        drop(country['name'], f'{MEASUREMENT_NAMES[datatype]}_trend')
-        drop(country['name'], f'{MEASUREMENT_NAMES[datatype]}_monthly_average')
-        drop(country['name'], f'{MEASUREMENT_NAMES[datatype]}_yearly_average')
-        drop(country['name'], f'{MEASUREMENT_NAMES[datatype]}_decadal_average')
-        drop(country['name'], f'{MEASUREMENT_NAMES[datatype]}_yoy_change')
-        drop(country['name'], f'{MEASUREMENT_NAMES[datatype]}_dod_change')
+        drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_trend')
+        drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_monthly_average')
+        drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_yearly_average')
+        drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_decadal_average')
+        drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_dod_change')
+        drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_yoy_change')
