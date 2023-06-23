@@ -7,13 +7,9 @@ with open(CONFIG_FILE, 'r') as file:
 
 MIN_START_YEAR = config['MIN_START_YEAR']
 DATATYPE_ID = config['DATATYPE_ID']
-ATTRIBUTES = config['ATTRIBUTES']
 MEASUREMENT_NAMES = config['MEASUREMENT_NAMES']
 MAX_WORKERS = config['MAX_WORKERS']
 MISSING_COUNTRY_CODES = config['MISSING_COUNTRY_CODES']
-
-EXCLUDED_ATTRIBUTES = ['source_code', 'daily_dataset_measurement_source_code', 'daily_dataset_flag', 'measurement_flag',
-                       'quality_flag']
 
 DB_CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/db_config.json')
 with open(DB_CONFIG_FILE, 'r') as file:

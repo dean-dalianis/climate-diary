@@ -2,56 +2,6 @@
   "MAX_WORKERS": 1,
   "MIN_START_YEAR": 1880,
   "DATATYPE_ID": "TAVG,TMAX,TMIN,EMXT,EMNT,PRCP,EMXP,EMSD",
-  "ATTRIBUTES": {
-    "TAVG": [
-      "days_missing",
-      "source_code"
-    ],
-    "TMAX": [
-      "days_missing",
-      "measurement_flag",
-      "quality_flag",
-      "source_code"
-    ],
-    "TMIN": [
-      "days_missing",
-      "measurement_flag",
-      "quality_flag",
-      "source_code"
-    ],
-    "EMXT": [
-      "days_missing",
-      "daily_dataset_source_code",
-      "day",
-      "more_than_once"
-    ],
-    "EMNT": [
-      "days_missing",
-      "daily_dataset_source_code",
-      "day",
-      "more_than_once"
-    ],
-    "PRCP": [
-      "days_missing",
-      "measurement_flag",
-      "quality_flag",
-      "source_code"
-    ],
-    "EMXP": [
-      "days_missing",
-      "daily_dataset_flag",
-      "daily_dataset_source_code",
-      "day",
-      "more_than_once"
-    ],
-    "EMSD": [
-      "days_missing",
-      "daily_dataset_flag",
-      "daily_dataset_source_code",
-      "day",
-      "more_than_once"
-    ]
-  },
   "MEASUREMENT_NAMES": {
     "TAVG": "Average_Temperature",
     "TMAX": "Maximum_Temperature",

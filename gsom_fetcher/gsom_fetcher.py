@@ -2,7 +2,7 @@ import concurrent.futures
 from datetime import datetime, timedelta, timezone
 
 from analysis import drop_analysis_data, analyze_data_and_write_to_db
-from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
+from config import DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
     MAX_WORKERS
 from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp
 from logging_config import logger
@@ -17,50 +17,6 @@ empty_station_details = {
     'longitude': float('inf'),
     'name': 'N/A'
 }
-
-
-def decode_attributes(datatype, attributes_str):
-    """
-    Decode the attributes string for a specified datatype.
-    The attributes string is a comma separated string of values in the order specified in the config file.
-
-    Attributes are decoded as follows:
-        - days_missing: int
-        - day: int (optional)
-        - more_than_once: bool (optional)
-
-
-    :param str datatype: The datatype of the attributes.
-    :param str attributes_str: The attributes string to decode.
-    :return: The decoded attributes.
-    :rtype: dict
-    """
-    attribute_names = ATTRIBUTES.get(datatype, [])
-    attributes = attributes_str.split(',')
-
-    decoded_attributes = {}
-    for i, name in enumerate(attribute_names):
-        # Check if the attribute value exists, else provide default.
-        if i < len(attributes):
-            if name == 'days_missing' or name == 'day':
-                value = int(attributes[i]) if attributes[i] != '' else 0
-            elif name == 'more_than_once':
-                value = True if attributes[i] == '+' else False
-            else:
-                value = attributes[i]
-        else:
-            if name == 'days_missing' or name == 'day':
-                value = 0
-            elif name == 'more_than_once':
-                value = False
-            else:
-                value = ''
-
-        # Add attribute to the decoded attributes dictionary if it's not excluded
-        if name not in EXCLUDED_ATTRIBUTES:
-            decoded_attributes[name] = value
-
-    return decoded_attributes
 
 
 def fetch_countries():
@@ -133,6 +89,7 @@ def fetch_gsom_data(country_id, start_date, end_date, offset):
         logger.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
     return data, has_more_data
 
+
 def init_dates(country):
     found_previous_data = False
     latest_timestamp = fetch_latest_timestamp(country)
@@ -180,8 +137,6 @@ def create_fields_map(country, record, station_details):
         'longitude': float(station_details['longitude']),
         'elevation': float(station_details['elevation'])
     }
-    if 'attributes' in record:
-        fields.update(decode_attributes(record['datatype'], record['attributes']))
     return fields
 
 
@@ -200,7 +155,6 @@ def create_points_dict(country, fields, record):
         - latitude
         - longitude
         - elevation
-        - other attributes
 
     :param dict country: The country information.
     :param dict fields: The map of fields for the data point.
