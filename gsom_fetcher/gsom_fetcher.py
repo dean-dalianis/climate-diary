@@ -1,9 +1,7 @@
-import concurrent.futures
 from datetime import datetime, timedelta, timezone
 
 from analysis import drop_analysis_data, analyze_data_and_write_to_db
-from config import DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
-    MAX_WORKERS
+from config import DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES
 from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp
 from logging_config import logger
 from noaa_requests import make_api_request
@@ -55,12 +53,13 @@ def fetch_stations(country_id, start_date):
 
     station_map = {}
     for station in stations:
-        station_map[station['id']] = {
-            'elevation': station.get('elevation', float('inf')),
-            'latitude': station.get('latitude', float('inf')),
-            'longitude': station.get('longitude', float('inf')),
-            'name': station.get('name', 'N/A')
-        }
+        station_map[station['id']] = {}
+        for field in ['elevation', 'latitude', 'longitude']:
+            if field in station:
+                station_map[station['id']][field] = float(station[field])
+            else:
+                station_map[station['id']][field] = None
+        station_map[station['id']]['name'] = station.get('name', None)
 
     if len(stations) == 0:
         logger.error('Failed to fetch stations')
@@ -130,12 +129,13 @@ def create_fields_map(country, record, station_details):
     :rtype: dict
     """
     fields = {
-        'value': float(record['value']),
+        'value': float(record['value']) if 'value' in record else None,
         'country_name': country['name'],
-        'station': record['station'],
-        'latitude': float(station_details['latitude']),
-        'longitude': float(station_details['longitude']),
-        'elevation': float(station_details['elevation'])
+        'station': record['station'] if 'station' in record else None,
+        'station_name': station_details['name'],
+        'latitude': station_details['latitude'],
+        'longitude': station_details['longitude'],
+        'elevation': station_details['elevation']
     }
     return fields
 
@@ -174,25 +174,21 @@ def create_points_dict(country, fields, record):
     }
 
 
-def fetch_measurements_from_db(country):
+def analyze_data(country):
     """
-    Fetches all measurements from DB for a country.
+    Analyzes the data for a country.
 
-    :param dict country: The country for which to fetch measurements.
-    :return: A map of measurements. Each key is the name of the measurement, and its value is a list of tuples containing the date and value of the measurement.
-    :rtype: dict
+    :param dict country: The country to analyze.
+    :return: None
     """
-    data_for_analysis = {datatype: [] for datatype in MEASUREMENT_NAMES.keys()}
-
+    logger.info(f'Starting analysis for {country["name"]}')
+    drop_analysis_data(country)
     for datatype in MEASUREMENT_NAMES.keys():
-        db_data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
-        if db_data is not None:
-            for record in db_data:
-                data_for_analysis[datatype].append((record['date'], record['value']))
-        logger.info(
-            f'Fetched {len(data_for_analysis[datatype])} points to analyze for {MEASUREMENT_NAMES[datatype]}')
-
-    return data_for_analysis
+        data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
+        if len(data) == 0:
+            continue
+        analyze_data_and_write_to_db(country, datatype, data)
+    logger.info(f'Analysis finished for {country["name"]}')
 
 
 def fetch_gsom_data_from_noaa_and_write_to_database(countries):
@@ -202,7 +198,6 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     :return: None
     :rtype: None
     """
-    countries_to_analyse = []
     while len(countries) > 0:
         country = countries.pop()
         if get_country_alpha_2(country['name']) is None:
@@ -239,6 +234,8 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                     if station_map is not None:
                         station_details = station_map.get(record['station'], empty_station_details)
                     fields = create_fields_map(country, record, station_details)
+                    if fields['value'] is None:
+                        continue
                     points_dict = create_points_dict(country, fields, record)
                     points.append(points_dict)
 
@@ -251,36 +248,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                     break
 
             start_date = current_end_date + timedelta(days=1)
-
-        countries_to_analyse.append(country)
-
-    return countries_to_analyse
-
-
-def analyze_data(country):
-    """
-    Analyzes the data for a country.
-
-    :param dict country: The country to analyze.
-    :return: None
-    """
-    logger.info(f'Starting analysis for {country["name"]}')
-    drop_analysis_data(country)
-    data_for_analysis = fetch_measurements_from_db(country)
-    logger.info(f'Fetched {len(data_for_analysis)} measurements for {country["name"]}')
-    analyze_data_and_write_to_db(country, data_for_analysis)
-    logger.info(f'Analysis finished for {country["name"]}')
-
-
-def perform_analysis(countries_to_analyze):
-    """
-    Analyzes the data for each country in COUNTRIES_TO_ANALYZE using multiple threads.
-
-    :return: None
-    :rtype: None
-    """
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        executor.map(analyze_data, countries_to_analyze)
+        analyze_data(country)
 
 
 def main():
@@ -290,12 +258,8 @@ def main():
         countries = fetch_countries() or []
 
         logger.info('Fetching climate data...')
-        countries_to_analyze = fetch_gsom_data_from_noaa_and_write_to_database(countries)
+        fetch_gsom_data_from_noaa_and_write_to_database(countries)
         logger.info('Fetching climate data finished.')
-
-        logger.info('Analyzing countries...')
-        perform_analysis(countries_to_analyze)
-        logger.info('Analysis finished.')
 
         update_last_run()
 

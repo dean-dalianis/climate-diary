@@ -6,86 +6,129 @@ from influx import write_points_to_db, drop
 from logging_config import logger
 
 
-def analyze_data_and_write_to_db(country, data):
+def analyze_data_and_write_to_db(country, datatype, data):
     """
     Analyze the data and write the results to the database.
     Analyzed data includes:
-        - monthly averages
         - yearly averages
         - decadal averages
         - year-over-year changes
         - decade-over-decade changes
-        - trend
+        - trends
 
     :param dict country: The country for which to calculate trends.
-    :param dict data: A dictionary where the key is the datatype, and the value is a list of tuples, each containing a timestamp and a value.
+    :param str datatype: The measurement we're doing the analysis for
+    :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
     :return: None
     :rtype: None
     """
-    from util import get_country_alpha_2
 
-    monthly_averages = {}
-    yearly_averages = {}
-    decadal_averages = {}
-    yoy_changes = {}
-    dod_changes = {}
-    trend_points = []
+    trend_points = calculate_trend_points(country, data, datatype)
+    decadal_averages, yearly_averages = calculate_averages(data)
+    dod_changes, yoy_changes = calculate_changes(data)
 
-    for datatype, data_points in data.items():
-        if data_points:
-            timestamps, values = zip(*data_points)
-            timestamps = [date2num(ts) for ts in timestamps]
-            trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
-            trend_point = {
-                'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
-                'tags': {
-                    'country_id': get_country_alpha_2(country['name'])
-                },
-                'fields': {
-                    'slope': trend_slope,
-                    'intercept': trend_intercept,
-                    'country_name': country['name']}
-            }
-            trend_points.append(trend_point)
+    write_points_to_db(trend_points, country)
+    write_yearly_averages_to_db(country, yearly_averages, datatype)
+    write_decadal_averages_to_db(country, decadal_averages, datatype)
+    write_yoy_changes_to_db(country, yoy_changes, datatype)
+    write_dod_changes_to_db(country, dod_changes, datatype)
 
-            for timestamp, value in data_points:
-                month = timestamp.month
-            year = timestamp.year
-            decade = (year // 10) * 10
 
-            monthly_averages.setdefault(year, {}).setdefault(month, []).append(value)
-            yearly_averages.setdefault(year, []).append(value)
-            decadal_averages.setdefault(decade, []).append(value)
+def calculate_changes(data):
+    """
+    Calculates the year-over-year and decade-over-decade changes for the data.
 
-            sorted_data_points = sorted(data_points, key=lambda x: x[0])  # Sort data points by timestamp
-            for i in range(1, len(sorted_data_points)):
-                current_year = sorted_data_points[i][0].year
-            prev_year = sorted_data_points[i - 1][0].year
-            yoy_change = sorted_data_points[i][1] - sorted_data_points[i - 1][1]
-            yoy_changes.setdefault(current_year, []).append(yoy_change)
-            if current_year != prev_year + 1:
+    :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
+    :return dict dod_changes: A dictionary containing the decade-over-decade changes.
+    :return dict yoy_changes: A dictionary containing the year-over-year changes.
+    :rtype: dict, dict
+    """
+    yoy_changes, dod_changes = {}, {}
+    sorted_data = sorted(data, key=lambda d: d['date'])  # Sort data points by timestamp
+    for i in range(1, len(sorted_data)):
+        current_year = sorted_data[i]['date'].year
+        prev_year = sorted_data[i - 1]['date'].year
+        yoy_change = sorted_data[i]['value'] - sorted_data[i - 1]['value']
+        yoy_changes.setdefault(current_year, []).append(yoy_change)
+        if current_year != prev_year + 1:
             # Handle missing years in the data
-                missing_years = range(prev_year + 1, current_year)
+            missing_years = range(prev_year + 1, current_year)
             for missing_year in missing_years:
                 yoy_changes.setdefault(missing_year, []).append(None)
 
-            current_decade = (sorted_data_points[i][0].year // 10) * 10
-            prev_decade = (sorted_data_points[i - 1][0].year // 10) * 10
-            dod_change = sorted_data_points[i][1] - sorted_data_points[i - 1][1]
-            dod_changes.setdefault(current_decade, []).append(dod_change)
-            if current_decade != prev_decade + 10:
+        current_decade = (sorted_data[i]['date'].year // 10) * 10
+        prev_decade = (sorted_data[i - 1]['date'].year // 10) * 10
+        dod_change = sorted_data[i]['value'] - sorted_data[i - 1]['value']
+        dod_changes.setdefault(current_decade, []).append(dod_change)
+        if current_decade != prev_decade + 10:
             # Handle missing decades in the data
-                missing_decades = range(prev_decade + 10, current_decade, 10)
+            missing_decades = range(prev_decade + 10, current_decade, 10)
             for missing_decade in missing_decades:
                 dod_changes.setdefault(missing_decade, []).append(None)
+    return dod_changes, yoy_changes
 
-            write_points_to_db(trend_points, country)
 
-            write_monthly_averages_to_db(country, monthly_averages, datatype)
-            write_yearly_averages_to_db(country, yearly_averages, datatype)
-            write_decadal_averages_to_db(country, decadal_averages, datatype)
-            write_yoy_changes_to_db(country, yoy_changes, datatype)
-            write_dod_changes_to_db(country, dod_changes, datatype)
+def calculate_averages(data):
+    """
+    Calculates the yearly and decadal averages for the data.
+
+    :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
+    :return dict decadal_averages: A dictionary containing the decadal averages.
+    :return dict yearly_averages: A dictionary containing the yearly averages.
+    :rtype: dict, dict
+    """
+    yearly_averages, decadal_averages = {}, {}
+    for d in data:
+        timestamp, value = d['date'], d['value']
+        year = timestamp.year
+        decade = (year // 10) * 10
+
+        yearly_averages.setdefault(year, []).append(value)
+        decadal_averages.setdefault(decade, []).append(value)
+    return decadal_averages, yearly_averages
+
+
+def calculate_trend_points(country, data, datatype):
+    """
+    Calculates the trend for the data and returns a list of points to write to the database.
+
+    :param dict country: The country for which to calculate trends.
+    :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
+    :param str datatype: The measurement we're doing the analysis for
+    :return: A list of points to write to the database.
+    :rtype: list
+    """
+    from util import get_country_alpha_2, timestamp_to_days_since_1880
+
+    # Calculate trend line
+    timestamps = [date2num(d['date']) for d in data]
+    values = [d['value'] for d in data]
+    trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
+
+    # Compute the start and end points of the trend line
+    start_point = {
+        'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
+        'tags': {
+            'country_id': get_country_alpha_2(country['name'])
+        },
+        'time': data[0]['date'],
+        'fields': {
+            'value': trend_slope * timestamp_to_days_since_1880(data[0]['date']) + trend_intercept,
+            'country_name': country['name']}
+    }
+
+    end_point = {
+        'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
+        'tags': {
+            'country_id': get_country_alpha_2(country['name'])
+        },
+        'time': data[-1]['date'],
+        'fields': {
+            'value': trend_slope * timestamp_to_days_since_1880(data[-1]['date']) + trend_intercept,
+            'country_name': country['name']}
+    }
+
+    return [start_point, end_point]
 
 
 def write_monthly_averages_to_db(country, monthly_averages, datatype):
