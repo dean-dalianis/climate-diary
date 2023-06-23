@@ -52,18 +52,17 @@ def ms_to_timestamp(timestamp_ms):
     return timestamp.replace(tzinfo=timezone.utc)
 
 
-def timestamp_to_days_since_1880(timestamp_ms):
+def datetime_to_days_since_1880(dt):
     """
-    Convert a timestamp in milliseconds to the number of days since January 1, 1880.
+    Convert a datetime object to the number of days since January 1, 1880.
 
-    :param int timestamp_ms: The timestamp in milliseconds.
+    :param datetime.datetime dt: The datetime to convert to a numerical representation.
     :return: The number of days since January 1, 1880.
     :rtype: int
     """
-    timestamp = ms_to_timestamp(timestamp_ms)  # Convert ms to datetime
-    base_date = datetime(1880, 1, 1, tzinfo=timezone.utc)  # Define base date
-    delta = timestamp - base_date  # Calculate the difference
-    return delta.days  # Return the number of days
+    base_date = datetime(1880, 1, 1, tzinfo=timezone.utc)
+    return (dt - base_date).days
+
 
 
 def should_run():
