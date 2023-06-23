@@ -103,7 +103,7 @@ def do_get(url):
             update_token()
 
 
-def make_api_request(url, offset):
+def make_api_request(url, offset=0):
     """
     Make an API request to the specified URL, handling rate limiting and token rotation.
 
