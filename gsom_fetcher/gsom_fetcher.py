@@ -185,7 +185,7 @@ def analyze_data(country):
     drop_analysis_data(country)
     for datatype in MEASUREMENT_NAMES.keys():
         data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
-        if len(data) == 0:
+        if data is None or len(data) == 0:
             continue
         analyze_data_and_write_to_db(country, datatype, data)
     logger.info(f'Analysis finished for {country["name"]}')
