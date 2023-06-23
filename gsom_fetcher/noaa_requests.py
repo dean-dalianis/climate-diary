@@ -9,11 +9,6 @@ from urllib3 import Retry
 
 from logging_config import logger
 
-# Calculate maximum number of points that fit in memory
-AVAILABLE_MEMORY = psutil.virtual_memory().available
-POINTS_MEMORY_USAGE = 5 * 24 + 3 * 49 + 30  # in bytes
-POINTS_FIT_IN_MEMORY = int(AVAILABLE_MEMORY * 0.9 // POINTS_MEMORY_USAGE)
-
 TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 8)]
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/api_config.json')
@@ -120,7 +115,12 @@ def make_api_request(url, offset=0):
 
     all_results = []
     more_data = True
-    pages_to_fetch = POINTS_FIT_IN_MEMORY // 1000
+    # Calculate maximum number of points that fit in memory
+    available_memory = psutil.virtual_memory().available
+    points_memory_usage = 5 * 24 + 3 * 49 + 30  # in bytes
+    points_fit_in_memory = int(available_memory * 0.9 // points_memory_usage)
+
+    pages_to_fetch = points_fit_in_memory // 1000
 
     while more_data and pages_to_fetch > 0:
         paged_url = f'{BASE_URL}{url}&offset={offset}'
