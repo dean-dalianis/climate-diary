@@ -93,7 +93,7 @@ def calculate_trend_points(country, data, measurement):
     timestamps = [datetime_to_days_since_1880(d['date']) for d in data]
     values = [d['value'] for d in data]
     trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
-    from gsom_fetcher.util import get_country_alpha_2
+    from util import get_country_alpha_2
 
     trend_points = []
     for i, timestamp in enumerate(timestamps):
