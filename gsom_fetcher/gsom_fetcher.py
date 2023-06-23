@@ -45,7 +45,7 @@ def decode_attributes(datatype, attributes_str):
             if name == 'days_missing' or name == 'day':
                 value = int(attributes[i]) if attributes[i] != '' else 0
             elif name == 'more_than_once':
-                value = 'true' if attributes[i] == '+' else 'false'
+                value = True if attributes[i] == '+' else False
             else:
                 value = attributes[i]
         else:
