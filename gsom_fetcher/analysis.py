@@ -1,5 +1,4 @@
 import numpy as np
-from matplotlib.dates import date2num
 
 from config import MEASUREMENT_NAMES
 from influx import write_points_to_db, drop
@@ -87,7 +86,17 @@ def calculate_averages(data):
         decadal_averages.setdefault(decade, []).append(value)
     return decadal_averages, yearly_averages
 
-def calculate_trend_points(country, data, measurement):
+
+def calculate_trend_points(country, data, datatype):
+    """
+    Calculates the trend points for the data.
+
+    :param dict country: The country for which to calculate trends.
+    :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
+    :param str datatype: The measurement we're doing the analysis for
+    :return: A list of dictionaries with trend points.
+    :rtype: list
+    """
     from util import datetime_to_days_since_1880, datetime_to_string
 
     timestamps = [datetime_to_days_since_1880(d['date']) for d in data]
@@ -98,7 +107,7 @@ def calculate_trend_points(country, data, measurement):
     trend_points = []
     for i, timestamp in enumerate(timestamps):
         trend_point = {
-            'measurement': f'{measurement}_trend',
+            'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
             'time': datetime_to_string(data[i]['date']),  # convert the datetime object to string
             'fields': {
                 'value': trend_slope * timestamp + trend_intercept,
@@ -109,7 +118,6 @@ def calculate_trend_points(country, data, measurement):
         trend_points.append(trend_point)
 
     return trend_points
-
 
 
 def write_monthly_averages_to_db(country, monthly_averages, datatype):
