@@ -28,7 +28,7 @@ def fetch_countries():
     """
     logger.info(f'Fetching countries...')
     countries_url = f"locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
-    countries, ignored = make_api_request(countries_url)
+    countries, ignored, ignored = make_api_request(countries_url)
     if len(countries) == 0:
         logger.error('Failed to fetch countries')
         exit(1)
@@ -49,7 +49,7 @@ def fetch_stations(country_id, start_date):
     """
     start_date_str = datetime_to_string(start_date)
     stations_url = f"stations?datasetid=GSOM&&units=metric&locationid={country_id}&startdate={start_date_str}&limit=1000"
-    stations, ignored = make_api_request(stations_url)
+    stations, ignored, ignored = make_api_request(stations_url)
 
     logger.info(f'Fetching stations for {country_id}...')
 
@@ -84,10 +84,10 @@ def fetch_gsom_data(country_id, start_date, end_date, offset):
     start_date_str = datetime_to_string(start_date)
     end_date_str = datetime_to_string(end_date)
     data_url = f"data?datasetid=GSOM&datatypeid={DATATYPE_ID}&units=metric&locationid={country_id}&startdate={start_date_str}&enddate={end_date_str}&limit=1000"
-    data, has_more_data = make_api_request(data_url, offset)
+    data, has_more_data, offset = make_api_request(data_url, offset)
     if data is None:
         logger.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
-    return data, has_more_data
+    return data, has_more_data, offset
 
 
 def init_dates(country):
@@ -227,7 +227,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
             # Initialize offset for pagination
             offset = 0
             while True:
-                gsom_data, has_more_data = fetch_gsom_data(country['id'], start_date, current_end_date, offset)
+                gsom_data, has_more_data, offset = fetch_gsom_data(country['id'], start_date, current_end_date, offset)
 
                 if gsom_data is None:
                     break
@@ -249,8 +249,6 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
 
                 if not has_more_data:
                     break
-
-                offset += len(gsom_data)
 
             start_date = current_end_date + timedelta(days=1)
 

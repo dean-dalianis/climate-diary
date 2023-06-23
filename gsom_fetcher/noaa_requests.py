@@ -2,11 +2,17 @@ import json
 import os
 import time
 
+import psutil as psutil
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
 from logging_config import logger
+
+# Calculate maximum number of points that fit in memory
+AVAILABLE_MEMORY = psutil.virtual_memory().available
+POINTS_MEMORY_USAGE = 5 * 24 + 3 * 49 + 30  # in bytes
+POINTS_FIT_IN_MEMORY = int(AVAILABLE_MEMORY * 0.9 // POINTS_MEMORY_USAGE)
 
 TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 7)]
 
@@ -105,36 +111,46 @@ def do_get(url):
 
 def make_api_request(url, offset=0):
     """
-    Make an API request to the specified URL, handling rate limiting and token rotation.
+    Make multiple API requests to the specified URL until the memory limit is reached or no more data is available.
 
     :param str url: The URL to make the API request to.
-    :return: The JSON response from the API request, and a boolean indicating if there is more data.
-    :rtype: list, bool
+    :return: The JSON response from the API request, boolean indicating if there is more data, and the offset of the last fetched data.
+    :rtype: list, bool, int
     """
 
-    paged_url = f'{BASE_URL}{url}&offset={offset}'
-    response = do_get(paged_url)
+    all_results = []
+    more_data = True
+    pages_to_fetch = POINTS_FIT_IN_MEMORY // 1000
 
-    if response.status_code == 200:
-        json_data = response.json()
+    while more_data and pages_to_fetch > 0:
+        paged_url = f'{BASE_URL}{url}&offset={offset}'
+        response = do_get(paged_url)
 
-        if 'results' in json_data:
-            results = json_data['results']
+        if response.status_code == 200:
+            json_data = response.json()
 
-            # Calculate total number of results
-            total_count = json_data.get('metadata', {}).get('resultset', {}).get('count', 0)
+            if 'results' in json_data:
+                results = json_data['results']
+                all_results.extend(results)
 
-            # Check if there are more results to fetch
-            if total_count > offset + len(results):
-                return results, True
+                # Calculate total number of results
+                total_count = json_data.get('metadata', {}).get('resultset', {}).get('count', 0)
+
+                # Check if there are more results to fetch
+                if total_count > offset + len(results):
+                    more_data = True
+                else:
+                    # All results have been fetched
+                    more_data = False
+                offset += len(results)
+                pages_to_fetch -= 1
             else:
-                # All results have been fetched
-                return results, False
+                logger.error(
+                    f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
+                more_data = False
         else:
             logger.error(
-                f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
-    else:
-        logger.error(
-            f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}.')
+                f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}.')
+            more_data = False
 
-    return None, False
+    return all_results, more_data, offset

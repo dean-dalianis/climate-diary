@@ -4,3 +4,4 @@ influxdb
 numpy
 matplotlib
 pycountry
+psutil
