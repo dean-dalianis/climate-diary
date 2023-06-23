@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from analysis import drop_analysis_data, analyze_data_and_write_to_db
 from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
     MAX_WORKERS
-from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp, no_analysis_data
+from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp
 from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime, update_last_run, should_run, get_country_alpha_2
@@ -249,6 +249,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     :return: None
     :rtype: None
     """
+    countries_to_analyse = []
     for country in countries:
         if get_country_alpha_2(country['name']) is None:
             continue
@@ -283,9 +284,11 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
 
         if points:
             logger.info(f'Writing climate info for {country["name"]} to db')
-
+            countries_to_analyse.append(country)
             from influx import write_points_to_db
             write_points_to_db(points, country)
+
+    return countries_to_analyse
 
 
 def analyze_data(country):
@@ -303,7 +306,7 @@ def analyze_data(country):
     logger.info(f'Analysis finished for {country["name"]}')
 
 
-def analyze_countries(countries):
+def perform_analysis(countries_to_analyze):
     """
     Analyzes the data for each country in COUNTRIES_TO_ANALYZE using multiple threads.
 
@@ -311,22 +314,7 @@ def analyze_countries(countries):
     :rtype: None
     """
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        executor.map(analyze_data, countries)
-
-
-def perform_analysis(countries):
-    """
-    Performs analysis for countries that have no analysis data.
-    To be used manually when there was an issue with the analysis.
-
-    :return: None
-    :rtype: None
-    """
-    countries_to_analyze = []
-    for country in countries:
-        if no_analysis_data(country):
-            countries_to_analyze.append(country)
-    analyze_countries(countries_to_analyze)
+        executor.map(analyze_data, countries_to_analyze)
 
 
 def main():
@@ -336,11 +324,11 @@ def main():
         countries = fetch_countries() or []
 
         logger.info('Fetching climate data...')
-        fetch_gsom_data_from_noaa_and_write_to_database(countries)
+        countries_to_analyze = fetch_gsom_data_from_noaa_and_write_to_database(countries)
         logger.info('Fetching climate data finished.')
 
         logger.info('Analyzing countries...')
-        perform_analysis(countries)
+        perform_analysis(countries_to_analyze)
         logger.info('Analysis finished.')
 
         update_last_run()
