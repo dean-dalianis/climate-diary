@@ -70,7 +70,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.5.3",
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "alias": "Last Run",
@@ -173,7 +173,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.5.3",
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "alias": "",
@@ -302,6 +302,7 @@
         "y": 7
       },
       "id": 35,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -309,6 +310,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -316,7 +320,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $country_name",
+          "alias": "Average Precipitation: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -324,13 +328,13 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
             },
             {
               "params": [
-                "country_name"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -366,14 +370,14 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
         {
-          "alias": "Highest Daily Total: $country_name",
+          "alias": "Highest Daily Of Total Precipitation: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -381,13 +385,13 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
             },
             {
               "params": [
-                "country_name"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -420,9 +424,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -491,6 +495,7 @@
         "y": 7
       },
       "id": 36,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -498,6 +503,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -505,7 +513,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $country_name",
+          "alias": "Average Precipitation: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -513,13 +521,13 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
             },
             {
               "params": [
-                "country_name"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -553,14 +561,14 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
         {
-          "alias": "Highest Daily Total: $country_name",
+          "alias": "Highest Daily Of Total Precipitation: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -568,7 +576,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
             },
@@ -607,9 +615,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -678,6 +686,7 @@
         "y": 19
       },
       "id": 37,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -685,6 +694,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -700,7 +712,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
             },
@@ -740,9 +752,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -755,7 +767,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
             },
@@ -794,9 +806,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -865,6 +877,7 @@
         "y": 19
       },
       "id": 38,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -872,6 +885,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -887,7 +903,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
             },
@@ -927,9 +943,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -942,7 +958,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
             },
@@ -981,9 +997,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1053,6 +1069,7 @@
         "y": 31
       },
       "id": 39,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1060,6 +1077,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -1075,13 +1095,13 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
             },
             {
               "params": [
-                "country_name"
+                "country_name::field"
               ],
               "type": "tag"
             },
@@ -1113,9 +1133,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1185,6 +1205,7 @@
         "y": 31
       },
       "id": 40,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1207,7 +1228,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
             },
@@ -1245,9 +1266,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1317,6 +1338,7 @@
         "y": 43
       },
       "id": 41,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1324,6 +1346,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -1339,7 +1364,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
             },
@@ -1377,9 +1402,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1450,6 +1475,7 @@
         "y": 43
       },
       "id": 42,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1457,6 +1483,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -1472,7 +1501,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
             },
@@ -1510,9 +1539,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1594,6 +1623,7 @@
         "y": 56
       },
       "id": 27,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1619,15 +1649,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -1657,9 +1681,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -1672,15 +1696,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -1711,9 +1729,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1782,6 +1800,7 @@
         "y": 56
       },
       "id": 44,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1807,15 +1826,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name::field"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -1845,9 +1858,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -1860,15 +1873,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -1899,9 +1906,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -1970,6 +1977,7 @@
         "y": 68
       },
       "id": 32,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -1977,6 +1985,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -1984,7 +1995,7 @@
       },
       "targets": [
         {
-          "alias": "Average: $country_name",
+          "alias": "Average Temperature: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -1992,15 +2003,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2030,14 +2035,14 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
         {
-          "alias": "Max: $country_name",
+          "alias": "Maximum Temperature: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2045,15 +2050,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2084,14 +2083,14 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
         {
-          "alias": "Min: $country_name",
+          "alias": "Minimum Temperature: $country_name",
           "datasource": {
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
@@ -2099,15 +2098,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_id"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2138,9 +2131,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -2209,6 +2202,7 @@
         "y": 68
       },
       "id": 33,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -2231,15 +2225,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2269,9 +2257,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -2284,15 +2272,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2323,9 +2305,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -2338,15 +2320,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2377,9 +2353,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -2448,6 +2424,7 @@
         "y": 80
       },
       "id": 29,
+      "interval": "365d",
       "options": {
         "legend": {
           "calcs": [],
@@ -2470,15 +2447,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2508,9 +2479,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -2523,15 +2494,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "365d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name::field"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2562,9 +2527,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -2633,6 +2598,7 @@
         "y": 80
       },
       "id": 30,
+      "interval": "3650d",
       "options": {
         "legend": {
           "calcs": [],
@@ -2655,15 +2621,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2693,9 +2653,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         },
@@ -2708,15 +2668,9 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "3650d"
               ],
               "type": "time"
-            },
-            {
-              "params": [
-                "country_name"
-              ],
-              "type": "tag"
             },
             {
               "params": [
@@ -2747,9 +2701,9 @@
           ],
           "tags": [
             {
-              "key": "country_name::field",
+              "key": "country_id::tag",
               "operator": "=~",
-              "value": "/^$country_name$/"
+              "value": "/^$country_id$/"
             }
           ]
         }
@@ -2767,17 +2721,44 @@
       {
         "current": {
           "selected": true,
-          "text": "Belgium",
-          "value": "Belgium"
+          "text": "FJ",
+          "value": "FJ"
         },
-        "definition": "SELECT DISTINCT(\"country_name\") FROM \"Average_Temperature\"",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "P0C89709D7A7DC177"
+        },
+        "definition": "SHOW TAG VALUES WITH key=\"country_id\"",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "country_id",
+        "options": [],
+        "query": "SHOW TAG VALUES WITH key=\"country_id\"",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Fiji",
+          "value": "Fiji"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "P0C89709D7A7DC177"
+        },
+        "definition": "SELECT country_name FROM Average_Temperature WHERE country_id = '${country_id}'\n",
         "hide": 0,
         "includeAll": false,
         "label": "Country Name",
         "multi": false,
         "name": "country_name",
         "options": [],
-        "query": "SELECT DISTINCT(\"country_name\") FROM \"Average_Temperature\"",
+        "query": "SELECT country_name FROM Average_Temperature WHERE country_id = '${country_id}'\n",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2787,13 +2768,13 @@
     ]
   },
   "time": {
-    "from": "1930-01-01T00:00:00.000Z",
-    "to": "2023-06-20T00:00:00.000Z"
+    "from": "1800-01-01T00:00:00.000Z",
+    "to": "2022-01-01T00:00:00.000Z"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "NOAA GSOM Dashboard",
   "uid": "c351f1fe-59e9-4758-b061-93603cbedc6d",
-  "version": 20,
+  "version": 7,
   "weekStart": ""
 }

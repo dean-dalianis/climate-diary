@@ -45,7 +45,7 @@ def decode_attributes(datatype, attributes_str):
             if name == 'days_missing' or name == 'day':
                 value = int(attributes[i]) if attributes[i] != '' else 0
             elif name == 'more_than_once':
-                value = True if attributes[i] == '+' else False
+                value = 'true' if attributes[i] == '+' else 'false'
             else:
                 value = attributes[i]
         else:
@@ -115,24 +115,23 @@ def fetch_stations(country_id, start_date):
     return station_map
 
 
-def fetch_gsom_data(country_id, start_date, end_date):
+def fetch_gsom_data(country_id, start_date, end_date, offset):
     """
     Fetch and return climate data for the specified country and date range.
 
     :param str country_id: The ID of the country to fetch data for.
     :param datetime start_date: The start of the date range.
     :param datetime end_date: The end of the date range.
-    :return: A list of climate data for the specified country and date range.
-    :rtype: list or None
+    :return: A list of climate data for the specified country and date range, and a boolean indicating if there is more data.
+    :rtype: list or None, bool
     """
     start_date_str = datetime_to_string(start_date)
     end_date_str = datetime_to_string(end_date)
     data_url = f"data?datasetid=GSOM&datatypeid={DATATYPE_ID}&units=metric&locationid={country_id}&startdate={start_date_str}&enddate={end_date_str}&limit=1000"
-    data = make_api_request(data_url)
+    data, has_more_data = make_api_request(data_url, offset)
     if data is None:
         logger.error(f'Failed to fetch climate data for country {country_id} from {start_date_str} to {end_date_str}')
-    return data
-
+    return data, has_more_data
 
 def init_dates(country):
     found_previous_data = False
@@ -254,7 +253,6 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
         if get_country_alpha_2(country['name']) is None:
             continue
 
-        points = []
         logger.info(f'Fetching climate data for country: {country["name"]}')
 
         end_date, start_date, found_previous_data = init_dates(country)
@@ -270,9 +268,18 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
 
         while start_date <= end_date:
             current_end_date = calculate_current_end_date(end_date, start_date)
-            if (gsom_data := fetch_gsom_data(country['id'], start_date, current_end_date)) is not None:
+
+            # Initialize offset for pagination
+            offset = 0
+            while True:
+                gsom_data, has_more_data = fetch_gsom_data(country['id'], start_date, current_end_date, offset)
+
+                if gsom_data is None:
+                    break
+
                 logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
 
+                points = []
                 for record in gsom_data:
                     if station_map is not None:
                         station_details = station_map.get(record['station'], empty_station_details)
@@ -280,13 +287,19 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                     points_dict = create_points_dict(country, fields, record)
                     points.append(points_dict)
 
+                # Write data to DB here
+                logger.info(f'Writing climate info for {country["name"]} to db')
+                from influx import write_points_to_db
+                write_points_to_db(points, country)
+
+                if not has_more_data:
+                    break
+
+                offset += len(gsom_data)
+
             start_date = current_end_date + timedelta(days=1)
 
-        if points:
-            logger.info(f'Writing climate info for {country["name"]} to db')
-            countries_to_analyse.append(country)
-            from influx import write_points_to_db
-            write_points_to_db(points, country)
+        countries_to_analyse.append(country)
 
     return countries_to_analyse
 

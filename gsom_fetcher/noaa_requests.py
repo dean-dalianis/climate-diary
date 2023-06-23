@@ -103,44 +103,38 @@ def do_get(url):
             update_token()
 
 
-def make_api_request(url):
+def make_api_request(url, offset):
     """
     Make an API request to the specified URL, handling rate limiting and token rotation.
 
     :param str url: The URL to make the API request to.
-    :return: The JSON response from the API request.
-    :rtype: list
+    :return: The JSON response from the API request, and a boolean indicating if there is more data.
+    :rtype: list, bool
     """
 
-    offset = 0
-    all_results = []
-    while True:
-        paged_url = f'{BASE_URL}{url}&offset={offset}'
-        response = do_get(paged_url)
+    paged_url = f'{BASE_URL}{url}&offset={offset}'
+    response = do_get(paged_url)
 
-        if response.status_code == 200:
-            json_data = response.json()
+    if response.status_code == 200:
+        json_data = response.json()
 
-            if 'results' in json_data:
-                results = json_data['results']
-                all_results.extend(results)
+        if 'results' in json_data:
+            results = json_data['results']
 
-                # Calculate total number of results
-                total_count = json_data.get('metadata', {}).get('resultset', {}).get('count', 0)
+            # Calculate total number of results
+            total_count = json_data.get('metadata', {}).get('resultset', {}).get('count', 0)
 
-                # Check if there are more results to fetch
-                if total_count > offset + len(results):
-                    offset += len(results)
-                else:
-                    # All results have been fetched
-                    return all_results
+            # Check if there are more results to fetch
+            if total_count > offset + len(results):
+                return results, True
             else:
-                logger.error(
-                    f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
-                break
+                # All results have been fetched
+                return results, False
         else:
             logger.error(
-                f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}.')
-            break
+                f'No \'results\' in response for URL {paged_url}. Response content: {response.content}')
+    else:
+        logger.error(
+            f'Received status code {response.status_code} for URL {paged_url}. Response content: {response.content}.')
 
-    return all_results
+    return None, False

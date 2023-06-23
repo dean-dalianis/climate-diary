@@ -1,5 +1,5 @@
 {
-  "MAX_WORKERS": 10,
+  "MAX_WORKERS": 1,
   "MIN_START_YEAR": 1880,
   "DATATYPE_ID": "TAVG,TMAX,TMIN,EMXT,EMNT,PRCP,EMXP,EMSD",
   "ATTRIBUTES": {
@@ -99,6 +99,7 @@
     "Trinidad & Tobago": "TT",
     "Turks & Caicos Is.": "TC",
     "Venezuela": "VE",
-    "Vietnam": "VN"
+    "Vietnam": "VN",
+    "Czech Republic": "CZ"
   }
 }
