@@ -87,48 +87,29 @@ def calculate_averages(data):
         decadal_averages.setdefault(decade, []).append(value)
     return decadal_averages, yearly_averages
 
+def calculate_trend_points(country, data, measurement):
+    from util import datetime_to_days_since_1880, datetime_to_string
 
-def calculate_trend_points(country, data, datatype):
-    """
-    Calculates the trend for the data and returns a list of points to write to the database.
-
-    :param dict country: The country for which to calculate trends.
-    :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
-    :param str datatype: The measurement we're doing the analysis for
-    :return: A list of points to write to the database.
-    :rtype: list
-    """
-    from util import get_country_alpha_2, timestamp_to_days_since_1880
-
-    # Calculate trend line
-    timestamps = [date2num(d['date']) for d in data]
+    timestamps = [datetime_to_days_since_1880(d['date']) for d in data]
     values = [d['value'] for d in data]
     trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
+    from gsom_fetcher.util import get_country_alpha_2
 
-    # Compute the start and end points of the trend line
-    start_point = {
-        'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
-        'tags': {
-            'country_id': get_country_alpha_2(country['name'])
-        },
-        'time': data[0]['date'],
-        'fields': {
-            'value': trend_slope * timestamp_to_days_since_1880(data[0]['date']) + trend_intercept,
-            'country_name': country['name']}
-    }
+    trend_points = []
+    for i, timestamp in enumerate(timestamps):
+        trend_point = {
+            'measurement': f'{measurement}_trend',
+            'time': datetime_to_string(data[i]['date']),  # convert the datetime object to string
+            'fields': {
+                'value': trend_slope * timestamp + trend_intercept,
+                'country_name': country['name'],
+                'country_id': get_country_alpha_2(country['name'])
+            }
+        }
+        trend_points.append(trend_point)
 
-    end_point = {
-        'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
-        'tags': {
-            'country_id': get_country_alpha_2(country['name'])
-        },
-        'time': data[-1]['date'],
-        'fields': {
-            'value': trend_slope * timestamp_to_days_since_1880(data[-1]['date']) + trend_intercept,
-            'country_name': country['name']}
-    }
+    return trend_points
 
-    return [start_point, end_point]
 
 
 def write_monthly_averages_to_db(country, monthly_averages, datatype):
