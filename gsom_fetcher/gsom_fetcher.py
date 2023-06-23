@@ -72,7 +72,7 @@ def fetch_countries():
     """
     logger.info(f'Fetching countries...')
     countries_url = f"locations?datasetid=GSOM&locationcategoryid=CNTRY&limit=1000"
-    countries = make_api_request(countries_url)
+    countries, ignored = make_api_request(countries_url)
     if len(countries) == 0:
         logger.error('Failed to fetch countries')
         exit(1)
@@ -93,7 +93,7 @@ def fetch_stations(country_id, start_date):
     """
     start_date_str = datetime_to_string(start_date)
     stations_url = f"stations?datasetid=GSOM&&units=metric&locationid={country_id}&startdate={start_date_str}&limit=1000"
-    stations = make_api_request(stations_url)
+    stations, ignored = make_api_request(stations_url)
 
     logger.info(f'Fetching stations for {country_id}...')
 
@@ -249,7 +249,8 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     :rtype: None
     """
     countries_to_analyse = []
-    for country in countries:
+    while len(countries) > 0:
+        country = countries.pop()
         if get_country_alpha_2(country['name']) is None:
             continue
 
