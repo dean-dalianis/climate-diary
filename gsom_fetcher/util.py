@@ -107,7 +107,9 @@ def get_country_alpha_2(country_name):
     try:
         alpha_2 = pycountry.countries.get(name=country_name).alpha_2
     except AttributeError:
-        alpha_2 = None
-        logger.warn(f'Could not get country alpha_2 for {country_name}')
+        from config import MISSING_COUNTRY_CODES
+        alpha_2 = MISSING_COUNTRY_CODES.get(country_name)
+        if alpha_2 is None:
+            logger.warn(f'Could not find country alpha_2 for {country_name}')
 
     return alpha_2

@@ -2,14 +2,14 @@ import concurrent.futures
 from datetime import datetime, timedelta, timezone
 
 from analysis import drop_analysis_data, analyze_data_and_write_to_db
-from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, EU_CONTINENT_FIPS, DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
+from config import ATTRIBUTES, EXCLUDED_ATTRIBUTES, DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES, \
     MAX_WORKERS
 from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp, no_analysis_data
 from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime, update_last_run, should_run, get_country_alpha_2
 
-MAX_STATIONS = 3000  # The maximum number of stations to fetch data for -- used for fetching data faster for testing purposes
+MAX_STATIONS = 5000  # The maximum number of stations to fetch data for -- used for fetching data faster for testing purposes
 
 empty_station_details = {
     'elevation': float('inf'),
@@ -79,27 +79,7 @@ def fetch_countries():
 
     logger.info(f'Fetched {len(countries)} countries.')
 
-    return [country for country in countries if not country['id'].split(':')[1] in EU_CONTINENT_FIPS]
-
-
-def fetch_european_countries():
-    """
-     Fetch and return a list of European countries.
-
-     This function fetches the list of all countries and filters it to include only the European countries.
-     The filtering is based on the continent code of each country. Only the countries with a continent code
-     present in the EU_CONTINENT_FIPS list are considered as European countries.
-
-     :return: A list of European countries.
-     :rtype: list or None
-     """
-    all_countries = fetch_countries()
-    european_countries = [country for country in all_countries if country['id'].split(':')[1] in EU_CONTINENT_FIPS]
-    if len(european_countries) == 0:
-        logger.error('Failed to fetch European countries')
-        exit(1)
-    logger.info(f'Fetched {len(european_countries)} European countries.')
-    return european_countries
+    return [country for country in countries]
 
 
 def fetch_stations(country_id, start_date):
@@ -293,7 +273,8 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                 logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
 
                 for record in gsom_data:
-                    station_details = station_map.get(record['station'], empty_station_details)
+                    if station_map is not None:
+                        station_details = station_map.get(record['station'], empty_station_details)
                     fields = create_fields_map(country, record, station_details)
                     points_dict = create_points_dict(country, fields, record)
                     points.append(points_dict)

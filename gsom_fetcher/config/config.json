@@ -2,20 +2,55 @@
   "MAX_WORKERS": 10,
   "MIN_START_YEAR": 1880,
   "DATATYPE_ID": "TAVG,TMAX,TMIN,EMXT,EMNT,PRCP,EMXP,EMSD",
-  "EU_CONTINENT_FIPS": [
-    "AL", "AN", "AU", "BO", "BE", "BU", "HR", "CY", "EZ", "DA", "EN", "FI", "FR", "GM", "GR", "HU",
-    "IC", "EI", "IT", "KV", "LG", "LH", "LU", "MK", "MT", "MD", "MN", "NL", "NO", "PL", "PO", "RO",
-    "RI", "LO", "SI", "SP", "SW", "SZ", "UK", "UP", "RS", "BO", "MD", "SM", "IM", "LI", "MC", "VA"
-  ],
   "ATTRIBUTES": {
-    "TAVG": ["days_missing", "source_code"],
-    "TMAX": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    "TMIN": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    "EMXT": ["days_missing", "daily_dataset_source_code", "day", "more_than_once"],
-    "EMNT": ["days_missing", "daily_dataset_source_code", "day", "more_than_once"],
-    "PRCP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-    "EMXP": ["days_missing", "daily_dataset_flag", "daily_dataset_source_code", "day", "more_than_once"],
-    "EMSD": ["days_missing", "daily_dataset_flag", "daily_dataset_source_code", "day", "more_than_once"]
+    "TAVG": [
+      "days_missing",
+      "source_code"
+    ],
+    "TMAX": [
+      "days_missing",
+      "measurement_flag",
+      "quality_flag",
+      "source_code"
+    ],
+    "TMIN": [
+      "days_missing",
+      "measurement_flag",
+      "quality_flag",
+      "source_code"
+    ],
+    "EMXT": [
+      "days_missing",
+      "daily_dataset_source_code",
+      "day",
+      "more_than_once"
+    ],
+    "EMNT": [
+      "days_missing",
+      "daily_dataset_source_code",
+      "day",
+      "more_than_once"
+    ],
+    "PRCP": [
+      "days_missing",
+      "measurement_flag",
+      "quality_flag",
+      "source_code"
+    ],
+    "EMXP": [
+      "days_missing",
+      "daily_dataset_flag",
+      "daily_dataset_source_code",
+      "day",
+      "more_than_once"
+    ],
+    "EMSD": [
+      "days_missing",
+      "daily_dataset_flag",
+      "daily_dataset_source_code",
+      "day",
+      "more_than_once"
+    ]
   },
   "MEASUREMENT_NAMES": {
     "TAVG": "Average_Temperature",
@@ -26,5 +61,44 @@
     "PRCP": "Precipitation",
     "EMXP": "Highest_Daily_Total_Of_Precipitation",
     "EMSD": "Highest_Daily_Snow_Depth"
-    }
+  },
+  "MISSING_COUNTRY_CODES": {
+    "Antigua & Barbuda": "AG",
+    "Bolivia": "BO",
+    "Bosnia & Herzegovina": "BA",
+    "Brunei": "BN",
+    "Cape Verde": "CV",
+    "Cayman Is.": "KY",
+    "Christmas I.": "CX",
+    "Congo, DRC": "CD",
+    "Cook Is.": "CK",
+    "Cote d'Ivoire": "CI",
+    "Curacao": "CW",
+    "Falkland Is.": "FK",
+    "Faroe Is.": "FO",
+    "French Southern & Antarctic Lands": "TF",
+    "Gaza Strip": "PS",
+    "Iran": "IR",
+    "Laos": "LA",
+    "Marshall Is.": "MH",
+    "Micronesia": "FM",
+    "Norfolk I.": "NF",
+    "North Korea": "KP",
+    "Pitcairn Is.": "PN",
+    "Reunion": "RE",
+    "Sint Maarten": "SX",
+    "Solomon Is.": "SB",
+    "South Korea": "KR",
+    "St. Helena": "SH",
+    "St. Lucia": "LC",
+    "Swaziland": "SZ",
+    "Syria": "SY",
+    "Tanzania": "TZ",
+    "The Bahamas": "BS",
+    "The Gambia": "GM",
+    "Trinidad & Tobago": "TT",
+    "Turks & Caicos Is.": "TC",
+    "Venezuela": "VE",
+    "Vietnam": "VN"
+  }
 }
