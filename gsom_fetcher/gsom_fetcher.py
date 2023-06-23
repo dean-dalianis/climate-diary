@@ -199,6 +199,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     :rtype: None
     """
     while len(countries) > 0:
+        new_data = False
         country = countries.pop()
         if get_country_alpha_2(country['name']) is None:
             continue
@@ -243,12 +244,13 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                 logger.info(f'Writing climate info for {country["name"]} to db')
                 from influx import write_points_to_db
                 write_points_to_db(points, country)
-
+                new_data = True
                 if not has_more_data:
                     break
 
             start_date = current_end_date + timedelta(days=1)
-        analyze_data(country)
+        if new_data:
+            analyze_data(country)
 
 
 def main():
