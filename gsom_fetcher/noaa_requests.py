@@ -14,7 +14,7 @@ AVAILABLE_MEMORY = psutil.virtual_memory().available
 POINTS_MEMORY_USAGE = 5 * 24 + 3 * 49 + 30  # in bytes
 POINTS_FIT_IN_MEMORY = int(AVAILABLE_MEMORY * 0.9 // POINTS_MEMORY_USAGE)
 
-TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 7)]
+TOKENS = [os.environ.get(f'NOAA_TOKEN_{i}') for i in range(1, 8)]
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config/api_config.json')
 with open(CONFIG_FILE, 'r') as file:
