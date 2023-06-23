@@ -88,7 +88,7 @@ def do_get(url):
             response = http.get(url, headers=get_headers())
             last_request_time = time.time()
             if response.status_code == 429:
-                logger.warning(f'Rate limit reached for token {current_token_index} - retrying with new token...')
+                logger.warning(f'Rate limit reached for token {current_token_index + 1} - retrying with new token...')
                 if current_token_index == 7:
                     logger.error('All tokens have been used. Exiting...')
                     exit(1)
