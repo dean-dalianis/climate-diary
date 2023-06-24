@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # NOAA GSOM fetcher
 
 This repository contains multiple projects that
@@ -164,7 +165,3 @@ You can modify these files to change the configuration of the services.
     - `nginx/container/log/` directory as a volume for logging.
     - `nginx/container/nginx.conf` file as a volume for configuration.
     - `nginx/container/conf.d/` directory as a volume for configuration.
-
-## License
-
-This project is licensed under the terms of the MIT license.
