@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from analysis import drop_analysis_data, analyze_data_and_write_to_db
+from analysis import drop_analysis_data, analyze_data_and_write_to_db, fix_trend_for_data
 from config import DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES
 from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp
 from logging_config import logger
@@ -174,6 +174,24 @@ def create_points_dict(country, fields, record):
     }
 
 
+def trend_fix(countries):
+    """
+    Fix the trends for each country.
+
+    :param list countries: The list of countries to fix the trend for.
+    :return: None
+    :rtype: None
+    """
+    for country in countries:
+        logger.info(f'Starting trend fix for {country["name"]}')
+        for datatype in MEASUREMENT_NAMES.keys():
+            data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
+            if data is None or len(data) == 0:
+                continue
+            fix_trend_for_data(country, datatype, data)
+        logger.info(f'Trend fix finished for {country["name"]}')
+
+
 def analyze_data(country):
     """
     Analyzes the data for a country.
@@ -259,11 +277,15 @@ def main():
 
         countries = fetch_countries() or []
 
-        logger.info('Fetching climate data...')
-        fetch_gsom_data_from_noaa_and_write_to_database(countries)
-        logger.info('Fetching climate data finished.')
+        # logger.info('Fetching climate data...')
+        # fetch_gsom_data_from_noaa_and_write_to_database(countries)
+        # logger.info('Fetching climate data finished.')
 
-        update_last_run()
+        # update_last_run()
+
+        logger.info('Fixing trends...')
+        trend_fix(countries)
+        logger.info('Fixing trends finished.')
 
 
 if __name__ == '__main__':

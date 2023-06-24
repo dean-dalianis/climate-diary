@@ -306,3 +306,10 @@ def drop_analysis_data(country):
         drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_decadal_average')
         drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_dod_change')
         drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_yoy_change')
+
+
+def fix_trend_for_data(country, datatype, data):
+    from util import get_country_alpha_2
+    drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_trend')
+    trend_points = calculate_trend_points(country, data, datatype)
+    write_points_to_db(trend_points, country)
