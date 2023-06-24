@@ -209,6 +209,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
 
         if (end_date - start_date) < timedelta(days=27):
             logger.info(f'No new data to fetch for {country["name"]}: {start_date} - {end_date}')
+            analyze_data(country) # TODO: Remove this line after testing
             continue
 
         station_map = fetch_stations(country['id'], start_date)
@@ -246,8 +247,8 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                     break
 
             start_date = current_end_date + timedelta(days=1)
-        if new_data:
-            analyze_data(country)
+        # TODO add if new_data: after testing
+        analyze_data(country)
 
 
 def main():
