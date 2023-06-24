@@ -306,3 +306,4 @@ def drop_analysis_data(country):
         drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_decadal_average')
         drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_dod_change')
         drop(get_country_alpha_2(country['name']), f'{MEASUREMENT_NAMES[datatype]}_yoy_change')
+    logger.info(f'Dropped analysis data for {country["name"]} from DB')
