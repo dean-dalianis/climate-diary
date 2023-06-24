@@ -180,7 +180,7 @@ def analyze_data(country):
     :param dict country: The country to analyze.
     :return: None
     """
-    drop_analysis_data(country)
+    # drop_analysis_data(country)
     logger.info(f'Starting analysis for {country["name"]}')
     for datatype in MEASUREMENT_NAMES.keys():
         data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
