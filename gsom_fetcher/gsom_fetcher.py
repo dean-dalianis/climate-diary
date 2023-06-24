@@ -240,6 +240,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                 logger.debug(f'Writing climate info for {country["name"]} to db')
                 from influx import write_points_to_db
                 write_points_to_db(points, country)
+                logger.info(f'Wrote climate info for {country["name"]} to db')
                 new_data = True
                 if not has_more_data:
                     break
