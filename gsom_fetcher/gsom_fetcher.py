@@ -7,7 +7,6 @@ from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime, update_last_run, should_run, get_country_alpha_2
 
-MAX_STATIONS = 5000  # The maximum number of stations to fetch data for -- used for fetching data faster for testing purposes
 
 empty_station_details = {
     'elevation': float('inf'),
@@ -213,9 +212,6 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
             continue
 
         station_map = fetch_stations(country['id'], start_date)
-        if station_map is not None and len(station_map) > MAX_STATIONS:
-            logger.warning(f'Country {country["name"]} has more than {MAX_STATIONS} stations. Skipping for now...')
-            continue
 
         while start_date <= end_date:
             current_end_date = calculate_current_end_date(end_date, start_date)
