@@ -108,11 +108,13 @@ def calculate_trend_points(country, data, datatype):
     for i, timestamp in enumerate(timestamps):
         trend_point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
+            'tags': {
+                'country_id': get_country_alpha_2(country['name']),
+            },
             'time': datetime_to_string(data[i]['date']),  # convert the datetime object to string
             'fields': {
                 'value': trend_slope * timestamp + trend_intercept,
                 'country_name': country['name'],
-                'country_id': get_country_alpha_2(country['name'])
             }
         }
         trend_points.append(trend_point)
