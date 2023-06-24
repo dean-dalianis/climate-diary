@@ -129,23 +129,22 @@ def wait_for_db():
     raise Exception(f'Cannot connect to DB: "{HOST}:{PORT}"')
 
 
-def drop(country, measurement):
+def drop(country_name, measurement):
     """
     Drop specific trend data for a specified country from DB.
 
-    :param dict country: The country to drop the measurement data for.
+    :param str country_name: The country to drop the measurement data for.
     :param str measurement: The measurement to drop.
     :return: None
     :rtype: None
     """
-    from util import get_country_alpha_2
 
     try:
-        query = f"DROP SERIES FROM \"{measurement}\" WHERE \"country_id\" = '{get_country_alpha_2(country['name'])}'"
+        query = f"DROP SERIES FROM \"{measurement}\" WHERE \"country_id\" = '{country_name}'"
         client.query(query)
-        logger.info(f'Successfully dropped {measurement} data for {country}')
+        logger.info(f'Successfully dropped {measurement} data for {country_name}')
     except Exception as e:
-        logger.warning(f'Failed to drop {measurement} data for {country}, {e}')
+        logger.warning(f'Failed to drop {measurement} data for {country_name}, {e}')
 
 
 def no_analysis_data(country):
