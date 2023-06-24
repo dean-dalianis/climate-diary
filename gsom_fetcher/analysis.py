@@ -150,7 +150,7 @@ def write_monthly_averages_to_db(country, monthly_averages, datatype):
                 }
             }
             points.append(point)
-    logger.info(f'Writing monthly averages for {country["name"]} to DB')
+    logger.debug(f'Writing monthly averages for {country["name"]} to DB')
     write_points_to_db(points, country)
 
 
@@ -181,7 +181,7 @@ def write_yearly_averages_to_db(country, yearly_averages, datatype):
             }
         }
         points.append(point)
-    logger.info(f'Writing yearly averages for {country["name"]} to DB')
+    logger.debug(f'Writing yearly averages for {country["name"]} to DB')
     write_points_to_db(points, country)
 
 
@@ -211,7 +211,7 @@ def write_decadal_averages_to_db(country, decadal_averages, datatype):
             }
         }
         points.append(point)
-    logger.info(f'Writing decadal averages for {country["name"]} to DB')
+    logger.debug(f'Writing decadal averages for {country["name"]} to DB')
     write_points_to_db(points, country)
 
 
@@ -242,7 +242,7 @@ def write_yoy_changes_to_db(country, yoy_changes, datatype):
                     }
                 }
                 points.append(point)
-    logger.info(f'Writing {len(points)} YoY changes for {country["name"]} to DB')
+    logger.debug(f'Writing {len(points)} YoY changes for {country["name"]} to DB')
     write_points_to_db(points, country)
 
 
@@ -273,7 +273,7 @@ def write_dod_changes_to_db(country, dod_changes, datatype):
                     }
                 }
                 points.append(point)
-    logger.info(f'Writing {len(points)} DoD changes for {country["name"]} to DB')
+    logger.debug(f'Writing {len(points)} DoD changes for {country["name"]} to DB')
     write_points_to_db(points, country)
 
 

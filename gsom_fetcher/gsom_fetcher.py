@@ -92,7 +92,7 @@ def init_dates(country):
     found_previous_data = False
     latest_timestamp = fetch_latest_timestamp(country)
     if latest_timestamp is not None:
-        logger.info(f'Found previous timestamp for {country["name"]}: {latest_timestamp}')
+        logger.debug(f'Found previous timestamp for {country["name"]}: {latest_timestamp}')
         latest_timestamp = latest_timestamp + timedelta(days=1)
         found_previous_data = True
     else:
@@ -203,7 +203,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
         if get_country_alpha_2(country['name']) is None:
             continue
 
-        logger.info(f'Fetching climate data for country: {country["name"]}')
+        logger.info(f'Processing climate data for country: {country["name"]}')
 
         end_date, start_date, found_previous_data = init_dates(country)
 
@@ -224,7 +224,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                 if gsom_data is None:
                     break
 
-                logger.info(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
+                logger.debug(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
 
                 points = []
                 for record in gsom_data:
@@ -237,7 +237,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
                     points.append(points_dict)
 
                 # Write data to DB here
-                logger.info(f'Writing climate info for {country["name"]} to db')
+                logger.debug(f'Writing climate info for {country["name"]} to db')
                 from influx import write_points_to_db
                 write_points_to_db(points, country)
                 new_data = True

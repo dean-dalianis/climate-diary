@@ -30,7 +30,7 @@ def write_points_to_db(points, country):
     """
     num_points = len(points)
     num_batches = (num_points + BATCHSIZE - 1) // BATCHSIZE
-    logger.info(f'Writing {num_points} points in {num_batches} batches to db')
+    logger.debug(f'Writing {num_points} points in {num_batches} batches to db')
     for i in range(0, num_points, BATCHSIZE):
         current_batch_number = i // BATCHSIZE + 1
         batch_points = points[i: i + BATCHSIZE]
@@ -38,7 +38,7 @@ def write_points_to_db(points, country):
         if batch_points:
             try:
                 write_to_db(batch_points)
-                logger.info(
+                logger.debug(
                     f'Successfully wrote data for {country["name"]}, batch {current_batch_number}/{num_batches}')
             except Exception as e:
                 logger.error(
@@ -138,11 +138,10 @@ def drop(country_name, measurement):
     :return: None
     :rtype: None
     """
-
     try:
         query = f"DROP SERIES FROM \"{measurement}\" WHERE \"country_id\" = '{country_name}'"
         client.query(query)
-        logger.info(f'Successfully dropped {measurement} data for {country_name}')
+        logger.debug(f'Successfully dropped {measurement} data for {country_name}')
     except Exception as e:
         logger.warning(f'Failed to drop {measurement} data for {country_name}, {e}')
 
