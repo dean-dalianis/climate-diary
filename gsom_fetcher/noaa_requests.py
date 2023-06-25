@@ -123,6 +123,7 @@ def make_api_request(url, offset=0):
     pages_to_fetch = points_fit_in_memory // 1000
 
     while more_data and pages_to_fetch > 0:
+        logger.debug(f'Fetching data from URL {url} with offset {offset}. ({pages_to_fetch} pages left to fetch)')
         paged_url = f'{BASE_URL}{url}&offset={offset}'
         response = do_get(paged_url)
 
