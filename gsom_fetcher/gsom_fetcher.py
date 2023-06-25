@@ -1,19 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
-from analysis import drop_analysis_data, analyze_data_and_write_to_db
+from analysis import analyze_data_and_write_to_db
 from config import DATATYPE_ID, MIN_START_YEAR, MEASUREMENT_NAMES
 from influx import fetch_gsom_data_from_db, wait_for_db, fetch_latest_timestamp
 from logging_config import logger
 from noaa_requests import make_api_request
 from util import datetime_to_string, string_to_datetime, update_last_run, should_run, get_country_alpha_2
-
-
-empty_station_details = {
-    'elevation': float('inf'),
-    'latitude': float('inf'),
-    'longitude': float('inf'),
-    'name': 'N/A'
-}
 
 
 def fetch_countries():
@@ -33,40 +25,6 @@ def fetch_countries():
     logger.info(f'Fetched {len(countries)} countries.')
 
     return [country for country in countries]
-
-
-def fetch_stations(country_id, start_date):
-    """
-    Fetches and returns a map of all stations for a given country.
-
-    :param dict country_id: The country_id to fetch the stations for.
-    :param datetime start_date: The start of the date range.
-    :return: A map of all stations for the given country with the station ID as the key and the station details as the value.
-    :rtype: dict or None
-    """
-    start_date_str = datetime_to_string(start_date)
-    stations_url = f"stations?datasetid=GSOM&&units=metric&locationid={country_id}&startdate={start_date_str}&limit=1000"
-    stations, ignored, ignored = make_api_request(stations_url)
-
-    logger.info(f'Fetching stations for {country_id}...')
-
-    station_map = {}
-    for station in stations:
-        station_map[station['id']] = {}
-        for field in ['elevation', 'latitude', 'longitude']:
-            if field in station:
-                station_map[station['id']][field] = float(station[field])
-            else:
-                station_map[station['id']][field] = None
-        station_map[station['id']]['name'] = station.get('name', None)
-
-    if len(stations) == 0:
-        logger.error('Failed to fetch stations')
-        return None
-
-    logger.info(f'Fetched {len(station_map)} stations for {country_id}...')
-
-    return station_map
 
 
 def fetch_gsom_data(country_id, start_date, end_date, offset):
@@ -89,18 +47,16 @@ def fetch_gsom_data(country_id, start_date, end_date, offset):
 
 
 def init_dates(country):
-    found_previous_data = False
     latest_timestamp = fetch_latest_timestamp(country)
     if latest_timestamp is not None:
         logger.debug(f'Found previous timestamp for {country["name"]}: {latest_timestamp}')
         latest_timestamp = latest_timestamp + timedelta(days=1)
-        found_previous_data = True
     else:
         latest_timestamp = datetime(MIN_START_YEAR, 1, 1, tzinfo=timezone.utc)
     earliest_timestamp = string_to_datetime(country['mindate']).replace(tzinfo=timezone.utc)
     start_date = max(earliest_timestamp, latest_timestamp)
     end_date = string_to_datetime(country['maxdate']).replace(tzinfo=timezone.utc)
-    return end_date, start_date, found_previous_data
+    return end_date, start_date
 
 
 def calculate_current_end_date(end_date, start_date):
@@ -117,25 +73,20 @@ def calculate_current_end_date(end_date, start_date):
     return current_end_date
 
 
-def create_fields_map(country, record, station_details):
+def create_fields_map(country, record):
     """
     Create a map of fields for a climate data record.
 
     :param dict country: The country information.
     :param dict record: The current climate data record.
-    :param dict station_details: The details of the station associated with the record.
     :return: A map of fields for the climate data record.
     :rtype: dict
     """
     fields = {
-        'value': float(record['value']) if 'value' in record else None,
+        'value': float(record['value']),
         'country_name': country['name'],
-        'station': record['station'] if 'station' in record else None,
-        'station_name': station_details['name'],
-        'latitude': station_details['latitude'],
-        'longitude': station_details['longitude'],
-        'elevation': station_details['elevation']
     }
+
     return fields
 
 
@@ -150,10 +101,6 @@ def create_points_dict(country, fields, record):
     - fields: The map of fields for the data point:
         - value
         - country_name
-        - station
-        - latitude
-        - longitude
-        - elevation
 
     :param dict country: The country information.
     :param dict fields: The map of fields for the data point.
@@ -180,7 +127,6 @@ def analyze_data(country):
     :param dict country: The country to analyze.
     :return: None
     """
-    # drop_analysis_data(country)
     logger.info(f'Starting analysis for {country["name"]}')
     for datatype in MEASUREMENT_NAMES.keys():
         data = fetch_gsom_data_from_db(country, MEASUREMENT_NAMES[datatype])
@@ -190,6 +136,48 @@ def analyze_data(country):
     logger.info(f'Analysis finished for {country["name"]}')
 
 
+def fetch_and_write_gsom_data_for_dates(country, start_date, end_date):
+    """
+    Fetch and write climate data for the specified country and date range.
+
+    :param dict country: The country to fetch data for.
+    :param datetime start_date: The start of the date range.
+    :param datetime end_date: The end of the date range.
+    :return: None
+    :rtype: None
+    """
+    while start_date <= end_date:
+        current_end_date = calculate_current_end_date(end_date, start_date)
+
+        # Initialize offset for pagination
+        offset = 0
+        while True:
+            gsom_data, has_more_data, offset = fetch_gsom_data(country['id'], start_date, current_end_date, offset)
+
+            if gsom_data is None:
+                break
+
+            logger.debug(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
+
+            points = []
+            for record in gsom_data:
+                fields = create_fields_map(country, record)
+                if fields['value'] is None:
+                    continue
+                points_dict = create_points_dict(country, fields, record)
+                points.append(points_dict)
+
+            # Write data to DB here
+            logger.debug(f'Writing climate info for {country["name"]} to db')
+            from influx import write_points_to_db
+            write_points_to_db(points, country)
+            logger.info(f'Wrote climate info for {country["name"]} to db')
+            if not has_more_data:
+                break
+
+        start_date = current_end_date + timedelta(days=1)
+
+
 def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     """
     Fetches climate data from NOAA and writes it to the database.
@@ -197,58 +185,27 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     :return: None
     :rtype: None
     """
+    logger.info('Fetching climate data from NOAA for countries and writing to database')
     while len(countries) > 0:
-        new_data = False
         country = countries.pop()
         if get_country_alpha_2(country['name']) is None:
             continue
 
         logger.info(f'Processing climate data for country: {country["name"]}')
 
-        end_date, start_date, found_previous_data = init_dates(country)
+        end_date, start_date = init_dates(country)
 
         if (end_date - start_date) < timedelta(days=27):
             logger.info(f'No new data to fetch for {country["name"]}: {start_date} - {end_date}')
-            analyze_data(country) # TODO: Remove this line after testing
             continue
 
-        station_map = fetch_stations(country['id'], start_date)
+        fetch_and_write_gsom_data_for_dates(country, start_date, end_date)
 
-        while start_date <= end_date:
-            current_end_date = calculate_current_end_date(end_date, start_date)
-
-            # Initialize offset for pagination
-            offset = 0
-            while True:
-                gsom_data, has_more_data, offset = fetch_gsom_data(country['id'], start_date, current_end_date, offset)
-
-                if gsom_data is None:
-                    break
-
-                logger.debug(f'Fetched climate data for {country["name"]}: {start_date} - {current_end_date}')
-
-                points = []
-                for record in gsom_data:
-                    if station_map is not None:
-                        station_details = station_map.get(record['station'], empty_station_details)
-                    fields = create_fields_map(country, record, station_details)
-                    if fields['value'] is None:
-                        continue
-                    points_dict = create_points_dict(country, fields, record)
-                    points.append(points_dict)
-
-                # Write data to DB here
-                logger.debug(f'Writing climate info for {country["name"]} to db')
-                from influx import write_points_to_db
-                write_points_to_db(points, country)
-                logger.info(f'Wrote climate info for {country["name"]} to db')
-                new_data = True
-                if not has_more_data:
-                    break
-
-            start_date = current_end_date + timedelta(days=1)
-        # TODO add if new_data: after testing
+        logger.info(f'Finished processing climate data for country: {country["name"]}. Analyzing data...')
         analyze_data(country)
+        logger.info(f'Finished analyzing climate data for country: {country["name"]}')
+
+    logger.info('Fetching climate data from NOAA for countries finished')
 
 
 def main():
@@ -256,10 +213,7 @@ def main():
         wait_for_db()
 
         countries = fetch_countries() or []
-
-        logger.info('Fetching climate data...')
         fetch_gsom_data_from_noaa_and_write_to_database(countries)
-        logger.info('Fetching climate data finished.')
 
         update_last_run()
 

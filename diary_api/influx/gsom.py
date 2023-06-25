@@ -57,13 +57,6 @@ def fetch_data(country_id=None, measurement=None, date=None, start_date=None, en
                     'measurement': measurement,
                     'country_id': point['country_id'],
                     'country_name': point['country_name'],
-                    'day': point.get('day'),
-                    'days_missing': point.get('days_missing'),
-                    'elevation': point['elevation'],
-                    'latitude': point['latitude'],
-                    'longitude': point['longitude'],
-                    'more_than_once': point.get('more_than_once'),
-                    'station': point['station'],
                     'value': point['value'],
                     'time': ms_to_timestamp(point['time'])
                 }

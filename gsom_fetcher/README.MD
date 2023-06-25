@@ -34,13 +34,8 @@ follows:
 
 - **fetch_measurements_from_db()**: Fetches all measurements from the database for a country.
 
-- **fetch_stations()**: Fetches all weather stations for a specified country.
-
 - **fetch_countries()**: Fetches a list of all countries from the NOAA API.
 
-- **fetch_european_countries()**: Fetches a list of European countries from the NOAA API.
-
-- **decode_attributes()**: Decodes the attributes string for a specified datatype.
 
 ## Rate Limiting
 

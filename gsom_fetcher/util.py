@@ -6,7 +6,7 @@ import pycountry
 
 from logging_config import logger
 
-LAST_RUN_LAST_RUN_FILE_PATH = "/gsom_fetcher/last_run/last_run.txt"
+LAST_RUN_LAST_RUN_FILE_PATH = "/last_run/last_run.txt"
 
 
 def string_to_datetime(date_string):

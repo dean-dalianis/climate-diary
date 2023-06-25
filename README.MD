@@ -15,19 +15,9 @@ Each project has its own README file with more detailed documentation.
 
 **gsom_fetcher** fetches various types of climate data from the NOAA API.
 
-The data types, their attributes, and the full names of the measurements can be found below.
+The full names of the measurements can be found below.
 
 ```json
-  "ATTRIBUTES": {
-"TAVG": ["days_missing", "source_code"],
-"TMAX": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-"TMIN": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-"EMXT": ["days_missing", "daily_dataset_source_code", "day", "more_than_once"],
-"EMNT": ["days_missing", "daily_dataset_source_code", "day", "more_than_once"],
-"PRCP": ["days_missing", "measurement_flag", "quality_flag", "source_code"],
-"EMXP": ["days_missing", "daily_dataset_flag", "daily_dataset_source_code", "day", "more_than_once"],
-"EMSD": ["days_missing", "daily_dataset_flag", "daily_dataset_source_code", "day", "more_than_once"]
-},
 "MEASUREMENT_NAMES": {
 "TAVG": "Average_Temperature",
 "TMAX": "Maximum_Temperature",
@@ -39,22 +29,6 @@ The data types, their attributes, and the full names of the measurements can be 
 "EMSD": "Highest_Daily_Snow_Depth"
 }
 ```
-
-**not all attributes are stored in the database*
-
-## Station Information
-
-In addition to climate data, the script also retrieves details for each station. The station details include the
-following information:
-
-- Elevation: The elevation of the station.
-- Latitude: The latitude of the station.
-- Longitude: The longitude of the station.
-- Name: The name of the station.
-- Data Coverage: The percentage of data coverage for the station.
-- ID: The ID of the station.
-
-**not all station details are stored in the database*
 
 ## Data Analysis
 

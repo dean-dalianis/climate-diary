@@ -148,15 +148,6 @@ The base URL for all API endpoints is `/`.
 
 - `measurement` (string): Measurement name
 - `country_name` (string): Country name
-- `day` (integer): Day of the month (1-31) for the Highest Temperature measurement (applicable only to specific
-  measurements)
-- `days_missing` (integer): Number of days missing
-- `elevation` (number): Elevation
-- `latitude` (number): Latitude
-- `longitude` (number): Longitude
-- `more_than_once` (boolean): Whether the measurement has been recorded more than once (applicable only to specific
-  measurements)
-- `station` (string): Station
 - `value` (number): Measurement value
 - `time` (string, format: date-time): Timestamp
 
@@ -164,8 +155,8 @@ The base URL for all API endpoints is `/`.
 
 - `measurement` (string): Measurement name
 - `country_name` (string): Country name
-- `slope` (number): Measurement value
-- `intercept` (number): Measurement value
+- `value` (number): Trend value
+- `time` (number): Trend value
 
 ## Available measurements
 
