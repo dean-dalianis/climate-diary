@@ -188,7 +188,6 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
     logger.info('Fetching climate data from NOAA for countries and writing to database')
     while len(countries) > 0:
         country = countries.pop()
-        logger.info(f'Processing climate data for country: {country["name"]}')
         if get_country_alpha_2(country['name']) is None:
             continue
 
