@@ -37,6 +37,7 @@ def fetch_gsom_data(country_id, start_date, end_date, offset):
     :return: A list of climate data for the specified country and date range, and a boolean indicating if there is more data.
     :rtype: list or None, bool
     """
+    logger.debug(f'Fetching climate data for country {country_id} from {start_date} to {end_date} (offset: {offset})')
     start_date_str = datetime_to_string(start_date)
     end_date_str = datetime_to_string(end_date)
     data_url = f"data?datasetid=GSOM&datatypeid={DATATYPE_ID}&units=metric&locationid={country_id}&startdate={start_date_str}&enddate={end_date_str}&limit=1000"
