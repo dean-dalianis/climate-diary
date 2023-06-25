@@ -150,6 +150,8 @@ def fetch_and_write_gsom_data_for_dates(country, start_date, end_date):
     while start_date <= end_date:
         current_end_date = calculate_current_end_date(end_date, start_date)
 
+        logger.debug(f'Curent end date: {current_end_date}')
+
         # Initialize offset for pagination
         offset = 0
         while True:
@@ -200,6 +202,7 @@ def fetch_gsom_data_from_noaa_and_write_to_database(countries):
             logger.info(f'No new data to fetch for {country["name"]}: {start_date} - {end_date}')
             continue
 
+        logger.debug(f'Fetching climate data for {country["name"]}: {start_date} - {end_date}')
         fetch_and_write_gsom_data_for_dates(country, start_date, end_date)
 
         logger.info(f'Finished processing climate data for country: {country["name"]}. Analyzing data...')
