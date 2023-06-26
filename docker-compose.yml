@@ -38,28 +38,23 @@ services:
       - ./grafana/provisioning/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
 
-  gsom_fetcher:
+  gsoy_importer:
     build:
-      context: gsom_fetcher
+      context: gsoy_importer
       dockerfile: ./Dockerfile
-    container_name: gsom_fetcher
+    container_name: gsoy_importer
     restart: always
     depends_on:
       - influxdb
     networks:
       - metrics-network
     volumes:
-      - ./gsom_fetcher/container/log:/gsom_fetcher/log
-      - ./gsom_fetcher/container/last_run/:/gsom_fetcher/last_run
+      - ./gsoy_importer/container/log:/gsoy_importer/log
+      - ./gsoy_importer/container/last_run/:/gsoy_importer/last_run
     environment:
       - DB_NAME=${DB_NAME}
       - DB_ADMIN_USER=admin
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
-      - NOAA_TOKEN_1=${NOAA_TOKEN_1}
-      - NOAA_TOKEN_2=${NOAA_TOKEN_2}
-      - NOAA_TOKEN_3=${NOAA_TOKEN_3}
-      - NOAA_TOKEN_4=${NOAA_TOKEN_4}
-      - NOAA_TOKEN_5=${NOAA_TOKEN_5}
 
   backend:
     build:

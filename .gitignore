@@ -2,6 +2,8 @@
 containers/
 gsom_fetcher/container/
 diary_api/container/
+gsoy_importer/gsoy_data
+gsoy_importer/container
 grafana/container
 nginx/logs
 
