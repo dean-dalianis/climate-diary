@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.9-slim
 
 # Install cron package
 RUN apt-get update && apt-get install -y cron && apt-get install -y procps
