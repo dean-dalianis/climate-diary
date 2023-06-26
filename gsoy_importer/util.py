@@ -82,7 +82,7 @@ def download_and_extract_data():
     :return: None
     :rtype: None
     """
-    from gsoy_importer.config import GSOY_DATA_DIR
+    from config import GSOY_DATA_DIR
     os.makedirs(GSOY_DATA_DIR, exist_ok=True)
 
     file_name = os.path.join(GSOY_DATA_DIR, 'gsoy-latest.tar.gz')
