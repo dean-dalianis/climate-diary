@@ -1,4 +1,3 @@
-from config import MEASUREMENT_NAMES
 from influx import write_points_to_db, drop
 from logging_config import logger
 
@@ -112,14 +111,14 @@ def calculate_dod_changes(country_iso, country_name, data, measurement):
     return dod_points
 
 
-def calculate_trend_points(country_iso, country_name, data, datatype):
+def calculate_trend_points(country_iso, country_name, data, measurement):
     """
     Calculates the trend points for the data.
 
     :param str country_iso: The country iso for which to calculate trends.
     :param str country_name: The country name for which to calculate trends.
     :param list data: A list of dictionaries with data
-    :param str datatype: The measurement we're doing the analysis for
+    :param str measurement: The measurement we're doing the analysis for
     :return: A list of dictionaries with trend points.
     :rtype: list
     """
@@ -132,7 +131,7 @@ def calculate_trend_points(country_iso, country_name, data, datatype):
     trend_points = []
     for i, timestamp in enumerate(timestamps):
         trend_point = {
-            'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
+            'measurement': f'{measurement}_trend',
             'tags': {
                 'country_iso': country_iso,
             },
@@ -147,14 +146,14 @@ def calculate_trend_points(country_iso, country_name, data, datatype):
     return trend_points
 
 
-def calculate_decadal_averages(country_iso, country_name, data, datatype):
+def calculate_decadal_averages(country_iso, country_name, data, measurement):
     """
     Calculates the decadal averages for the data and prepare points to write to DB.
 
     :param str country_iso: The country iso for which to calculate decadal averages.
     :param str country_name: The country name for which to calculate decadal averages.
     :param list data: A list of dictionaries with data.
-    :param str datatype: The datatype for which to write the decadal averages.
+    :param str measurement: The measurement for which to write the decadal averages.
     :return: A list of dictionaries with prepared points.
     :rtype: list
     """
@@ -173,10 +172,9 @@ def calculate_decadal_averages(country_iso, country_name, data, datatype):
     # Prepare points to write to DB
     points = []
     for decade, average in decadal_averages.items():
-        metric = calculate_correct_metric(average,
-                                          datatype)  # adjust this if calculate_correct_metric() is not the right function for this
+        metric = calculate_correct_metric(average, measurement)  # adjust this if calculate_correct_metric() is not the right function for this
         point = {
-            'measurement': f'{MEASUREMENT_NAMES[datatype]}_decadal_average',
+            'measurement': f'{measurement}_decadal_average',
             'tags': {
                 'country_id': country_iso,
             },
