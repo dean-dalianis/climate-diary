@@ -1,7 +1,7 @@
 import os
 import tarfile
 import urllib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 LAST_RUN_LAST_RUN_FILE_PATH = "/last_run/last_run.txt"
 GSOY_DOWNLOAD_URL = "https://www.ncei.noaa.gov/data/gsoy/archive/gsoy-latest.tar.gz"
@@ -27,6 +27,23 @@ def should_run():
 
     logger.info(f'Found last_run_file. Last run was {"less" if run is False else "more"} that 15 days ago.')
     return run
+
+
+def ms_to_timestamp(timestamp_ms):
+    """
+    Convert a timestamp in milliseconds to a datetime object with UTC timezone.
+
+    :param int timestamp_ms: The timestamp in milliseconds.
+    :return: The converted timestamp as a datetime object with UTC timezone.
+    :rtype: datetime.datetime
+    """
+    timestamp = datetime.utcfromtimestamp(timestamp_ms / 1000.0)
+    # Handle timestamps before 1970
+    if timestamp.year < 1970:
+        epoch_start = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        delta = timedelta(milliseconds=timestamp_ms)
+        timestamp = epoch_start + delta
+    return timestamp.replace(tzinfo=timezone.utc)
 
 
 def update_last_run():
