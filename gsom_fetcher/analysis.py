@@ -87,33 +87,66 @@ def calculate_averages(data):
     return decadal_averages, yearly_averages
 
 
-def calculate_trend_points(country, data, datatype):
+def calculate_trend_points(country, data, datatype, max_degree=5, alpha=0.5):
     """
-    Calculates the trend points for the data.
+    Calculates the trend points for the data using a polynomial fit. The polynomial degree is determined
+    by a combination of AIC and BIC criteria (https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118856406.app5).
 
     :param dict country: The country for which to calculate trends.
     :param list data: A list of dictionaries with data like [{'date': .., 'value':..}, {'date': .., 'value': ..}]
     :param str datatype: The measurement we're doing the analysis for
+    :param int max_degree: The maximum polynomial degree to consider for the fit (default is 5).
+    :param float alpha: The weight in [0, 1] given to the AIC in the combined score (default is 0.5, i.e equally weighted scheme).
     :return: A list of dictionaries with trend points.
     :rtype: list
     """
-    from util import datetime_to_days_since_1880, datetime_to_string
-
+    from util import datetime_to_days_since_1880, datetime_to_string, get_country_alpha_2
+    from sklearn.metrics import mean_squared_error
+    import numpy as np
+    
+    # Data processing
     timestamps = [datetime_to_days_since_1880(d['date']) for d in data]
     values = [d['value'] for d in data]
-    trend_slope, trend_intercept = np.polynomial.polynomial.polyfit(timestamps, values, 1)
-    from util import get_country_alpha_2
 
+    # Find the best polynomial degree using a combination of AIC and BIC
+    best_degree = 1
+    min_combined_score = float("inf")
+    n = len(timestamps)
+
+    for degree in range(1, max_degree + 1):
+        coefs = np.polynomial.polynomial.polyfit(timestamps, values, degree)
+        fitted_values = np.polynomial.polynomial.polyval(timestamps, coefs)
+        mse = mean_squared_error(values, fitted_values)
+        
+        # Calculate AIC
+        k = degree + 1
+        aic = n * np.log(mse / n) + 2 * k
+        
+        # Calculate BIC
+        bic = n * np.log(mse / n) + k * np.log(n)
+        
+        # Combine AIC and BIC
+        combined_score = alpha * aic + (1 - alpha) * bic
+        
+        if combined_score < min_combined_score:
+            min_combined_score = combined_score
+            best_degree = degree
+
+    # Use the best polynomial degree to compute the trend
+    coefs = np.polynomial.polynomial.polyfit(timestamps, values, best_degree)
+
+    # Construct the trend_points list
     trend_points = []
     for i, timestamp in enumerate(timestamps):
+        value_on_trend = np.polynomial.polynomial.polyval(timestamp, coefs)
         trend_point = {
             'measurement': f'{MEASUREMENT_NAMES[datatype]}_trend',
             'tags': {
                 'country_id': get_country_alpha_2(country['name']),
             },
-            'time': datetime_to_string(data[i]['date']),  # convert the datetime object to string
+            'time': datetime_to_string(data[i]['date']),
             'fields': {
-                'value': trend_slope * timestamp + trend_intercept,
+                'value': value_on_trend,
                 'country_name': country['name'],
             }
         }
