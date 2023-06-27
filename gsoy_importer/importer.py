@@ -1,8 +1,8 @@
 import csv
 import os
 
-from config import FIELD_MAPPING, GSOY_DATA_DIR, FIPS_MAPPING
 from analysis import analyze_data_and_write_to_db
+from config import FIELD_MAPPING, GSOY_DATA_DIR, FIPS_MAPPING
 from influx import write_points_to_db, fetch_gsom_data_from_db
 from logging_config import logger
 from util import update_last_run, download_and_extract_data
@@ -47,14 +47,14 @@ def import_data():
                             'country_name': country_name
                         }
 
-                        data = [{
+                        data = {
                             'measurement': human_readable_name,
                             'tags': {
                                 'country_iso': country_iso,
                             },
                             'time': time,
                             'fields': fields
-                        }]
+                        }
 
                         points.append(data)
         write_points_to_db(points)
