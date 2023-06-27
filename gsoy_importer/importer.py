@@ -13,8 +13,12 @@ def import_data():
     for filename in os.listdir(GSOY_DATA_DIR):
         if filename.endswith('.csv'):
             file_path = os.path.join(GSOY_DATA_DIR, filename)
-            country_name = FIPS_MAPPING[filename[:2]].get('country_name')
-            country_iso = FIPS_MAPPING[filename[:2]].get('country_iso')
+            country_name = FIPS_MAPPING[filename[:2]].get('country_name', None)
+            country_iso = FIPS_MAPPING[filename[:2]].get('country_iso', None)
+
+            if country_name is None or country_iso is None:
+                logger.error(f'No country found for "FIPS:{filename[:2]}"')
+                continue
 
             with open(file_path, 'r') as file:
                 points = []
