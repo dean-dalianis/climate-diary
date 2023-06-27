@@ -297,7 +297,7 @@ FIPS_MAPPING = {
     "UC": {"country_name": "Curacao", "country_iso": "CW"},
     "CY": {"country_name": "Cyprus", "country_iso": "CY"},
     "EZ": {"country_name": "Czechia", "country_iso": "CZ"},
-    "DK": {"country_name": "Denmark", "country_iso": "DK"},
+    "DA": {"country_name": "Denmark", "country_iso": "DK"},
     "DJ": {"country_name": "Djibouti", "country_iso": "DJ"},
     "DO": {"country_name": "Dominica", "country_iso": "DM"},
     "DR": {"country_name": "Dominican Republic", "country_iso": "DO"},
