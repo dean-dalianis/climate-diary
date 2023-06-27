@@ -379,6 +379,7 @@ FIPS_MAPPING = {
     "MB": {"country_name": "Martinique", "country_iso": "MQ"},
     "MR": {"country_name": "Mauritania", "country_iso": "MR"},
     "MP": {"country_name": "Mauritius", "country_iso": "MU"},
+    "MQ": {"country_name": "Midway Atoll", "country_iso": "UM"},
     "MF": {"country_name": "Mayotte", "country_iso": "YT"},
     "MX": {"country_name": "Mexico", "country_iso": "MX"},
     "FM": {"country_name": "Micronesia (Federated States of)", "country_iso": "FM"},
