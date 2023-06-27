@@ -479,7 +479,7 @@ FIPS_MAPPING = {
     "UZ": {"country_name": "Uzbekistan", "country_iso": "UZ"},
     "NH": {"country_name": "Vanuatu", "country_iso": "VU"},
     "VE": {"country_name": "Venezuela (Bolivarian Republic of)", "country_iso": "VE"},
-    "VN": {"country_name": "Viet Nam", "country_iso": "VN"},
+    "VM": {"country_name": "Vietnam", "country_iso": "VN"},
     "VI": {"country_name": "Virgin Islands (British)", "country_iso": "VG"},
     "VQ": {"country_name": "Virgin Islands (U.S.)", "country_iso": "VI"},
     "WF": {"country_name": "Wallis and Futuna", "country_iso": "WF"},
