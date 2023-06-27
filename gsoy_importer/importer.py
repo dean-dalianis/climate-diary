@@ -89,7 +89,7 @@ def analyze_data():
     """
     logger.info('Starting analysis')
     for country in FIPS_MAPPING:
-        logger.debug(f'Analyzing data for {country["country_name"]}')
+        logger.info(f'Analyzing data for {country["country_name"]}')
         country_iso = FIPS_MAPPING[country].get('country_iso')
         analyze(country_iso)
         logger.info('Analysis finished for {country["country_name"]}')
@@ -97,4 +97,6 @@ def analyze_data():
 
 
 if __name__ == '__main__':
+    logger.info('Starting import')
     import_data()
+    logger.info('Import finished')
