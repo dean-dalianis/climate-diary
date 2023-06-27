@@ -11,6 +11,7 @@ from util import update_last_run, download_and_extract_data
 def import_data():
     download_and_extract_data()
     for filename in os.listdir(GSOY_DATA_DIR):
+        logger.info(f'Importing data from {filename}')
         if filename.endswith('.csv'):
             file_path = os.path.join(GSOY_DATA_DIR, filename)
             country_name = FIPS_MAPPING[filename[:2]].get('country_name', None)
