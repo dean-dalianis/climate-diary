@@ -9,6 +9,10 @@ services:
       - metrics-network
     ports:
       - '8086:8086'
+    deploy:
+      resources:
+        limits:
+          memory: 4000M
     environment:
       - INFLUXDB_DB=${DB_NAME}
       - INFLUXDB_ADMIN_USER=admin
