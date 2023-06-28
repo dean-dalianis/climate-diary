@@ -14,16 +14,16 @@ PASSWORD = os.environ.get('DB_ADMIN_PASSWORD', 'changeme')
 GSOY_DATA_DIR = 'gsoy_data'
 
 FIELD_MAPPING = {
-    'AWND': {
-        'name': 'Average_Daily_Wind_Speed',
-        'attributes': ['source_code']
-    },
-    'CDSD': {
-        'name': 'Cooling_Degree_Days_season-to-date',
-        'attributes': ['source_code']
-    },
+    # 'AWND': {
+    #     'name': 'Average_Daily_Wind_Speed',
+    #     'attributes': ['source_code']
+    # },
+    # 'CDSD': {
+    #     'name': 'Cooling_Degree_Days_season-to-date',
+    #     'attributes': ['source_code']
+    # },
     'CLDD': {
-        'name': 'Cooling_Degree_Days_when_daily_average_temperature_is_above_18.3°C',
+        'name': 'Cooling_Degree_Days',
         'attributes': ['days_missing', 'source_code']
     },
     'DP01': {
@@ -46,26 +46,26 @@ FIELD_MAPPING = {
         'name': 'Number_of_Days_with_Snowfall',
         'attributes': ['days_missing', 'source_code']
     },
-    'DT00': {
-        'name': 'Number_of_Days_with_Maximum_Temperature<=-17.8°C',
-        'attributes': ['source_code']
-    },
-    'DT32': {
-        'name': 'Number_of_Days_with_Minimum_Temperature<=0°C',
-        'attributes': ['source_code']
-    },
-    'DX32': {
-        'name': 'Number_of_Days_with_Maximum_Temperature<=0°C',
-        'attributes': ['source_code']
-    },
-    'DX70': {
-        'name': 'Number_of_Days_with_Maximum_Temperature>=21.1°C',
-        'attributes': ['source_code']
-    },
-    'DX90': {
-        'name': 'Number_of_Days_with_Maximum_Temperature>=32.2°C',
-        'attributes': ['source_code']
-    },
+    # 'DT00': {
+    #     'name': 'Number_of_Days_with_Maximum_Temperature<=-17.8°C',
+    #     'attributes': ['source_code']
+    # },
+    # 'DT32': {
+    #     'name': 'Number_of_Days_with_Minimum_Temperature<=0°C',
+    #     'attributes': ['source_code']
+    # },
+    # 'DX32': {
+    #     'name': 'Number_of_Days_with_Maximum_Temperature<=0°C',
+    #     'attributes': ['source_code']
+    # },
+    # 'DX70': {
+    #     'name': 'Number_of_Days_with_Maximum_Temperature>=21.1°C',
+    #     'attributes': ['source_code']
+    # },
+    # 'DX90': {
+    #     'name': 'Number_of_Days_with_Maximum_Temperature>=32.2°C',
+    #     'attributes': ['source_code']
+    # },
     'DYFG': {
         'name': 'Number_of_Days_with_Fog',
         'attributes': []
@@ -98,62 +98,62 @@ FIELD_MAPPING = {
         'name': 'Total_Evaporation',
         'attributes': ['source_code']
     },
-    'FZF0': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_0°C_Aug-Dec',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF1': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-2.2°C_Aug-Dec',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF2': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-4.4°C_Aug-Dec',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF3': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-6.7°C_Aug-Dec',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF4': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-8.9°C_Aug-Dec',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF5': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_0°C_Jan-Jul',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF6': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-2.2°C_Jan-Jul',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF7': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-4.4°C_Jan-Jul',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF8': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-6.7°C_Jan-Jul',
-        'attributes': ['source_code', 'date']
-    },
-    'FZF9': {
-        'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-8.9°C_Jan-Jul',
-        'attributes': ['source_code', 'date']
-    },
-    'HDSD': {
-        'name': 'Heating_Degree_Days_season_to_date',
-        'attributes': ['source_code']
-    },
+    # 'FZF0': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_0°C_Aug-Dec',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF1': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-2.2°C_Aug-Dec',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF2': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-4.4°C_Aug-Dec',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF3': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-6.7°C_Aug-Dec',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF4': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-8.9°C_Aug-Dec',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF5': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_0°C_Jan-Jul',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF6': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-2.2°C_Jan-Jul',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF7': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-4.4°C_Jan-Jul',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF8': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-6.7°C_Jan-Jul',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'FZF9': {
+    #     'name': 'Temperature_Value_of_First_Freeze_at_or_less_than_-8.9°C_Jan-Jul',
+    #     'attributes': ['source_code', 'date']
+    # },
+    # 'HDSD': {
+    #     'name': 'Heating_Degree_Days_season_to_date',
+    #     'attributes': ['source_code']
+    # },
     'HTDD': {
         'name': 'Heating_Degree_Days',
         'attributes': ['days_missing', 'source_code']
     },
-    'MNPN': {
-        'name': 'Annual_Mean_Minimum_Temperature_of_evaporation_pan',
-        'attributes': ['source_code']
-    },
-    'MXPN': {
-        'name': 'Annual_Mean_Maximum_Temperature_of_evaporation_pan',
-        'attributes': ['source_code']
-    },
+    # 'MNPN': {
+    #     'name': 'Annual_Mean_Minimum_Temperature_of_evaporation_pan',
+    #     'attributes': ['source_code']
+    # },
+    # 'MXPN': {
+    #     'name': 'Annual_Mean_Maximum_Temperature_of_evaporation_pan',
+    #     'attributes': ['source_code']
+    # },
     'PRCP': {
         'name': 'Total_Precipitation',
         'attributes': ['measurement_flag', 'source_code']
@@ -182,58 +182,58 @@ FIELD_MAPPING = {
         'name': 'Total_Sunshine_in_minutes',
         'attributes': ['days_missing', 'source_code']
     },
-    'WDF1': {
-        'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_1-Minute_WSF1',
-        'attributes': ['source_code']
-    },
-    'WDF2': {
-        'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_2-Minute_WSF2',
-        'attributes': ['source_code']
-    },
-    'WDF5': {
-        'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_5-Second_WSF5',
-        'attributes': ['source_code']
-    },
-    'WDFG': {
-        'name': 'Wind_Direction_for_Peak_Wind_Gust',
-        'attributes': ['source_code']
-    },
-    'WDFI': {
-        'name': 'Direction_of_Highest_Instantaneous_Wind_Speed',
-        'attributes': ['days_missing', 'source_code']
-    },
-    'WDFM': {
-        'name': 'Wind_Direction_for_Maximum_Wind_Speed',
-        'attributes': ['source_code']
-    },
-    'WDMV': {
-        'name': 'Total_annual_wind_movement_over_evaporation_pan',
-        'attributes': ['source_code']
-    },
-    'WSF1': {
-        'name': 'Maximum_Wind_Speed_Fastest_1-minute',
-        'attributes': ['source_code']
-    },
-    'WSF2': {
-        'name': 'Maximum_Wind_Speed_Fastest_2-minute',
-        'attributes': ['source_code']
-    },
-    'WSF5': {
-        'name': 'Peak_Wind_Gust_Speed_Fastest_5-second',
-        'attributes': ['source_code']
-    },
-    'WSFG': {
-        'name': 'Peak_Wind_Gust_Speed',
-        'attributes': ['source_code']
-    },
-    'WSFI': {
-        'name': 'Highest_Instantaneous_Wind_Speed',
-        'attributes': ['days_missing', 'source_code']
-    },
-    'WSFM': {
-        'name': 'Maximum_Wind_Speed',
-        'attributes': ['source_code']
-    }
+    # 'WDF1': {
+    #     'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_1-Minute_WSF1',
+    #     'attributes': ['source_code']
+    # },
+    # 'WDF2': {
+    #     'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_2-Minute_WSF2',
+    #     'attributes': ['source_code']
+    # },
+    # 'WDF5': {
+    #     'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_5-Second_WSF5',
+    #     'attributes': ['source_code']
+    # },
+    # 'WDFG': {
+    #     'name': 'Wind_Direction_for_Peak_Wind_Gust',
+    #     'attributes': ['source_code']
+    # },
+    # 'WDFI': {
+    #     'name': 'Direction_of_Highest_Instantaneous_Wind_Speed',
+    #     'attributes': ['days_missing', 'source_code']
+    # },
+    # 'WDFM': {
+    #     'name': 'Wind_Direction_for_Maximum_Wind_Speed',
+    #     'attributes': ['source_code']
+    # },
+    # 'WDMV': {
+    #     'name': 'Total_annual_wind_movement_over_evaporation_pan',
+    #     'attributes': ['source_code']
+    # },
+    # 'WSF1': {
+    #     'name': 'Maximum_Wind_Speed_Fastest_1-minute',
+    #     'attributes': ['source_code']
+    # },
+    # 'WSF2': {
+    #     'name': 'Maximum_Wind_Speed_Fastest_2-minute',
+    #     'attributes': ['source_code']
+    # },
+    # 'WSF5': {
+    #     'name': 'Peak_Wind_Gust_Speed_Fastest_5-second',
+    #     'attributes': ['source_code']
+    # },
+    # 'WSFG': {
+    #     'name': 'Peak_Wind_Gust_Speed',
+    #     'attributes': ['source_code']
+    # },
+    # 'WSFI': {
+    #     'name': 'Highest_Instantaneous_Wind_Speed',
+    #     'attributes': ['days_missing', 'source_code']
+    # },
+    # 'WSFM': {
+    #     'name': 'Maximum_Wind_Speed',
+    #     'attributes': ['source_code']
+    # }
 }
 
 FIPS_MAPPING = {

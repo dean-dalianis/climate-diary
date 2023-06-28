@@ -14,12 +14,14 @@ def import_data():
         logger.info(f'Importing data from {filename}')
         if filename.endswith('.csv'):
             file_path = os.path.join(GSOY_DATA_DIR, filename)
-            country_name = FIPS_MAPPING[filename[:2]].get('country_name', None)
-            country_iso = FIPS_MAPPING[filename[:2]].get('country_iso', None)
+            country_fips_code = filename[:2]
 
-            if country_name is None or country_iso is None:
-                logger.error(f'No country found for "FIPS:{filename[:2]}"')
+            if country_fips_code not in FIPS_MAPPING.keys():
+                logger.error(f'No country found for "FIPS:{country_fips_code}"')
                 continue
+
+            country_name = FIPS_MAPPING[country_fips_code].get('country_name', None)
+            country_iso = FIPS_MAPPING[country_fips_code].get('country_iso', None)
 
             with open(file_path, 'r') as file:
                 points = []
@@ -36,8 +38,10 @@ def import_data():
 
                     for i, field_value in enumerate(row):
                         field_name = headers[i]
-                        if field_name not in FIELD_MAPPING.keys():
+                        if field_name not in FIELD_MAPPING:
+                            # Filter out fields that are not in the mapping
                             continue
+
                         human_readable_name = FIELD_MAPPING.get(field_name, {}).get('name', field_name)
                         value = row[headers.index(field_name)]
                         if value == '':
