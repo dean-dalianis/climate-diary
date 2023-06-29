@@ -26,22 +26,22 @@ FIELD_MAPPING = {
         'name': 'Cooling_Degree_Days',
         'attributes': ['days_missing', 'source_code']
     },
-    'DP01': {
-        'name': 'Number_of_Days_with_at_least_0.254_mm_of_Precipitation',
-        'attributes': ['source_code']
-    },
-    'DP10': {
-        'name': 'Number_of_Days_with_at_least_2.54_mm_of_Precipitation',
-        'attributes': ['source_code']
-    },
-    'DP1X': {
-        'name': 'Number_of_Days_with_at_least_25.4_mm_of_Precipitation',
-        'attributes': ['source_code']
-    },
-    'DSND': {
-        'name': 'Number_of_Days_with_Snow_Depth_at_least_25.4mm',
-        'attributes': []
-    },
+    # 'DP01': {
+    #     'name': 'Number_of_Days_with_at_least_0.254_mm_of_Precipitation',
+    #     'attributes': ['source_code']
+    # },
+    # 'DP10': {
+    #     'name': 'Number_of_Days_with_at_least_2.54_mm_of_Precipitation',
+    #     'attributes': ['source_code']
+    # },
+    # 'DP1X': {
+    #     'name': 'Number_of_Days_with_at_least_25.4_mm_of_Precipitation',
+    #     'attributes': ['source_code']
+    # },
+    # 'DSND': {
+    #     'name': 'Number_of_Days_with_Snow_Depth_at_least_25.4mm',
+    #     'attributes': []
+    # },
     'DSNW': {
         'name': 'Number_of_Days_with_Snowfall',
         'attributes': ['days_missing', 'source_code']
