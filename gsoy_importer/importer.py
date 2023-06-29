@@ -50,7 +50,7 @@ def import_data():
                             continue
                         fields = {
                             'value': float(row[headers.index(field_name)]),
-                            'station': station,
+                            # 'station': station,
                             'latitude': latitude,
                             'longitude': longitude,
                             'elevation': elevation,

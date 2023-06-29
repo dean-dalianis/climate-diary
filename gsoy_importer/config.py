@@ -22,10 +22,10 @@ FIELD_MAPPING = {
     #     'name': 'Cooling_Degree_Days_season-to-date',
     #     'attributes': ['source_code']
     # },
-    'CLDD': {
-        'name': 'Cooling_Degree_Days',
-        'attributes': ['days_missing', 'source_code']
-    },
+    # 'CLDD': {
+    #     'name': 'Cooling_Degree_Days',
+    #     'attributes': ['days_missing', 'source_code']
+    # },
     # 'DP01': {
     #     'name': 'Number_of_Days_with_at_least_0.254_mm_of_Precipitation',
     #     'attributes': ['source_code']
@@ -142,10 +142,10 @@ FIELD_MAPPING = {
     #     'name': 'Heating_Degree_Days_season_to_date',
     #     'attributes': ['source_code']
     # },
-    'HTDD': {
-        'name': 'Heating_Degree_Days',
-        'attributes': ['days_missing', 'source_code']
-    },
+    # 'HTDD': {
+    #     'name': 'Heating_Degree_Days',
+    #     'attributes': ['days_missing', 'source_code']
+    # },
     # 'MNPN': {
     #     'name': 'Annual_Mean_Minimum_Temperature_of_evaporation_pan',
     #     'attributes': ['source_code']
@@ -158,10 +158,10 @@ FIELD_MAPPING = {
         'name': 'Total_Precipitation',
         'attributes': ['measurement_flag', 'source_code']
     },
-    'PSUN': {
-        'name': 'Percent_of_Possible_Sunshine',
-        'attributes': ['source_code']
-    },
+    # 'PSUN': {
+    #     'name': 'Percent_of_Possible_Sunshine',
+    #     'attributes': ['source_code']
+    # },
     'SNOW': {
         'name': 'Total_Snowfall',
         'attributes': ['measurement_flag', 'source_code']
@@ -178,10 +178,10 @@ FIELD_MAPPING = {
         'name': 'Minimum_Temperature',
         'attributes': ['source_code']
     },
-    'TSUN': {
-        'name': 'Total_Sunshine_in_minutes',
-        'attributes': ['days_missing', 'source_code']
-    },
+    # 'TSUN': {
+    #     'name': 'Total_Sunshine_in_minutes',
+    #     'attributes': ['days_missing', 'source_code']
+    # },
     # 'WDF1': {
     #     'name': 'Wind_Direction_for_Maximum_Wind_Speed_Fastest_1-Minute_WSF1',
     #     'attributes': ['source_code']
