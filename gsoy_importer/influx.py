@@ -1,3 +1,4 @@
+import atexit
 import time
 
 from influxdb_client import InfluxDBClient, WritePrecision
@@ -21,14 +22,16 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
 
-def write_points_to_db(points):
+def write_points_to_db(points, batch_size=2000):
     num_points = len(points)
-    logger.debug(f'Writing {num_points} points in batches to db')
+    logger.debug(f'Writing {num_points} points in batches of {batch_size} to db')
 
-    try:
-        write_api.write(bucket=BUCKET, record=points, write_precision=WritePrecision.MS)
-    except Exception as e:
-        logger.error(f'Failed to write data, {e}')
+    for i in range(0, len(points), batch_size):
+        batch = points[i:i + batch_size]
+        try:
+            write_api.write(bucket=BUCKET, record=batch, write_precision=WritePrecision.MS)
+        except Exception as e:
+            logger.error(f'Failed to write batch {i // batch_size + 1}, {e}')
 
 
 def fetch_gsom_data_from_db(country, datatype):
@@ -66,3 +69,11 @@ def wait_for_db():
 
     logger.error(f'Failed to connect to DB "{HOST}" after multiple attempts.')
     raise Exception(f'Cannot connect to DB: "{HOST}"')
+
+
+def cleanup():
+    write_api.__del__()
+    client.__del__()
+
+
+atexit.register(cleanup)

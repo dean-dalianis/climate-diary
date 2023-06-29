@@ -55,7 +55,7 @@ def import_data():
                             'longitude': longitude,
                             'elevation': elevation,
                             'station_name': station_name,
-                            'country_name': country_name
+                            # 'country_name': country_name
                         }
 
                         data = {
