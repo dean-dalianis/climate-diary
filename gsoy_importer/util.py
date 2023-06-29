@@ -1,6 +1,6 @@
 import os
 import tarfile
-import urllib
+import urllib.request
 from datetime import datetime, timedelta, timezone
 
 LAST_RUN_LAST_RUN_FILE_PATH = "/last_run/last_run.txt"

@@ -6,12 +6,12 @@ with open(DB_CONFIG_FILE, 'r') as file:
     config = json.load(file)
 HOST = config['HOST']
 PORT = config['PORT']
-
-DB_NAME = os.environ.get('DB_NAME', 'noaa_gsom')
 USERNAME = os.environ.get('DB_ADMIN_USER', 'admin')
 PASSWORD = os.environ.get('DB_ADMIN_PASSWORD', 'changeme')
+ORG = os.environ.get('DB_ORG', 'noaa')
+BUCKET = os.environ.get('DB_BUCKET', 'noaa_gsom')
 
-GSOY_DATA_DIR = 'gsoy_data'
+GSOY_DATA_DIR = 'files/gsoy_data'
 
 FIELD_MAPPING = {
     # 'AWND': {

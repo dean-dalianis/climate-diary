@@ -9,7 +9,9 @@ from util import update_last_run, download_and_extract_data
 
 
 def import_data():
+    logger.info('Starting download...')
     download_and_extract_data()
+    logger.info('Download and extraction complete.')
     for filename in os.listdir(GSOY_DATA_DIR):
         logger.info(f'Importing data from {filename}')
         if filename.endswith('.csv'):
@@ -30,7 +32,7 @@ def import_data():
 
                 for row in csv_reader:
                     station = row[0]
-                    time = row[1]
+                    time = f'{row[1]}-01-01T00:00:00.000Z'
                     latitude = row[2]
                     longitude = row[3]
                     elevation = row[4]

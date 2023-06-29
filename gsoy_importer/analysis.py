@@ -1,6 +1,4 @@
-from influx import write_points_to_db, drop
-from logging_config import logger
-
+from influx import write_points_to_db
 
 def analyze_data_and_write_to_db(country_iso, country_name, measurement, data):
     """
