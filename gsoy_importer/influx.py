@@ -13,6 +13,8 @@ client = InfluxDBClient(
     password=PASSWORD,
     org=ORG,
     enable_gzip=True,
+    timeout=60000,
+    debug=True
 )
 
 write_api = client.write_api(write_options=SYNCHRONOUS)
