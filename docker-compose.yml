@@ -57,7 +57,7 @@ services:
       - DB_ADMIN_USER=admin
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
       - DB_INIT_ORG=${DB_INIT_ORG}
-      - DB_BUCKET=${DB_INIT_BUCKET}
+      - DB_INIT_BUCKET=${DB_INIT_BUCKET}
 
   backend:
     build:

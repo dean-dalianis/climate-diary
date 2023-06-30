@@ -8,8 +8,8 @@ HOST = config['HOST']
 PORT = config['PORT']
 USERNAME = os.environ.get('DB_ADMIN_USER', 'admin')
 PASSWORD = os.environ.get('DB_ADMIN_PASSWORD', 'changeme')
-ORG = os.environ.get('DB_ORG', 'noaa')
-BUCKET = os.environ.get('DB_BUCKET', 'noaa_gsom')
+ORG = os.environ.get('DB_INIT_ORG', 'CLIMATE')
+BUCKET = os.environ.get('DB_INIT_BUCKET', 'climate-bucket')
 
 GSOY_DATA_DIR = 'files/gsoy_data'
 
