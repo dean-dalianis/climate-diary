@@ -31,8 +31,10 @@ services:
       - '3000:3000'
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-      - DB_NAME=${DB_NAME}
+      - DB_ADMIN_USER=admin
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+      - DB_INIT_ORG=${DB_INIT_ORG}
+      - DB_INIT_BUCKET=${DB_INIT_BUCKET}
     volumes:
       - ./grafana/container/grafana_data:/var/lib/grafana
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
@@ -72,9 +74,10 @@ services:
     volumes:
       - ./diary_api/container/log:/app/log
     environment:
-      - DB_NAME=${DB_NAME}
       - DB_ADMIN_USER=admin
       - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+      - DB_INIT_ORG=${DB_INIT_ORG}
+      - DB_INIT_BUCKET=${DB_INIT_BUCKET}
 
 #  frontend:
 #    build:

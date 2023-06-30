@@ -68,7 +68,7 @@ def update_last_run():
         }
     ]
 
-    from gsoy_importer.influx import write_points_to_db
+    from influx import write_points_to_db
     write_points_to_db(last_run_point)
 
     with open(LAST_RUN_LAST_RUN_FILE_PATH, "w") as f:
