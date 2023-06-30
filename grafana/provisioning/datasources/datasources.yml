@@ -6,13 +6,12 @@ datasources:
     access: proxy
     url: http://influxdb:8086
     user: admin
-    password: ${DB_ADMIN_PASSWORD}
     secureJsonData:
-      password: ${DB_ADMIN_PASSWORD}
+      token: ${DB_ADMIN_TOKEN}
     jsonData:
       version: Flux
       organization: ${DB_INIT_ORG}
-      defaultBucket: ${DB_INIT_BUCKET}
+      defaultBucket: bucket
       tlsSkipVerify: true
     isDefault: true
     editable: true
