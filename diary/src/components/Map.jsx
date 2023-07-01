@@ -73,7 +73,7 @@ function Map({ getValue, gradient, onCountrySelect, minValue, maxValue }) {
           [90, 180],
         ]}
         maxBoundsViscosity={1.0}
-        minZoom={2}
+        minZoom={3}
         maxZoom={10}
       >
         <TileLayer {...tileLayerProps} />
