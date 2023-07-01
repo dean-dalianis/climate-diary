@@ -1,11 +1,10 @@
-from flask import Flask
+from flask import Flask, g
 from flask_restx import Api
+from influxdb_client import InfluxDBClient
 
-from endpoints.analysis import initialize_routes as initialize_analysis_routes
-from endpoints.gsom import initialize_routes as initialize_gsom_routes
-from endpoints.metadata import initialize_routes as initialize_metadata_routes
+from config import HOST, PORT, ORG, TOKEN
+from endpoints.gsoy import initialize_routes as initialize_gsoy_routes
 from endpoints.other import initialize_routes as initialize_other_routes
-from endpoints.trends import initialize_routes as initialize_trends_routes
 
 
 def create_app():
@@ -17,11 +16,24 @@ def create_app():
         description='A simple API for fetching data from the Climate Diary database.',
     )
 
-    initialize_gsom_routes(api)
+    initialize_gsoy_routes(api)
     initialize_other_routes(api)
-    initialize_analysis_routes(api)
-    initialize_trends_routes(api)
-    initialize_metadata_routes(api)
+
+    @app.before_request
+    def before_request():
+        g.db = InfluxDBClient(
+            url=f'http://{HOST}:{PORT}',
+            token=TOKEN,
+            org=ORG,
+            enable_gzip=True
+        )
+        g.query_api = g.db.query_api()
+
+    @app.teardown_appcontext
+    def close_db_client(error=None):
+        db = g.pop('db', None)
+        if db is not None:
+            db.close()
 
     return app
 

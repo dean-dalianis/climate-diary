@@ -9,10 +9,10 @@ function convertTime(dateString) {
   return timestamp;
 }
 
-function GraphanaGraph({
-  countryId,
+function GrafanaPanel({
+  countryIso,
   width = 790,
-  height = 300,
+  height = 400,
   from,
   to,
   panelId,
@@ -24,11 +24,11 @@ function GraphanaGraph({
         from
       )}&to=${convertTime(
         to
-      )}&var-country_id=${countryId}&theme=${colorScheme}&panelId=${panelId}&kiosk`}
+      )}&var-country_iso=${countryIso}&theme=${colorScheme}&panelId=${panelId}&kiosk`}
       width={width}
       height={height}
       frameBorder="0"
     />
   );
 }
-export default GraphanaGraph;
+export default GrafanaPanel;

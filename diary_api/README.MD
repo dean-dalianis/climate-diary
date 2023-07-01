@@ -162,7 +162,7 @@ The base URL for all API endpoints is `/`.
 
 The API supports querying the following measurements as created by `gsom_fetcher`:
 
-- `DEFAULT_MEASUREMENTS`:
+- `GSOY_MEASUREMENTS`:
     - Average_Temperature
     - Maximum_Temperature
     - Minimum_Temperature

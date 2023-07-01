@@ -60,31 +60,32 @@ def initialize_routes(api: Api):
             else:
                 return {"message": "No earliest timestamp found."}, 404
 
-    @other_namespace.route('/measurements/', defaults={'country_id': None})
-    @other_namespace.route('/measurements/<string:country_id>')
+    @other_namespace.route('/measurements/', defaults={'country_iso': None})
+    @other_namespace.route('/measurements/<string:country_iso>')
     class MeasurementsList(Resource):
         @other_namespace.doc('list_measurements',
-                             params={'country_id': 'A country id'},
+                             params={
+                                 'country_iso': {'description': 'A country iso', 'type': 'string', 'default': 'US'}},
                              responses={
                                  200: 'List of available measurements for the specified country or all countries.',
-                                 404: 'No measurements found for this country ID or no countries found.'})
-        def get(self, country_id):
+                                 404: 'No measurements found for this country iso or no countries found.'})
+        def get(self, country_iso):
             """
-            Fetch a list of available measurements for the specified country or all countries if no country ID is specified
+            Fetch a list of available measurements for the specified country or all countries if no country iso is specified
             """
-            logger.info(f'Fetching available measurements for country ID: {country_id}.')
-            timestamp = fetch_available_measurements(country_id)
+            logger.info(f'Fetching available measurements for country iso: {country_iso}.')
+            timestamp = fetch_available_measurements(country_iso)
             logger.info(f'Fetched available measurements.')
             if timestamp:
                 return timestamp, 200
             else:
-                return {"message": "No measurements found for this country ID."}, 404
+                return {"message": "No measurements found for this country iso."}, 404
 
     @other_namespace.route('/temperature/minimum/<string:measurement>')
     class MinimumTemperature(Resource):
         @other_namespace.doc('get_minimum_temperature',
-                             params={'measurement': 'The name of the measurement', 'type': 'string',
-                                     'default': 'Average_Temperature'},
+                             params={'measurement': {'description': 'A measurement name', 'type': 'string',
+                                                     'default': 'Average_Temperature'}},
                              responses={
                                  200: 'The minimum temperature across all countries for the specified measurement.',
                                  404: 'No minimum temperature found for this measurement.'})
@@ -92,9 +93,9 @@ def initialize_routes(api: Api):
             """
             Fetch the minimum temperature across all countries for the specified measurement
             """
-            logger.info(f'Fetching minimum temperature for measurement: {measurement}.')
+            logger.debug(f'Fetching minimum temperature for measurement: {measurement}.')
             temperature = fetch_minimum_temperature(measurement)
-            logger.info(f'Fetched minimum temperature.')
+            logger.debug(f'Fetched minimum temperature.')
             if temperature:
                 return temperature, 200
             else:
@@ -103,8 +104,8 @@ def initialize_routes(api: Api):
     @other_namespace.route('/temperature/maximum/<string:measurement>')
     class MaximumTemperature(Resource):
         @other_namespace.doc('get_maximum_temperature',
-                             params={'measurement': 'The name of the measurement', 'type': 'string',
-                                     'default': 'Average_Temperature'},
+                             params={'measurement': {'description': 'A measurement name', 'type': 'string',
+                                                     'default': 'Average_Temperature'}},
                              responses={
                                  200: 'The maximum temperature across all countries for the specified measurement.',
                                  404: 'No maximum temperature found for this measurement.'})
@@ -115,9 +116,9 @@ def initialize_routes(api: Api):
             if 'temperature' not in measurement.lower():
                 return {'message': 'The measurement must be of type temperature.'}, 400
 
-            logger.info(f'Fetching maximum temperature for measurement: {measurement}.')
+            logger.debug(f'Fetching maximum temperature for measurement: {measurement}.')
             temperature = fetch_maximum_temperature(measurement)
-            logger.info(f'Fetched maximum temperature.')
+            logger.debug(f'Fetched maximum temperature.')
             if temperature:
                 return temperature, 200
             else:

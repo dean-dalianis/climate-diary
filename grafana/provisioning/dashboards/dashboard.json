@@ -65,12 +65,12 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^Last Run$/",
+          "fields": "/^last_run gsoy_importer$/",
           "values": false
         },
         "textMode": "auto"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "alias": "Last Run",
@@ -95,7 +95,7 @@
           "measurement": "metadata",
           "orderByTime": "ASC",
           "policy": "autogen",
-          "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"metadata\" and r[\"script\"] == \"gsoy_importer\")\r\n  |> last(column: \"last_run\")\r\n",
+          "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: 1700-01-01T00:00:00Z)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"metadata\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"last_run\")\r\n  |> filter(fn: (r) => r[\"script\"] == \"gsoy_importer\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -173,7 +173,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "alias": "",
@@ -198,7 +198,7 @@
           "measurement": "metadata",
           "orderByTime": "ASC",
           "policy": "autogen",
-          "query": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(bucket: \"climate-bucket\", tag: \"country_iso\", start: 1700-01-01T00:00:00Z, stop: 3000-12-31T23:59:59Z)\r\n",
+          "query": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(bucket: \"climate-bucket\", tag: \"country_iso\", start: 1700-01-01T00:00:00Z)\r\n",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table",
@@ -243,223 +243,11 @@
             "type": "influxdb",
             "uid": "P0C89709D7A7DC177"
           },
+          "description": "",
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "celsius"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byFrameRefID",
-                  "options": "A"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "red",
-                      "mode": "shades"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byFrameRefID",
-                  "options": "B"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "purple",
-                      "mode": "shades"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 13,
-            "w": 24,
-            "x": 0,
-            "y": 7
-          },
-          "id": 27,
-          "interval": "365d",
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "timezone": [
-              "utc"
-            ],
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "alias": "Max: $country_name",
-              "datasource": {
-                "type": "influxdb",
-                "uid": "P0C89709D7A7DC177"
-              },
-              "groupBy": [
-                {
-                  "params": [
-                    "365d"
-                  ],
-                  "type": "time"
-                },
-                {
-                  "params": [
-                    "linear"
-                  ],
-                  "type": "fill"
-                }
-              ],
-              "measurement": "Extreme_Maximum_Temperature_yearly_average",
-              "orderByTime": "ASC",
-              "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
-              "refId": "A",
-              "resultFormat": "time_series",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "value"
-                    ],
-                    "type": "field"
-                  },
-                  {
-                    "params": [],
-                    "type": "max"
-                  }
-                ]
-              ],
-              "tags": [
-                {
-                  "key": "country_id::tag",
-                  "operator": "=~",
-                  "value": "/^$country_id$/"
-                }
-              ]
-            },
-            {
-              "alias": "Min: $country_name",
-              "datasource": {
-                "type": "influxdb",
-                "uid": "P0C89709D7A7DC177"
-              },
-              "groupBy": [
-                {
-                  "params": [
-                    "365d"
-                  ],
-                  "type": "time"
-                },
-                {
-                  "params": [
-                    "linear"
-                  ],
-                  "type": "fill"
-                }
-              ],
-              "hide": false,
-              "measurement": "Extreme_Minimum_Temperature_yearly_average",
-              "orderByTime": "ASC",
-              "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"min\")",
-              "refId": "B",
-              "resultFormat": "time_series",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "value"
-                    ],
-                    "type": "field"
-                  },
-                  {
-                    "params": [],
-                    "type": "min"
-                  }
-                ]
-              ],
-              "tags": [
-                {
-                  "key": "country_id::tag",
-                  "operator": "=~",
-                  "value": "/^$country_id$/"
-                }
-              ]
-            }
-          ],
-          "title": "Extreme Temperature Events (yearly)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P0C89709D7A7DC177"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "fixed"
               },
               "custom": {
                 "axisCenteredZero": false,
@@ -517,8 +305,8 @@
                   {
                     "id": "color",
                     "value": {
-                      "fixedColor": "orange",
-                      "mode": "shades"
+                      "fixedColor": "blue",
+                      "mode": "fixed"
                     }
                   }
                 ]
@@ -532,8 +320,38 @@
                   {
                     "id": "color",
                     "value": {
-                      "fixedColor": "green",
-                      "mode": "shades"
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
                     }
                   }
                 ]
@@ -547,7 +365,23 @@
                   {
                     "id": "color",
                     "value": {
-                      "mode": "palette-classic"
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "D"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
                     }
                   }
                 ]
@@ -556,11 +390,11 @@
           },
           "gridPos": {
             "h": 13,
-            "w": 24,
+            "w": 12,
             "x": 0,
-            "y": 20
+            "y": 7
           },
-          "id": 43,
+          "id": 57,
           "interval": "365d",
           "options": {
             "legend": {
@@ -577,6 +411,7 @@
               "sort": "none"
             }
           },
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "alias": "Max: $country_name",
@@ -598,10 +433,11 @@
                   "type": "fill"
                 }
               ],
+              "hide": false,
               "measurement": "Extreme_Maximum_Temperature_yearly_average",
               "orderByTime": "ASC",
               "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
               "refId": "A",
               "resultFormat": "time_series",
               "select": [
@@ -627,56 +463,16 @@
               ]
             },
             {
-              "alias": "Min: $country_name",
               "datasource": {
                 "type": "influxdb",
                 "uid": "P0C89709D7A7DC177"
               },
-              "groupBy": [
-                {
-                  "params": [
-                    "365d"
-                  ],
-                  "type": "time"
-                },
-                {
-                  "params": [
-                    "linear"
-                  ],
-                  "type": "fill"
-                }
-              ],
               "hide": false,
-              "measurement": "Extreme_Minimum_Temperature_yearly_average",
-              "orderByTime": "ASC",
-              "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Average_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Average Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")",
-              "refId": "B",
-              "resultFormat": "time_series",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "value"
-                    ],
-                    "type": "field"
-                  },
-                  {
-                    "params": [],
-                    "type": "min"
-                  }
-                ]
-              ],
-              "tags": [
-                {
-                  "key": "country_id::tag",
-                  "operator": "=~",
-                  "value": "/^$country_id$/"
-                }
-              ]
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"Maximum Temperature trend\"})\r\n  |> yield(name: \"Maximum Temperature trend\")\r\n",
+              "refId": "B"
             },
             {
-              "alias": "Min: $country_name",
+              "alias": "Max: $country_name",
               "datasource": {
                 "type": "influxdb",
                 "uid": "P0C89709D7A7DC177"
@@ -696,10 +492,10 @@
                 }
               ],
               "hide": false,
-              "measurement": "Extreme_Minimum_Temperature_yearly_average",
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
               "orderByTime": "ASC",
               "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"min\")",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
               "refId": "C",
               "resultFormat": "time_series",
               "select": [
@@ -712,7 +508,7 @@
                   },
                   {
                     "params": [],
-                    "type": "min"
+                    "type": "max"
                   }
                 ]
               ],
@@ -723,9 +519,1419 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"Minimum Temperature trend\"})\r\n  |> yield(name: \"Minimum Temperature trend\")\r\n",
+              "refId": "D"
             }
           ],
-          "title": "Temperatures (yearly)",
+          "title": "Extreme Temperatures (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "points"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "C"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "D"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 13,
+            "w": 12,
+            "x": 12,
+            "y": 7
+          },
+          "id": 61,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"Maximum Temperature trend\"})\r\n  |> yield(name: \"Maximum Temperature trend\")\r\n",
+              "refId": "B"
+            },
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "C",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"Minimum Temperature trend\"})\r\n  |> yield(name: \"Minimum Temperature trend\")\r\n",
+              "refId": "D"
+            }
+          ],
+          "title": "Extreme Temperatures (decadal)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 0,
+            "y": 20
+          },
+          "id": 58,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Maximum Temperature (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 12,
+            "y": 20
+          },
+          "id": 62,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Maximum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Maximum Temperature (decadal)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 0,
+            "y": 34
+          },
+          "id": 59,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Average_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Average Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Average_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Average Temperature (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 12,
+            "y": 34
+          },
+          "id": 63,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Average_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Average Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Average_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Average Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Average Temperature (decadal",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 0,
+            "y": 48
+          },
+          "id": 60,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Minimum Temperature (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 12,
+            "y": 48
+          },
+          "id": 64,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Minimum Temperature\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Minimum_Temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: min, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Minimum Temperature (decadal)",
           "type": "timeseries"
         }
       ],
@@ -799,11 +2005,42 @@
               },
               "unit": "lengthmm"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 13,
-            "w": 8,
+            "w": 12,
             "x": 0,
             "y": 8
           },
@@ -846,10 +2083,11 @@
                   "type": "fill"
                 }
               ],
+              "hide": false,
               "measurement": "Extreme_Maximum_Temperature_yearly_average",
               "orderByTime": "ASC",
               "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
               "refId": "A",
               "resultFormat": "time_series",
               "select": [
@@ -873,9 +2111,18 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
             }
           ],
-          "title": "Total Precipitation",
+          "title": "Total Precipitation (yearly)",
           "type": "timeseries"
         },
         {
@@ -887,8 +2134,7 @@
           "fieldConfig": {
             "defaults": {
               "color": {
-                "fixedColor": "yellow",
-                "mode": "fixed"
+                "mode": "palette-classic"
               },
               "custom": {
                 "axisCenteredZero": false,
@@ -925,7 +2171,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "yellow",
+                    "color": "green",
                     "value": null
                   },
                   {
@@ -936,13 +2182,228 @@
               },
               "unit": "lengthmm"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 13,
-            "w": 8,
-            "x": 8,
+            "w": 12,
+            "x": 12,
             "y": 8
+          },
+          "id": 71,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n|> yield(name: \"original\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Total Precipitation (decadal)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "fixedColor": "yellow",
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "semi-dark-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 13,
+            "w": 12,
+            "x": 0,
+            "y": 21
           },
           "id": 45,
           "interval": "365d",
@@ -983,10 +2444,11 @@
                   "type": "fill"
                 }
               ],
+              "hide": false,
               "measurement": "Extreme_Maximum_Temperature_yearly_average",
               "orderByTime": "ASC",
               "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")",
               "refId": "A",
               "resultFormat": "time_series",
               "select": [
@@ -1010,9 +2472,202 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal_max = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal_max   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
             }
           ],
-          "title": "Extreme Maximum Precipitation",
+          "title": "Extreme Maximum Precipitation (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "fixedColor": "yellow",
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "semi-dark-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 13,
+            "w": 12,
+            "x": 12,
+            "y": 21
+          },
+          "id": 72,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal_max = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Extreme_Maximum_Precipitation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Maximum Precipitation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal_max   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Extreme Maximum Precipitation (decadal)",
           "type": "timeseries"
         },
         {
@@ -1069,13 +2724,48 @@
               },
               "unit": "d"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 13,
-            "w": 8,
-            "x": 16,
-            "y": 8
+            "w": 12,
+            "x": 0,
+            "y": 34
           },
           "id": 48,
           "interval": "365d",
@@ -1116,6 +2806,7 @@
                   "type": "fill"
                 }
               ],
+              "hide": false,
               "measurement": "Extreme_Maximum_Temperature_yearly_average",
               "orderByTime": "ASC",
               "policy": "autogen",
@@ -1143,9 +2834,205 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal_mean = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Thunder\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days With Thunder\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal_mean   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
             }
           ],
-          "title": "Days With Thunder",
+          "title": "Days With Thunder (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "smooth",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "d"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 13,
+            "w": 12,
+            "x": 12,
+            "y": 34
+          },
+          "id": 73,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Thunder\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days With Thunder\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal_mean = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Thunder\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days With Thunder\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n\r\noriginal_mean   \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Days With Thunder (decadal)",
           "type": "timeseries"
         }
       ],
@@ -1219,13 +3106,44 @@
               },
               "unit": "lengthmm"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 12,
-            "w": 6,
+            "w": 12,
             "x": 0,
-            "y": 22
+            "y": 9
           },
           "id": 50,
           "interval": "365d",
@@ -1293,9 +3211,18 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
             }
           ],
-          "title": "Total Snowfall",
+          "title": "Total Snowfall (yearly)",
           "type": "timeseries"
         },
         {
@@ -1355,15 +3282,56 @@
               },
               "unit": "lengthmm"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 12,
-            "w": 6,
-            "x": 6,
-            "y": 22
+            "w": 12,
+            "x": 12,
+            "y": 9
           },
-          "id": 51,
+          "id": 67,
           "interval": "365d",
           "options": {
             "legend": {
@@ -1405,7 +3373,7 @@
               "measurement": "Extreme_Maximum_Temperature_yearly_average",
               "orderByTime": "ASC",
               "policy": "autogen",
-              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
               "refId": "A",
               "resultFormat": "time_series",
               "select": [
@@ -1429,9 +3397,18 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
             }
           ],
-          "title": "Highest Daily Snowfall",
+          "title": "Total Snowfall (decadal)",
           "type": "timeseries"
         },
         {
@@ -1491,13 +3468,44 @@
               },
               "unit": "lengthmm"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 12,
-            "w": 6,
-            "x": 12,
-            "y": 22
+            "w": 12,
+            "x": 0,
+            "y": 21
           },
           "id": 52,
           "interval": "365d",
@@ -1565,9 +3573,566 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snow_Depth\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snow Depth\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal\r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")",
+              "refId": "B"
             }
           ],
-          "title": "Highest Daily Snow Depth",
+          "title": "Highest Daily Snow Depth (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 12,
+            "x": 12,
+            "y": 21
+          },
+          "id": 68,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snow_Depth\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snow Depth\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snow_Depth\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snow Depth\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal\r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")",
+              "refId": "B"
+            }
+          ],
+          "title": "Highest Daily Snow Depth (decadal)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 12,
+            "x": 0,
+            "y": 33
+          },
+          "id": 51,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal  \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Highest Daily Snowfall (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 12,
+            "x": 12,
+            "y": 33
+          },
+          "id": 69,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"max\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Highest_Daily_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: max, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Highest Daily Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal  \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Highest Daily Snowfall (decadal)",
           "type": "timeseries"
         },
         {
@@ -1627,13 +4192,48 @@
               },
               "unit": "d"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 12,
-            "w": 6,
-            "x": 18,
-            "y": 22
+            "w": 12,
+            "x": 0,
+            "y": 45
           },
           "id": 53,
           "interval": "365d",
@@ -1701,9 +4301,204 @@
                   "value": "/^$country_id$/"
                 }
               ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal\r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
             }
           ],
-          "title": "Days with Snow",
+          "title": "Days with Snow (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "smooth",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "d"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 12,
+            "x": 12,
+            "y": 45
+          },
+          "id": 70,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Snowfall\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Snowfall\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal\r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")\r\n",
+              "refId": "B"
+            }
+          ],
+          "title": "Days with Snow (decadal)",
           "type": "timeseries"
         }
       ],
@@ -1711,7 +4506,7 @@
       "type": "row"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1719,284 +4514,724 @@
         "y": 9
       },
       "id": 54,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 0,
+            "y": 10
+          },
+          "id": 55,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Evaporation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Evaporation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal= from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Evaporation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Evaporation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal  \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")",
+              "refId": "B"
+            }
+          ],
+          "title": "Total Evaporation (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "lengthmm"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 12,
+            "y": 10
+          },
+          "id": 65,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Evaporation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Evaporation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal= from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Evaporation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Evaporation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\noriginal  \r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")",
+              "refId": "B"
+            }
+          ],
+          "title": "Total Evaporation (decadal)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "d"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "super-light-purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 0,
+            "y": 21
+          },
+          "id": 56,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Fog\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Fog\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Fog\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Fog\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n  \r\noriginal\r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")",
+              "refId": "B"
+            }
+          ],
+          "title": "Days with Fog (yearly)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P0C89709D7A7DC177"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "smooth",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "d"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 12,
+            "y": 21
+          },
+          "id": 66,
+          "interval": "365d",
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "timezone": [
+              "utc"
+            ],
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "alias": "Max: $country_name",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "groupBy": [
+                {
+                  "params": [
+                    "365d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "linear"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "Extreme_Maximum_Temperature_yearly_average",
+              "orderByTime": "ASC",
+              "policy": "autogen",
+              "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Fog\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Fog\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "country_id::tag",
+                  "operator": "=~",
+                  "value": "/^$country_id$/"
+                }
+              ]
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "P0C89709D7A7DC177"
+              },
+              "hide": false,
+              "query": "import \"contrib/anaisdg/statsmodels\"\r\n\r\noriginal = from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Fog\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: 10y, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Fog\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n\r\n  \r\noriginal\r\n  |> statsmodels.linearRegression()\r\n  |> drop(columns: [\"N\", \"slope\", \"sx\", \"sxx\", \"sxy\", \"sy\", \"x\", \"y\", \"errors\"])\r\n  |> rename(columns: {\"y_hat\": \"trend\"})\r\n  |> yield(name: \"trend\")",
+              "refId": "B"
+            }
+          ],
+          "title": "Days with Fog (decadal)",
+          "type": "timeseries"
+        }
+      ],
       "title": "Evaporation",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "lengthmm"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 12,
-        "x": 0,
-        "y": 10
-      },
-      "id": 55,
-      "interval": "365d",
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "timezone": [
-          "utc"
-        ],
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "alias": "Max: $country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P0C89709D7A7DC177"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "365d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "linear"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "Extreme_Maximum_Temperature_yearly_average",
-          "orderByTime": "ASC",
-          "policy": "autogen",
-          "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Total_Evaporation\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Evaporation\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "max"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country_id::tag",
-              "operator": "=~",
-              "value": "/^$country_id$/"
-            }
-          ]
-        }
-      ],
-      "title": "Total Evaporation",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P0C89709D7A7DC177"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "d"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 12,
-        "x": 12,
-        "y": 10
-      },
-      "id": 56,
-      "interval": "365d",
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "timezone": [
-          "utc"
-        ],
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "alias": "Max: $country_name",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P0C89709D7A7DC177"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "365d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "linear"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "Extreme_Maximum_Temperature_yearly_average",
-          "orderByTime": "ASC",
-          "policy": "autogen",
-          "query": "from(bucket: \"climate-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Number_of_Days_with_Fog\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"country_iso\"] == \"${country_iso}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _measurement: \"Days with Fog\" }))\r\n  |> map(fn: (r) => ({ r with _field: \"\" }))\r\n  |> map(fn: (r) => ({ r with country_iso: \"\" }))\r\n  |> yield(name: \"mean\")\r\n",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "max"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "country_id::tag",
-              "operator": "=~",
-              "value": "/^$country_id$/"
-            }
-          ]
-        }
-      ],
-      "title": "Days with Fog",
-      "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -2029,13 +5264,13 @@
     ]
   },
   "time": {
-    "from": "1900-05-03T06:46:58.000Z",
-    "to": "2023-08-26T19:40:10.000Z"
+    "from": "1877-07-01T06:00:00.000Z",
+    "to": "2020-01-01T00:00:00.000Z"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "NOAA GSOM Dashboard",
   "uid": "c351f1fe-59e9-4758-b061-93603cbedc6d",
-  "version": 4,
+  "version": 13,
   "weekStart": ""
 }

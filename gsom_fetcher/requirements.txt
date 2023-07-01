@@ -1,7 +1,0 @@
-requests
-python-dateutil
-influxdb
-numpy
-matplotlib
-pycountry
-psutil

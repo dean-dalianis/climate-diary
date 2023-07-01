@@ -1,16 +1,5 @@
-from config import HOST, PORT, USERNAME, PASSWORD, DB_NAME, DEFAULT_MEASUREMENTS, ANALYSIS_MEASUREMENTS, \
-    TRENDS_MEASUREMENTS
-from influx.util import ms_to_timestamp
-from influxdb import InfluxDBClient
-
-client = InfluxDBClient(
-    host=HOST,
-    port=PORT,
-    username=USERNAME,
-    password=PASSWORD,
-    database=DB_NAME,
-    retries=10,
-)
+from config import BUCKET, GSOY_MEASUREMENTS
+from flask import g
 
 
 def fetch_country_list():
@@ -20,34 +9,13 @@ def fetch_country_list():
     :return: A list of available countries.
     :rtype: list[str]
     """
+    query = f'import "influxdata/influxdb/schema" schema.tagValues(bucket: "{BUCKET}", tag: "country_iso", start: 1700-01-01T00:00:00Z)'
+    tables = g.query_api.query(query)
     countries = []
-    query = f"SHOW TAG VALUES WITH KEY = \"country_id\""
-    result = client.query(query, epoch='ms')
-    if result:
-        for point in result.get_points():
-            if point['value'] not in countries:
-                countries.append(point['value'])
-
+    for table in tables:
+        for record in table.records:
+            countries.append(record.get_value())
     return countries
-
-
-def fetch_latest_timestamp():
-    """
-    Fetch the latest timestamp across all measurements.
-
-    :return: The latest timestamp as a string.
-    :rtype: str or None
-    """
-    latest_timestamp = None
-    for table in DEFAULT_MEASUREMENTS:
-        query = f'SELECT last("value") FROM "{table}"'
-        result = client.query(query, epoch='ms')
-        if result:
-            point = list(result.get_points())[0]
-            timestamp_ms = point['time']
-            if latest_timestamp is None or timestamp_ms > latest_timestamp:
-                latest_timestamp = timestamp_ms
-    return ms_to_timestamp(latest_timestamp) if latest_timestamp else None
 
 
 def fetch_earliest_timestamp():
@@ -58,37 +26,53 @@ def fetch_earliest_timestamp():
     :rtype: str or None
     """
     earliest_timestamp = None
-    for table in DEFAULT_MEASUREMENTS:
-        query = f'SELECT first("value") FROM "{table}"'
-        result = client.query(query, epoch='ms')
-        if result:
-            point = list(result.get_points())[0]
-            timestamp_ms = point['time']
-            if earliest_timestamp is None or timestamp_ms < earliest_timestamp:
-                earliest_timestamp = timestamp_ms
-    return ms_to_timestamp(earliest_timestamp) if earliest_timestamp else None
+    for table in GSOY_MEASUREMENTS:
+        query = f'from(bucket: "{BUCKET}") |> range(start: 0) |> filter(fn: (r) => r["_measurement"] == "{table}") |> first(column: "_time")'
+        tables = g.query_api.query(query)
+        for table in tables:
+            for record in table.records:
+                timestamp = record.get_time()
+                if earliest_timestamp is None or timestamp < earliest_timestamp:
+                    earliest_timestamp = timestamp
+    return earliest_timestamp.isoformat() if earliest_timestamp else None
 
 
-def fetch_available_measurements(country_id=None):
+def fetch_latest_timestamp():
+    """
+    Fetch the latest timestamp across all measurements.
+
+    :return: The latest timestamp as a string.
+    :rtype: str or None
+    """
+    latest_timestamp = None
+    for table in GSOY_MEASUREMENTS:
+        query = f'from(bucket: "{BUCKET}") |> range(start: 0) |> filter(fn: (r) => r["_measurement"] == "{table}") |> last(column: "_time")'
+        tables = g.query_api.query(query)
+        for table in tables:
+            for record in table.records:
+                timestamp = record.get_time()
+                if latest_timestamp is None or timestamp > latest_timestamp:
+                    latest_timestamp = timestamp
+    return latest_timestamp.isoformat() if latest_timestamp else None
+
+
+def fetch_available_measurements(country_iso=None):
     """
     Fetch the available measurements for a specified country.
 
-    :param str country_id: The country ID to fetch the available measurements for. If None, fetch for all countries.
+    :param str country_iso: The country iso to fetch the available measurements for. If None, fetch for all countries.
     :return: A list of available measurements for the specified country or all countries.
     :rtype: list[str] or None
     """
     available_measurements = []
-    all_measurements = DEFAULT_MEASUREMENTS + ANALYSIS_MEASUREMENTS + TRENDS_MEASUREMENTS
-
-    for measurement in all_measurements:
-        query = f"SHOW TAG VALUES FROM \"{measurement}\" WITH KEY = \"country_id\""
-        if country_id is not None:
-            query += f" WHERE \"country_id\" = '{country_id}'"
-        result = client.query(query, epoch='ms')
-        if result:
-            for point in result.get_points():
-                if measurement not in available_measurements:
-                    available_measurements.append(measurement)
+    for measurement in GSOY_MEASUREMENTS:
+        query = f'import "influxdata/influxdb/schema" schema.measurementTagValues(bucket: "{BUCKET}", measurement: "{measurement}", tag: "country_iso", start: 1700-01-01T00:00:00Z)'
+        if country_iso is not None:
+            query += f'|> filter(fn: (r) => r._value == "{country_iso}")'
+        tables = g.query_api.query(query)
+        for table in tables:
+            if len(table.records) > 0:
+                available_measurements.append(measurement)
     return available_measurements if available_measurements else None
 
 
@@ -100,12 +84,15 @@ def fetch_maximum_temperature(measurement):
     :return: The maximum temperature for the specified measurement.
     :rtype: float or None
     """
-    query = f'SELECT max(*) FROM "{measurement}"'
-    result = client.query(query, epoch='ms')
-    if result:
-        point = list(result.get_points())[0]
-        return point['max_value']
-    return None
+    max_temp = None
+    query = f'from(bucket: "{BUCKET}") |> range(start: 0) |> filter(fn: (r) => r["_measurement"] == "{measurement}") |> max(column: "_value")'
+    tables = g.query_api.query(query)
+    for table in tables:
+        for record in table.records:
+            value = record.get_value()
+            if max_temp is None or value > max_temp:
+                max_temp = value
+    return max_temp
 
 
 def fetch_minimum_temperature(measurement):
@@ -116,9 +103,12 @@ def fetch_minimum_temperature(measurement):
     :return: The minimum temperature for the specified measurement.
     :rtype: float or None
     """
-    query = f'SELECT min(*) FROM "{measurement}"'
-    result = client.query(query, epoch='ms')
-    if result:
-        point = list(result.get_points())[0]
-        return point['min_value']
-    return None
+    min_temp = None
+    query = f'from(bucket: "{BUCKET}") |> range(start: 0) |> filter(fn: (r) => r["_measurement"] == "{measurement}") |> min(column: "_value")'
+    tables = g.query_api.query(query)
+    for table in tables:
+        for record in table.records:
+            value = record.get_value()
+            if min_temp is None or value < min_temp:
+                min_temp = value
+    return min_temp

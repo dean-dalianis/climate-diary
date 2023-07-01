@@ -70,19 +70,13 @@ export const getMinimumTemperature = async (measurement) => {
   return data;
 };
 
-export const getAnalysis = async (params) => {
+export const getGsoy = async (params) => {
   const data = await api
-    .get("/diary/analysis/data", { params })
+    .get("/diary/gsoy/data", { params })
     .then((res) => res.data);
   return data;
 };
 
-export const getGsom = async (params) => {
-  const data = await api
-    .get("/diary/gsom/data", { params })
-    .then((res) => res.data);
-  return data;
-};
 
 export const getCountryFromCoordinates = async (lat, lng) => {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
@@ -91,19 +85,6 @@ export const getCountryFromCoordinates = async (lat, lng) => {
     const response = await axios.get(url);
     const { country_code, country } = response.data.address;
     return { countryCode: country_code, countryName: country };
-  } catch (error) {
-    console.error("Error fetching country information:", error);
-    return null;
-  }
-};
-
-export const getCountryCodeFromName = async (countryName) => {
-  const url = `https://api.restcountries.com/v3.1/name/${countryName}`;
-
-  try {
-    const response = await axios.get(url);
-    const countryCode = response.data[0]["tld"]["cca2"];
-    return countryCode;
   } catch (error) {
     console.error("Error fetching country information:", error);
     return null;

@@ -2,17 +2,18 @@ import concurrent.futures
 import csv
 import os
 
-from analysis import analyze_data_and_write_to_db
 from config import FIELD_MAPPING, GSOY_DATA_DIR, FIPS_MAPPING
-from influx import write_points_to_db, fetch_gsom_data_from_db
+from influx import write_points_to_db
 from logging_config import logger
-from util import update_last_run, download_and_extract_data
+from util import update_last_run, download_and_extract_data, remove_extracted_data
+
+MAX_WORKERS = 4
 
 
 def import_file(filename):
     logger.info(f'Importing data from {filename}')
     if filename.endswith('.csv'):
-        file_path = os.path.join(GSOY_DATA_DIR, filename)
+        file_path = os.path.join(GSOY_DATA_DIR, "extracted_data", filename)
         country_fips_code = filename[:2]
 
         if country_fips_code not in FIPS_MAPPING.keys():
@@ -73,45 +74,18 @@ def import_data():
     download_and_extract_data()
     logger.info('Download and extraction complete.')
 
-    filenames = os.listdir(GSOY_DATA_DIR)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    extracted_data_dir = os.path.join(GSOY_DATA_DIR, 'extracted_data')
+    filenames = os.listdir(extracted_data_dir)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         executor.map(import_file, filenames)
 
     update_last_run()
-
-
-def analyze(country_iso):
-    """
-    Analyzes the data for a country.
-
-    :param country_iso: The country to analyze.
-    :return: None
-    """
-    for measurement in FIELD_MAPPING:
-        measurement_name = FIELD_MAPPING[measurement].get('name')
-        data = fetch_gsom_data_from_db(country_iso, measurement_name)
-        if data is None or len(data) == 0:
-            continue
-        logger.debug(f'Found {len(data)} data points for analysis for {measurement_name} in {country_iso}')
-        analyze_data_and_write_to_db(country_iso, measurement_name, data)
-
-
-def analyze_data():
-    """
-    Analyzes the data for all countries.
-
-    :return: None
-    """
-    logger.info('Starting analysis')
-    for country in FIPS_MAPPING:
-        logger.info(f'Analyzing data for {country["country_name"]}')
-        country_iso = FIPS_MAPPING[country].get('country_iso')
-        analyze(country_iso)
-        logger.info('Analysis finished for {country["country_name"]}')
-    logger.info('Analysis finished')
 
 
 if __name__ == '__main__':
     logger.info('Starting import')
     import_data()
     logger.info('Import finished')
+    logger.info('Removing extracted data')
+    remove_extracted_data()
+    logger.info('Removed extracted data')

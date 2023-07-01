@@ -12,11 +12,11 @@ function MapArea({ data, selectedDate, onCountrySelect }) {
     let mapData = {};
     if (!data) return mapData;
 
-    for (const { country_id, time, value } of data) {
-      if (!mapData[country_id]) {
-        mapData[country_id] = {};
+    for (const { country_iso, time, value } of data) {
+      if (!mapData[country_iso]) {
+        mapData[country_iso] = {};
       }
-      mapData[country_id][moment(time).format("YYYY-MM-DD")] = value;
+      mapData[country_iso][moment(time).format("YYYY-MM-DD")] = value;
     }
     return mapData;
   }, [data]);
@@ -52,7 +52,7 @@ function MapArea({ data, selectedDate, onCountrySelect }) {
           theme.colors.green[2],
           theme.colors.red[9],
         ]}
-        getValue={(countryID) => mapData?.[countryID]?.[selectedDate]}
+        getValue={(countryIso) => mapData?.[countryIso]?.[selectedDate]}
         onCountrySelect={onCountrySelect}
         minValue={min}
         maxValue={max}

@@ -6,7 +6,7 @@ services:
     container_name: influxdb
     restart: always
     networks:
-      - metrics-network
+      - docker-network
     ports:
       - '8086:8086'
     environment:
@@ -27,13 +27,11 @@ services:
     depends_on:
       - influxdb
     networks:
-      - metrics-network
+      - docker-network
     ports:
       - '3000:3000'
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-      - DB_ADMIN_USER=admin
-      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
       - DB_ADMIN_TOKEN=${DB_ADMIN_TOKEN}
       - DB_INIT_ORG=${DB_INIT_ORG}
       - DB_INIT_BUCKET=${DB_INIT_BUCKET}
@@ -52,14 +50,13 @@ services:
     depends_on:
       - influxdb
     networks:
-      - metrics-network
+      - docker-network
     volumes:
-      - ./gsoy_importer/container/files:/gsoy_importer/files
+      - ./gsoy_importer/container/gsoy_data:/gsoy_importer/gsoy_data
       - ./gsoy_importer/container/log:/gsoy_importer/log
-      - ./gsoy_importer/container/last_run/:/gsoy_importer/last_run
+      - ./gsoy_importer/container/last_run:/gsoy_importer/last_run
     environment:
-      - DB_ADMIN_USER=admin
-      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+      - DB_ADMIN_TOKEN=${DB_ADMIN_TOKEN}
       - DB_INIT_ORG=${DB_INIT_ORG}
       - DB_INIT_BUCKET=${DB_INIT_BUCKET}
 
@@ -70,34 +67,33 @@ services:
     container_name: backend
     restart: always
     networks:
-      - metrics-network
+      - docker-network
     expose:
       - '8000'
     volumes:
       - ./diary_api/container/log:/app/log
     environment:
-      - DB_ADMIN_USER=admin
-      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+      - DB_ADMIN_TOKEN=${DB_ADMIN_TOKEN}
       - DB_INIT_ORG=${DB_INIT_ORG}
       - DB_INIT_BUCKET=${DB_INIT_BUCKET}
 
-#  frontend:
-#    build:
-#      context: diary
-#      dockerfile: ./Dockerfile
-#    container_name: diary
-#    restart: always
-#    networks:
-#      - metrics-network
-#    expose:
-#      - '9000'
+  frontend:
+    build:
+      context: diary
+      dockerfile: ./Dockerfile
+    container_name: frontend
+    restart: always
+    networks:
+      - docker-network
+    expose:
+      - '9000'
 
   nginx:
     image: nginx:latest
     container_name: nginx
     restart: always
     networks:
-      - metrics-network
+      - docker-network
     ports:
       - '8000:8000'
       - '9000:9000'
@@ -107,7 +103,7 @@ services:
       - ./nginx/logs:/var/log/nginx
 
 networks:
-  metrics-network:
+  docker-network:
     driver: bridge
 
 volumes:

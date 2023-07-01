@@ -6,12 +6,14 @@ with open(DB_CONFIG_FILE, 'r') as file:
     config = json.load(file)
 HOST = config['HOST']
 PORT = config['PORT']
-USERNAME = os.environ.get('DB_ADMIN_USER', 'admin')
-PASSWORD = os.environ.get('DB_ADMIN_PASSWORD', 'changeme')
-ORG = os.environ.get('DB_INIT_ORG', 'CLIMATE')
-BUCKET = os.environ.get('DB_INIT_BUCKET', 'climate-bucket')
+TOKEN = os.environ.get('DB_ADMIN_TOKEN')
+ORG = os.environ.get('DB_INIT_ORG')
+BUCKET = os.environ.get('DB_INIT_BUCKET')
 
-GSOY_DATA_DIR = 'files/gsoy_data'
+GSOY_DATA_DIR = 'gsoy_data'
+LAST_RUN_LAST_RUN_FILE_PATH = 'last_run/last_run.txt'
+GSOY_DOWNLOAD_URL = "https://www.ncei.noaa.gov/data/gsoy/archive/gsoy-latest.tar.gz"
+
 
 FIELD_MAPPING = {
     # 'AWND': {

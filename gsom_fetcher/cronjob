@@ -1,1 +1,0 @@
-0 0 */15 * * root python3 /gsom_fetcher/gsom_fetcher.py >> /var/log/cron.log 2>&1

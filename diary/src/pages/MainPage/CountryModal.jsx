@@ -1,23 +1,15 @@
 import { useEffect, useState } from "react";
-import {
-  Overlay,
-  Box,
-  Title,
-  ScrollArea,
-  Flex,
-  Tabs,
-  ActionIcon,
-} from "@mantine/core";
+import { ActionIcon, Box, Flex, Overlay, ScrollArea, Tabs, Title } from "@mantine/core";
 import axios from "axios";
-
 import { IconX } from "@tabler/icons-react";
-
-import GraphanaGraph from "../../components/GraphanaGraph";
+import GrafanaPanel from "../../components/GrafanaPanel";
 
 const graphs = [
-  { group: "Temprature", panels: [35, 36, 37] },
-  { group: "Percipitation", panels: [35, 36, 37] },
-  { group: "Other", panels: [35, 36, 37] },
+  { group: "Extreme Temperatures", panels: [57, 61] },
+  { group: "Temperatures", panels: [58, 62, 59, 63, 60, 64] },
+  { group: "Precipitation", panels: [47, 71, 45, 72, 48, 73] },
+  { group: "Snow", panels: [50, 67, 52, 68, 51, 69, 53, 70] },
+  { group: "Evaporation", panels: [55, 65, 56, 66] },
 ];
 
 function CountryModal({ country, dateRange, onClose }) {
@@ -30,7 +22,7 @@ function CountryModal({ country, dateRange, onClose }) {
 
   return (
     <Overlay blur={15}>
-      <Box w={850} h={"100%"} p="lg" sx={{ margin: "auto" }}>
+      <Box w={1800} h={"100%"} p="lg" sx={{ margin: "auto" }}>
         <Flex
           justify="space-between"
           align="center"
@@ -40,13 +32,9 @@ function CountryModal({ country, dateRange, onClose }) {
           })}
         >
           <Flex gap="md" align="center">
-            {flag && (
-              <img width={50} height={32} src={flag.png} alt={flag.alt} />
-            )}
-
+            {flag && <img width={50} height={32} src={flag.png} alt={flag.alt} />}
             <Title>{country.name}</Title>
           </Flex>
-
           <ActionIcon onClick={onClose} size={36}>
             <IconX size="2rem" />
           </ActionIcon>
@@ -62,16 +50,18 @@ function CountryModal({ country, dateRange, onClose }) {
           <ScrollArea h={700}>
             {graphs.map(({ group, panels }) => (
               <Tabs.Panel key={group} value={group} pt="xs">
-                {panels.map((id) => (
-                  <div key={id} style={{ marginBottom: "16px" }}>
-                    <GraphanaGraph
-                      country={country.id}
-                      from={dateRange.from}
-                      to={dateRange.to}
-                      panelId={id}
-                    />
-                  </div>
-                ))}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  {panels.map((id) => (
+                    <div key={id}>
+                      <GrafanaPanel
+                        countryIso={country.id}
+                        from={dateRange.from}
+                        to={dateRange.to}
+                        panelId={id}
+                      />
+                    </div>
+                  ))}
+                </div>
               </Tabs.Panel>
             ))}
           </ScrollArea>
