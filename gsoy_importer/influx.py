@@ -1,7 +1,7 @@
 import time
 
 from influxdb_client import InfluxDBClient, WritePrecision
-from influxdb_client.client.write_api import ASYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 from config import HOST, PORT, ORG, BUCKET, TOKEN
 from logging_config import logger
@@ -14,7 +14,7 @@ client = InfluxDBClient(
 )
 
 def write_points_to_db(points, batch_size=2000):
-    write_api = client.write_api(write_options=ASYNCHRONOUS)
+    write_api = client.write_api(write_options=SYNCHRONOUS)
     num_points = len(points)
     logger.debug(f'Writing {num_points} points in batches of {batch_size} to db')
 
