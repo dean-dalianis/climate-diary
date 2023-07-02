@@ -24,7 +24,9 @@ if errorlevel 1 (
 )
 
 REM Convert DVI to SVG
-dvisvgm "%filename%.dvi"
+dvisvgm --no-fonts "%filename%.dvi"
+REM  For retaining fonts use the command bellow and comment-out the above
+REM  dvisvgm --font-format=woff --exact "%filename%.dvi"
 
 REM Check if dvisvgm succeeded
 if errorlevel 1 (

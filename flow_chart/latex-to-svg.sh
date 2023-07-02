@@ -14,7 +14,9 @@ if [ $? -ne 0 ]; then
 fi
 
 # Step 2: Convert DVI to SVG using dvisvgm
-dvisvgm "$filename.dvi"
+dvisvgm --no-fonts "$filename.dvi"
+# For retaining fonts, use the command below and comment-out the above
+# dvisvgm --font-format=woff --exact "$filename.dvi"
 
 # Check if dvisvgm succeeded
 if [ $? -ne 0 ]; then
