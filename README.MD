@@ -1,47 +1,74 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/dean-dalianis/dataVisualisation/blob/master/LICENSE)
-# NOAA GSOM fetcher
+
+# Climate Diary
 
 This repository contains multiple projects that
 
-- fetch, analyze, and write climate data to an InfluxDb database for world's countries (easily extendable to all
-  countries, but due to resource constraints, only European countries are currently supported)
+- fetch and write climate data to an InfluxDb database for world's countries
 - provide an API to access the data
 - provide a web application to visualize the data
 - provide a Grafana instance to visualize the data
 
 Each project has its own README file with more detailed documentation.
 
-## Data Types and Attribute Decoding
+## Climate Data
 
-**gsom_fetcher** fetches various types of climate data from the NOAA API.
+### Available measurements
 
-The full names of the measurements can be found below.
+The project uses NOAA's Global Summary of the Year(GSOY) data, directly from
+the [NOAA GSOY archive](https://www.ncei.noaa.gov/data/gsoy/archive/gsoy-latest.tar.gz).
 
-```json
-"MEASUREMENT_NAMES": {
-"TAVG": "Average_Temperature",
-"TMAX": "Maximum_Temperature",
-"TMIN": "Minimum_Temperature",
-"EMXT": "Extreme_Maximum_Temperature",
-"EMNT": "Extreme_Minimum_Temperature",
-"PRCP": "Precipitation",
-"EMXP": "Highest_Daily_Total_Of_Precipitation",
-"EMSD": "Highest_Daily_Snow_Depth"
-}
-```
+It currently supports a limited set of measurements and it currently doesn't store information about the stations , due
+to memory constraints, but it can be easily extended to support more measurements and information.
 
-## Data Analysis
+The measurements currently supported are:
 
-The data analysis is done in the gsom_fetcher project. The analysis produces the following results:
+- **DSNW**: Number of days with Snowfall
+- **DYFG**: Number of days with Fog
+- **DYTS**: Number of days with Thunder
+- **EMNT**: Extreme minimum temperature
+- **EMSD**: Highest daily snow depth
+- **EMSN**: Highest daily snowfall
+- **EMXP**: Extreme maximum precipitation
+- **EMXT**: Extreme maximum temperature
+- **EVAP**: Total evaporation
+- **PRCP**: Precipitation
+- **SNOW**: Total Snowfall
+- **TAVG**: Average Temperature
+- **TMAX**: Maximum Temperature
+- **TMIN**: Minimum Temperature
 
-- monthly averages
-- yearly averages
-- decadal averages
-- year-over-year changes
-- decade-over-decade changes
-- trends
+### Data trends
 
-*More details about the analysis can be found in the gsom_fetcher README.*
+InfluxDB 2.* introduces Flux as a query language. Flux is a functional data scripting language designed for querying,
+analyzing, and acting on data. It is used by InfluxDB to process data for visualization in Grafana.
+
+This allows us to easily query the database and generate data trends in the visualizations on the fly.
+
+## Overview
+
+![Architecture](./flow_chart/chart.svg)
+
+The project consists of a multi-component web application aimed at fetching and providing access to climate data
+visualization. The architecture is as follows:
+
+1. **Nginx Server:** This is the web server for the application. It handles incoming requests and routes them to the
+   appropriate component, either the Flask server or the ReactJS frontend.
+
+2. **ReactJS Frontend:** This is the client-side user interface of the application. It interacts with the backend
+   services to fetch and display the climate data to users.
+
+3. **Flask Server:** A server-side service that interacts with the application's database (InfluxDB) to fetch and
+   process the climate data as required.
+
+4. **GSOY importer:** This module is responsible for fetching climate data from the NOAA GSOY archive. After obtaining
+   this data, it stores it in the InfluxDB for later retrieval and analysis. It is run as a cron job every 15 days.
+
+5. **InfluxDB:** This is the database that houses all the climate data fetched from the NOAA GSOY archive. It is
+   accessed by both the Flask Server (to provide data to the frontend) and Grafana (for data analysis).
+
+6. **Grafana:** This component is a data visualization tool. It fetches data from InfluxDB and generates intuitive,
+   visual representations of the climate data for analysis. It is used inside ReactJS frontend as multiple iframes.
 
 ## Docker
 
@@ -53,9 +80,9 @@ The services included in the stack are:
 
 1. **influxDB**: A time series database for storing metrics and time-based data.
 2. **grafana**: A platform for visualizing and analyzing metrics with customizable dashboards and plugins.
-3. **gsom_fetcher**: A custom Python script for fetching climate data using the NOAA GSOM API.
+3. **gsoy_importer**: A Python script for fetching the data from NOAA and writing it to the InfluxDB database.
 4. **frontend**: The React app for the diary.
-5. **backent**: The API for the diary app.
+5. **backend**: The API for the diary app.
 6. **nginx**: A web server for serving the frontend and backend.
 
 ### Running the Stack
@@ -64,19 +91,22 @@ To run the stack, follow these steps:
 
 1. Clone this repository to your local system.
 
-2. Create an `.env` file in the root directory of the project and add the following environment variables to it:
+2. Create a `.env` file in the root directory of the project and add the following environment variables to it:
 
+    ```yml
+    DB_ADMIN_PASSWORD=changeme
+    DB_INIT_ORG=CLIMATE
+    DB_INIT_BUCKET=climate-bucket
+    DB_ADMIN_TOKEN=<An InfluxDB 2.* token>
     ```
-    DB_ADMIN_PASSWORD=<admin_password>
-    DB_NAME=noaa_gsom
-    NOAA_TOKEN_1=<noaa_token_1>
-    NOAA_TOKEN_2=<noaa_token_2>
-    NOAA_TOKEN_3=<noaa_token_3>
-    NOAA_TOKEN_4=<noaa_token_4>
-    NOAA_TOKEN_5=<noaa_token_5>
-    ```
+3. Create a `.env` file in the diary directory and add the following environment variables to it:
 
-3. Run the following command to start the containers:
+    ```yml
+    VITE_API_URL = localhost:8000/
+    VITE_GRAFANA_URL = localhost:3000/    
+   ```
+
+4. Run the following command to start the containers:
 
     ```bash
     docker compose --env-file ./.env -f ./docker-compose.yml up --remove-orphans --build
@@ -93,19 +123,14 @@ To run the stack, follow these steps:
     docker-compose --env-file ./.env -f ./docker-compose.yml down --volumes --remove-orphans
     ```
 
-   And manually remove the created directories in your local host machine:
-    - containers
-    - gsom_fetcher/container/
-    - diary_api/container/
-
-4. After the containers are up and running, you can access the following services:
+5. After the containers are up and running, you can access the following services:
 
     - influxDB: [http://localhost:8086](http://localhost:8086)
     - grafana: [http://localhost:3000](http://localhost:3000)
-    - frontend: [http://localhost:8081](http://localhost:8081)
+    - frontend: [http://localhost:9000](http://localhost:8081)
     - backend: [http://localhost:8000](http://localhost:8000)
 
-5. To stop the containers, run the following command:
+6. To stop the containers, run the following command:
 
     ```bash
     docker-compose down
@@ -113,29 +138,14 @@ To run the stack, follow these steps:
 
 ### Configuration
 
-The Docker configuration files for the services are stored in their respective directories:
+The Docker and service configuration files for all the services are stored in their respective directories:
 
-- **influxdb**: `provisioning/influxdb/influxdb.conf`
-- **grafana**: `grafana/grafana.ini`
-- **gsom_fetcher**: `gsom_fetcher/Dockerfile`
+- **grafana**:
+    - `grafana/grafana.ini`
+    - `grafana/provisioning/*`
+- **gsoy_importer**: `gsom_fetcher/Dockerfile`
 - **frontend**: `diary/Dockerfile`
 - **backend**: `diary_api/Dockerfile`
-- **nginx**: `nginx/Dockerfile`
-
-You can modify these files to change the configuration of the services.
-
-### Docker Volumes
-
-- **grafana** mounts
-    - `grafana/counteiner/grafana_data` directory as a volume for data persistence.
-    - `grafana/provisioning` directory as a volume for provisioning.
-- **influxdb** mounts
-    - `containers/influxdb_data/` directory as a volume for data persistence.
-- **gsom_fetcher** mounts
-    - `gsom_fetcher/container/log/` directory as a volume for logging.
-- **backend** mounts
-    - `diary_api/container/log/` directory as a volume for logging.
-- **nginx** mounts
-    - `nginx/container/log/` directory as a volume for logging.
-    - `nginx/container/nginx.conf` file as a volume for configuration.
-    - `nginx/container/conf.d/` directory as a volume for configuration.
+- **nginx**:
+    - `nginx/nginx.conf`
+    - `nginx/conf.d/*`
