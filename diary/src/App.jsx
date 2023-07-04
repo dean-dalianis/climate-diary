@@ -9,9 +9,7 @@ import Logo from "./components/Logo";
 import DarkModeSwitch from "./components/DarkModeSwitch";
 
 import MainPage from "./pages/MainPage";
-import Insights from "./pages/Insights";
 import About from "./pages/About";
-import Contact from "./pages/Contact";
 
 function App() {
     const [opened, {open, close}] = useDisclosure(false);
@@ -48,16 +46,13 @@ function App() {
                 close={close}
                 links={[
                     {label: "Global Map", path: "/", Icon: IconLocationFilled},
-                    {label: "Data Insights", path: "/insights", Icon: IconChartAreaFilled},
                     {label: "About", path: "/about", Icon: IconInfoCircleFilled},
-                    {label: "Contact", path: "contact", Icon: IconMessage2},
+                    {label: "Contact", Icon: IconMessage2}
                 ]}
             />
             <Routes>
                 <Route path="/" element={<MainPage/>}></Route>
-                <Route path="/Insights" element={<Insights/>}></Route>
                 <Route path="/About" element={<About/>}></Route>
-                <Route path="/Contact" element={<Contact/>}></Route>
             </Routes>
         </div>
     );
