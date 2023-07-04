@@ -47,7 +47,7 @@ This allows us to easily query the database and generate data trends in the visu
 
 ## Overview
 
-![Architecture](./flow_chart/chart.svg)
+![Architecture](./flow_chart/diagram.svg)
 
 The project consists of a multi-component web application aimed at fetching and providing access to climate data
 visualization. The architecture is as follows:
