@@ -47,7 +47,10 @@ This allows us to easily query the database and generate data trends in the visu
 
 ## Overview
 
-![Architecture](./flow_chart/diagram.svg)
+<picture>
+ <source media="(prefers-color-scheme: dark)" srcset="./flow_chart/diagram_dark.svg">
+ <img alt="Shows the appropriate diagrams in light and dark color modes." src="./flow_chart/diagram_light.svg">
+</picture>
 
 The project consists of a multi-component web application aimed at fetching and providing access to climate data
 visualization. The architecture is as follows:
