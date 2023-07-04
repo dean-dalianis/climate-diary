@@ -48,8 +48,9 @@ This allows us to easily query the database and generate data trends in the visu
 ## Overview
 
 <picture>
- <source media="(prefers-color-scheme: dark)" srcset="./flow_chart/diagram_dark.svg">
- <img alt="Shows the appropriate diagrams in light and dark color modes." src="./flow_chart/diagram_light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="flow_chart/diagram_dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="flow_chart/diagram_light.svg">
+  <img src="flow_chart/diagram_light.svg" alt="Fallback Image">
 </picture>
 
 The project consists of a multi-component web application aimed at fetching and providing access to climate data
