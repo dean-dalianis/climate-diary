@@ -1,6 +1,9 @@
-import {Card, List, Paper, Text, Title} from "@mantine/core";
+import {Card, List, Paper, Text, Title, useMantineTheme} from "@mantine/core";
 
 export default function About() {
+
+    const {colorScheme} = useMantineTheme();
+    const diagram = colorScheme === 'light' ? 'diagram_light.svg' : 'diagram_dark.svg';
     return (
         <Paper style={{
             display: 'flex',
@@ -110,12 +113,11 @@ export default function About() {
                         </div>
                         <div style={{
                             width: '45%',
-                            backgroundColor: 'white',
                             padding: '1em',
                             display: 'flex',
                             justifyContent: 'center'
                         }}>
-                            <img src='diagram.svg' alt='Architecture' style={{width: '95%'}}/>
+                            <img src={diagram} alt='Architecture' style={{width: '95%'}}/>
                         </div>
                     </div>
                 </Card>
