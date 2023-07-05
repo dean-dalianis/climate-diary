@@ -17,7 +17,7 @@ export default function About() {
             paddingRight: '10em'
         }}>
             <div style={{display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap'}}>
-                <Card padding="md" shadow="xs" style={{width: '45%', padding: '2em', margin: '2em'}}>
+                <Card padding="md" shadow="xs" style={{width: '30%', padding: '2em', margin: '2em'}}>
                     <Title order={1} style={{paddingBottom: '0.3em'}}>About Climate Diary</Title>
                     <Text size="lg">
                         Welcome to the Climate Diary! A one-of-a-kind project that enables users to fetch, access, and
@@ -42,7 +42,7 @@ export default function About() {
                     </Text>
                 </Card>
 
-                <Card padding="md" shadow="xs" style={{width: '45%', padding: '2em', margin: '2em'}}>
+                <Card padding="md" shadow="xs" style={{width: '30%', padding: '2em', margin: '2em'}}>
                     <Title order={1} style={{paddingBottom: '0.3em'}}>Our Data</Title>
                     <Text size="lg">
                         We currently use the Global Summary of the Year (GSOY) data provided by the National Oceanic and
@@ -63,6 +63,18 @@ export default function About() {
                             <List.Item>socioeconomic data</List.Item>
                         </List>
                     </Text>
+                </Card>
+
+                <Card padding="md" shadow="xs" style={{width: '30%', padding: '2em', margin: '2em'}}>
+                    <Title order={1} style={{paddingBottom: '0.3em'}}>Video Presentation</Title>
+                    <iframe
+                        width="860"
+                        height="515"
+                        src="https://www.youtube.com/embed/iLk-AxGoejA"
+                        title="Climate Diary Presentation Video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                    />
                 </Card>
 
                 <Card padding="md" shadow="xs" style={{padding: '2em', margin: '2em'}}>
