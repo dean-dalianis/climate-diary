@@ -1,4 +1,4 @@
-[![Climate Diary](https://img.shields.io/badge/Climate%20Diary%20Live-Click%20Here-blue)](http://209.38.220.161:9000) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/dean-dalianis/dataVisualisation/blob/master/LICENSE)
+[![Climate Diary](https://img.shields.io/badge/Climate%20Diary%20Live-Click%20Here-blue)](http://climatediary.ddns.net:9000/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/dean-dalianis/dataVisualisation/blob/master/LICENSE)
 
 # Climate Diary
 
