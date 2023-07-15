@@ -2,6 +2,8 @@
 
 # Climate Diary
 
+The Climate Diary is an open-source project designed to aggregate, simplify, and visualize complex climate data. The platform makes this information accessible and easy to understand, fostering meaningful climate change discussions among a broad audience, from scientists and policymakers to students and the general public. Future enhancements include expanding the diversity of data, integrating real-time data sources, and conducting rigorous assessments of data quality and relevance. Additionally, a comprehensive technical evaluation will optimize the platform's software stack, potentially exploring alternatives for data storage, stream processing, backend and frontend programming, and data visualization. As an open-source initiative, the Climate Diary warmly welcomes contributions from the wider community for continuous improvement and innovation. Furthermore, the platform is open to potential collaborations in the future to enrich its data sources and strengthen its impact.
+
 This repository contains multiple projects that
 
 - fetch and write climate data to an InfluxDb database for world's countries
