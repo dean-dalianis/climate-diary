@@ -167,7 +167,7 @@ export default function About() {
                 <Card padding="md" shadow="xs" style={{width: '30%', padding: '2em', margin: '2em'}}>
                     <Title order={1} style={{paddingBottom: '0.3em'}}>Project Links</Title>
                     <Text size="lg">
-                        <a href='https://github.com/dean-dalianis/dataVisualisation'>GitHub Repository</a><br/>
+                        <a href='https://github.com/dean-dalianis/climate-diary'>GitHub Repository</a><br/>
                         <a href='https://www.ncei.noaa.gov/data/gsoy/'>NOAA GSOY Data</a><br/>
                         <a href='http://209.38.220.161:3000/d/c351f1fe-59e9-4758-b061-93603cbedc6d/noaa-gsom-dashboard?orgId=1/'>Grafana</a><br/>
                         <a href='http://209.38.220.161:8000/'>Swagger UI</a>
